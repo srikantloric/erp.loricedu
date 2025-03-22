@@ -1,0 +1,166 @@
+.sidebar-container {
+  height: 100vh;
+  border-right: 1px solid var(--bs-gray-300);
+  box-sizing: border-box;
+  position: fixed;
+  overflow-y: auto;
+  z-index: 1;
+}
+
+.sidebar {
+  padding: 16px;
+}
+
+.hidden {
+  width: 0;
+}
+
+.sidebar a {
+  text-decoration: none;
+  color: #5a6a85;
+  margin-top: 6px;
+}
+
+.sidebar-menu {
+  padding: 6px;
+}
+.sidebar-menu > p {
+  color: #11142d;
+  font-size: 12px;
+  padding-top: 12px;
+  padding-left: 10px;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.sidebar-logo {
+  display: flex;
+  padding: 5px 10px;
+  border-bottom: 1px solid var(--bs-gray-400);
+
+  img {
+    width: 90%;
+    // height: 40px;
+  }
+}
+
+.menu-items {
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  border-radius: 6px;
+  padding: 0px 10px;
+  transition: background-color 0.3s, color 0.3s;
+
+  & p {
+    font-size: 14px;
+    margin-left: 8px;
+    font-family: "Plus Jakarta Sans", sans-serif;
+    font-weight: 400;
+  }
+
+  &:hover {
+    background-color: var(--bs-light);
+    color: var(--bs-primary);
+  }
+}
+
+.menu-items .toggle-btn {
+  cursor: pointer;
+  transition: transform 0.3s;
+  
+}
+
+.open-mainmenu {
+  & .toggle-btn {
+    transform: rotate(180deg);
+  }
+  transition: all 0.5s;
+}
+
+.close-mainmenu {
+  & .toggle-btn {
+    transform: rotate(0deg);
+  }
+  transition: all 0.5s;
+}
+
+.close-submenu {
+  display: none;
+  // height: 0;
+}
+
+.sidebar .active {
+  background-color: var(--bs-link-color);
+  color: var(--bs-white);
+
+  &a {
+    color: var(--bs-white);
+  }
+}
+
+.icon-plus-title {
+  display: flex;
+  align-items: center;
+}
+
+/*
+ *  STYLE 6
+ */
+
+.sidebar-container::-webkit-scrollbar-track {
+  -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+  background-color: #f5f5f5;
+}
+
+.sidebar-container::-webkit-scrollbar {
+  width: 0px;
+  background-color: #f5f5f5;
+  transition: width 0.5s; /* Transition for scrollbar width */
+
+}
+
+.sidebar-container:hover {
+  &.sidebar-container::-webkit-scrollbar {
+    width: 5px;
+    background-color: #f5f5f5;
+     }
+  &.sidebar-container::-webkit-scrollbar-thumb {
+    background-color: var(--bs-primary);
+    background-image: -webkit-linear-gradient(
+      45deg,
+      rgba(255, 255, 255, 0.2) 25%,
+      transparent 25%,
+      transparent 50%,
+      rgba(255, 255, 255, 0.2) 50%,
+      rgba(255, 255, 255, 0.2) 75%,
+      transparent 75%,
+      transparent
+    );
+    transition: background-color 0.5s;
+  }
+}
+
+.menu-items-submenu {
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  border-radius: 6px;
+  padding: 0px 10px;
+
+  & p {
+    font-size: 14px;
+    margin-left: 8px;
+    font-family: "Plus Jakarta Sans", sans-serif;
+    font-weight: 400;
+  }
+  &:hover {
+    color: var(--bs-primary);
+    background: none;
+  }
+}

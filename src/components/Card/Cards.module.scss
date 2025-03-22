@@ -1,0 +1,109 @@
+.cardContainer {
+  width: 180px;
+  height: 235px;
+  box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px,
+    rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 10px;
+  padding: 10px;
+  border: 1px solid var(--bs-gray-200);
+  transition: all 0.3s;
+
+  cursor: pointer;
+  margin: 8px;
+  &:hover {
+    border: 1px solid var(--bs-primary);
+  }
+}
+
+.blurLoading {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background-size: cover;
+  background-position: top;
+}
+
+.blurLoading .facultyImage {
+  opacity: 0;
+  border-radius: 50%;
+  width: 90px;
+  height: 90px;
+  object-fit: cover;
+  object-position: top;
+  // border: 1px solid var(--bs-gray-300);
+  transition: 300ms opacity ease-in;
+}
+
+.blurLoading .loaded {
+  opacity: 1;
+}
+
+.cardHeader {
+  position: relative;
+}
+
+.badge {
+  height: 40px;
+  object-fit: cover;
+  width: 40px;
+  background-color: white;
+  border-radius: 50%;
+  position: absolute;
+  right: -20px;
+  top: 0px;
+  padding: 5px;
+  border: 1px solid var(--bs-gray-201);
+}
+
+.cardBody {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+
+  & h3 {
+    font-family: "Plus Jakarta Sans", sans-serif;
+    font-weight: 600;
+    font-size: 16px;
+    color: var(--bs-primary-text);
+    text-transform: uppercase;
+    margin: 10px 0px 4px 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  & h4 {
+    font-family: "Plus Jakarta Sans", sans-serif;
+    font-weight: 500;
+    font-size: 16px;
+    color: var(--bs-light-text);
+    margin: 0;
+  }
+}
+
+.cardBody p {
+  width: 80%;
+  height: 30px;
+  margin: 0;
+  padding: 0;
+  font-size: 14px;
+  color: var(--bs-light-text);
+}
+
+.cardFooter {
+  width: 100%;
+}
+
+.cardFooter .viewButton {
+  width: inherit;
+  height: 30px;
+  margin-top: 12px;
+  font-size: 12px;
+  background-color: var(--bs-primary);
+  &:hover {
+    background-color: var(--bs-primary-text);
+  }
+}

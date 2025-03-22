@@ -1,0 +1,33 @@
+.card-container {
+  padding-right: 21px;
+  cursor: pointer;
+}
+
+.cs-card {
+  height: 160px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  transition: scale 0.2s;
+}
+.cs-card:hover {
+  scale: 1.05;
+}
+
+.cs-card > h4 {
+  margin: 8px 0px 0px;
+  font-size: 21px;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  line-height: 1.75;
+  font-weight: 600;
+}
+
+.cs-card > h6 {
+  margin: 8px 0px 0px;
+  font-size: 14px;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  line-height: 1.75;
+  font-weight: 600;
+}/*# sourceMappingURL=CardDashboard.css.map */

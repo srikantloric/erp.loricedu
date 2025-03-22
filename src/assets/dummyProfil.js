@@ -1,0 +1,2 @@
+export const MALE_DUMMY ="https://firebasestorage.googleapis.com/v0/b/orient-public-school.appspot.com/o/Dummy%20Images%2Fdmmy_profile_male.png?alt=media&token=8ac49105-26a7-4ca4-9eef-c6901b63a2c3";
+export const FEMALE_DUMMY="https://firebasestorage.googleapis.com/v0/b/orient-public-school.appspot.com/o/Dummy%20Images%2Fdmmy_profile_female.png?alt=media&token=fd68bdf7-211b-4417-892d-714bb3f7a265";

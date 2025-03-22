@@ -1,0 +1,51 @@
+.card_dashboard {
+  height: 120px;
+  border-radius: 8px;
+  display: flex;
+  width: 280px;
+  flex-direction: column;
+  justify-content: center;
+  transition: scale 0.2s;
+}
+
+.card_dashboard:hover {
+  scale: 1.05;
+}
+
+.card_top {
+  flex: 1;
+  width: 100%;
+  padding: 10px;
+}
+
+.card_bottom {
+  flex: 0.2;
+  border-radius: 0px 0px 10px 10px;
+  width: 100%;
+  text-align: center;
+}
+
+.card_bottom p {
+  padding: 4px 10px;
+  margin: 0;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  color: #fff;
+}
+
+.card_dashboard h4 {
+  margin: 8px 0px 0px;
+  font-size: 24px;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  line-height: 1.5;
+  font-weight: 600;
+  color: #fff;
+}
+
+.card_dashboard h6 {
+  margin: 8px 0px 0px;
+  font-size: 16px;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  line-height: 1.75;
+  font-weight: 600;
+  color: #fff;
+} /*# sourceMappingURL=Card2.module.css.map */

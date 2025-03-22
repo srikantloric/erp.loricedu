@@ -1,0 +1,66 @@
+.react-calendar {
+    width: 100% !important;
+    padding: 10px !important;
+    margin-top: 16px !important;
+  }
+  
+  .calender-body {
+    background-color: #ffffff !important;
+  }
+  
+  .react-calendar__tile--active {
+    background-color: #fbbc13 !important;
+  }
+  
+  .today {
+    border: 2px solid #1f1b13 !important;
+  }
+  
+  .react-calendar_month-viewdays_day {
+    margin: 12px !important;
+  }
+  
+  .react-calendar__tile--active:enabled:hover {
+    background-color: #fbbc13 !important;
+  }
+  
+  .react-calendar__month-view__days__day--weekend {
+    color: #1f1b13 !important;
+  }
+  
+  .react-calendar__tile--now {
+    background-color: transparent !important;
+  }
+  
+  .react-calendar__month-view__days__day--neighboringMonth {
+    visibility: hidden;
+  }
+  
+  .present-marker {
+    color: #1a8825;
+  }
+  
+  .absent-marker {
+    color: #ba1a1a !important;
+  }
+  
+  .on-leave-marker {
+    color: #ba1a1a !important;
+  }
+  
+  .tile-day {
+    border: 1px solid #b2a9b5 !important;
+    height: 90px !important;
+    /* border-radius: 5px; */
+    /* margin-bottom: 5px !important; */
+    width: 90% !important;
+    /* margin: 10px !important; */
+  }
+  
+  .attendance-not-marked abbr {
+    border: 1px dashed #ba1a1a;
+    color: #ba1a1a !important;
+    border-radius: 50%;
+    padding: 5px;
+  }
+  
