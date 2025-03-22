@@ -12,11 +12,11 @@ import {
 } from "@mui/joy";
 import UpdateStudentImageCard from "components/Card/UpdateStudentImageCard";
 import { SCHOOL_CLASSES, SCHOOL_SECTIONS } from "config/schoolConfig";
+import { useFirebase } from "context/firebaseContext";
 import {  collection, query, where, getDocs, onSnapshot } from "firebase/firestore";
 import { enqueueSnackbar } from "notistack";
 import React, { useState } from "react";
 import { StudentDetailsType } from "types/student";
-import { db } from "../../firebase";
 
 const StudentProfilePictureUpdater: React.FC = () => {
   const [selectedClass, setSelectedClass] = useState<number | null>(null);
@@ -24,8 +24,10 @@ const StudentProfilePictureUpdater: React.FC = () => {
   const [studentData, setStudentData] = useState<StudentDetailsType[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [inputSearch, setInputSearch] = useState<string>("");
-
   const [tabSelected, setTabSelected] = useState<string>("byClass");
+
+  //Get Firebase DB instance
+  const {db} = useFirebase();
 
   const handleStudentFetching = () => {
     if (selectedSection === null || selectedClass === null) {

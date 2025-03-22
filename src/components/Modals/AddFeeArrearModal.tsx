@@ -13,10 +13,10 @@ import {
 import { FEE_HEADERS } from "../../constants/index";
 import { Additem } from "iconsax-react";
 import { useEffect, useState } from "react";
-import { db } from "../../firebase";
 import { enqueueSnackbar } from "notistack";
 import { IChallanHeaderType, IChallanHeaderTypeForChallan, IChallanNL } from "types/payment";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { useFirebase } from "context/firebaseContext";
 
 interface IAddArrearInputTypes {
   examFee: number;
@@ -34,7 +34,7 @@ interface Props {
   feeHeader: IChallanHeaderTypeForChallan[];
 }
 
-interface IAddArrearInputTypes extends Record<string, number> {}
+interface IAddArrearInputTypes extends Record<string, number> { }
 
 const AddFeeArrearModal: React.FC<Props> = ({
   open,
@@ -51,6 +51,11 @@ const AddFeeArrearModal: React.FC<Props> = ({
     admissionFee: 0,
     otherFee: 0,
   });
+
+
+  // Get Firebase DB ref
+  const { db } = useFirebase()
+
   const [totalAmount, setTotalAmount] = useState<number>(0);
 
   useEffect(() => {
@@ -70,22 +75,22 @@ const AddFeeArrearModal: React.FC<Props> = ({
     try {
       // Reference to the specific challan document
       const challanRef = doc(db, "STUDENTS", studentId, "CHALLANS", challanId);
-  
+
       // Fetch the current challan document
       const challanDoc = await getDoc(challanRef);
       if (!challanDoc.exists()) {
         throw new Error("Challan not found");
       }
-  
+
       // Get the current data
       const challanData = challanDoc.data() as IChallanNL;
       const { feeHeaders = [] } = challanData;
-  
+
       // Create a map of existing headers for quick lookup
       const feeHeadersMap = new Map(
         feeHeaders.map((header) => [header.headerTitle, header])
       );
-  
+
       // Update the headers
       newHeaders.forEach((newHeader) => {
         if (feeHeadersMap.has(newHeader.headerTitle)) {
@@ -100,10 +105,10 @@ const AddFeeArrearModal: React.FC<Props> = ({
           feeHeadersMap.set(newHeader.headerTitle, newHeader);
         }
       });
-  
+
       // Convert the map back to an array
       const updatedFeeHeaders = Array.from(feeHeadersMap.values());
-  
+
       let pStatus = "";
       switch (paymentStatus) {
         case "PAID":
@@ -116,13 +121,13 @@ const AddFeeArrearModal: React.FC<Props> = ({
         default:
           pStatus = "";
       }
-  
+
       // Update the document with the modified feeHeaders array
       await updateDoc(challanRef, {
         feeHeaders: updatedFeeHeaders,
         status: pStatus,
       });
-  
+
       enqueueSnackbar("Fee Header Updated Successfully!", { variant: "success" });
       setOpen(false);
     } catch (error) {
@@ -141,7 +146,7 @@ const AddFeeArrearModal: React.FC<Props> = ({
         amountPaid: 0,
         amount: feeHeaderData.admissionFee,
         amountDue: 0,
-        amountPaidTotal:0
+        amountPaidTotal: 0
       });
     }
     if (feeHeaderData.examFee) {
@@ -150,7 +155,7 @@ const AddFeeArrearModal: React.FC<Props> = ({
         amountPaid: 0,
         amount: feeHeaderData.examFee,
         amountDue: 0,
-        amountPaidTotal:0
+        amountPaidTotal: 0
       });
     }
     if (feeHeaderData.annualFee) {
@@ -159,7 +164,7 @@ const AddFeeArrearModal: React.FC<Props> = ({
         amountPaid: 0,
         amount: feeHeaderData.annualFee,
         amountDue: 0,
-        amountPaidTotal:0
+        amountPaidTotal: 0
       });
     }
     if (feeHeaderData.otherFee) {
@@ -168,7 +173,7 @@ const AddFeeArrearModal: React.FC<Props> = ({
         amountPaid: 0,
         amount: feeHeaderData.otherFee,
         amountDue: 0,
-        amountPaidTotal:0
+        amountPaidTotal: 0
       });
     }
 

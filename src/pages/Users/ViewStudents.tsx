@@ -39,8 +39,6 @@ import { MoreVert } from "@mui/icons-material";
 
 import { useSnackbar } from "notistack";
 import ConfirmationModal from "../../components/Modals/ConfirmationModal";
-
-import StudentProfileDetailsModal from "components/Modals/StudentProfileDetailsModal";
 import { getClassNameByValue } from "utilities/UtilitiesFunctions";
 import { StudReportPDF } from "components/StudentDetailsReport/StudentReportGeneratorPDF";
 import ExportToExcel from "components/Reports/ExportToExcel";
@@ -78,19 +76,13 @@ function ViewStudents() {
 
   const [filteredData, setFilteredData] = useState(Array.from(data));
   const [selectedRowData, setSelectedRowData] = useState<StudentDetailsType | null>(null);
-  // const [selectedId, setSelectedId] = useState<string | null>(null); // eslint-disable-line
   const [filterChip, setFilterChip] = useState(false);
   const [filterChipLabel, setFilterChipLabel] = useState<string>("");
 
-  //topbar selection state
-  // const [session, setSession] = useState("2025/26"); // eslint-disable-line
   const session ="2025/26"
   const [selectedClass, setSelectedClass] = useState<any>(-1);
   const [selectedSection, setSelectedSection] = useState<any>(-1);
 
-  //student Profile
-  const [studentProfileDetailsModalOpen, setStudentProfileModalOpen] =
-    useState(false);
 
   //confirmation Modal
   const [confirmationModal, setConfirmationModal] = useState(false);
@@ -499,15 +491,7 @@ function ViewStudents() {
             Suspend User
           </MenuItem> */}
         </Menu>
-        {selectedRowData && studentProfileDetailsModalOpen ? (
-          <StudentProfileDetailsModal
-            selectedRowData={selectedRowData}
-            handleStudentProfileModalClose={() => {
-              setStudentProfileModalOpen(false);
-              setSelectedRowData(null);
-            }}
-          />
-        ) : null}
+       
       </LSPage>
     </PageContainer>
   );

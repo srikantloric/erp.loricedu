@@ -2,11 +2,11 @@ import { Delete, Edit, } from "@mui/icons-material"
 import { Button, Chip, Input } from "@mui/joy";
 import { Divider, IconButton, Paper, Stack, styled, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip, Typography } from "@mui/material"
 import LSBox from "components/Card/LSBox";
-import { db } from "./../../firebase";
 import { doc, getDoc, setDoc, updateDoc, arrayUnion } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { enqueueSnackbar } from "notistack";
 import  { tableCellClasses  } from '@mui/material/TableCell';
+import { useFirebase } from "context/firebaseContext";
 export interface SectionType {
   sectionId: string;
   name: string;
@@ -35,6 +35,8 @@ function AddSections() {
   const [searchInput, setSearchInput] = useState<string>("");
   const [sections, setSections] = useState<SectionType[]>([]);
   const [newSection, setNewSection] = useState<string>("");
+   //Get Firebase DB instance
+   const {db} = useFirebase();
 
   const handleSaveNewClass = async () => {
     if (newSection.trim() === "") {

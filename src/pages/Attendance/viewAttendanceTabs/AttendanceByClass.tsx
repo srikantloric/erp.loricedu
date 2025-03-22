@@ -14,7 +14,6 @@ import {
   Typography,
 } from "@mui/joy";
 import { Paper } from "@mui/material";
-import { db } from "../../../firebase";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import { StudentAttendanceGlobalSchema } from "types/attendance";
@@ -27,6 +26,7 @@ import { SCHOOL_CLASSES } from "config/schoolConfig";
 import { Print } from "@mui/icons-material";
 import { AttendanceReportGenerator } from "components/AttendanceReport/AttendanceReportGenerator";
 import { doc, getDoc } from "firebase/firestore";
+import { useFirebase } from "context/firebaseContext";
 
 type AttendanceHeaderDataType = {
   totalStudent: number;
@@ -48,6 +48,9 @@ function AttendanceByClass() {
   const [individualAttendanceData, setIndividualAttendanceData] = useState<
     StudentAttendanceGlobalSchema[]
   >([]);
+
+   //Get Firebase DB instance
+   const {db} = useFirebase();
 
   const fetchStudentAtt = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

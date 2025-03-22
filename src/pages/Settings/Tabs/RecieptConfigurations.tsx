@@ -16,10 +16,10 @@ import {
   Textarea,
   Typography,
 } from "@mui/joy";
-import { db } from "../../../firebase";
 import { useEffect, useRef, useState } from "react";
 import { enqueueSnackbar } from "notistack";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { useFirebase } from "context/firebaseContext";
 
 function RecieptConfigurations() {
   const [accountantName, setAccountantName] = useState("");
@@ -28,9 +28,13 @@ function RecieptConfigurations() {
   const [updatingAccoutantName, setUpdatingAccountantName] =
     useState<boolean>(false);
   const [messageText, setMessageText] = useState("");
-
   const [showMessageOnReciept, setShowMessageOnReciept] =
     useState<boolean>(false);
+
+
+    //Get Firebase DB instance
+   const {db} = useFirebase();
+
   useEffect(() => {
     imageRef.current.src = "./recieptPreviewImg.jpg"; // Update with your image path
     imageRef.current.onload = () => {

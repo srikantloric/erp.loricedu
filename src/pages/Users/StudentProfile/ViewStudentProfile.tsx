@@ -17,8 +17,8 @@ import { useParams } from "react-router-dom";
 import { StudentDetailsType } from "types/student";
 import { useEffect, useState } from "react";
 import { enqueueSnackbar } from "notistack";
-import {db} from '../../../firebase'
 import { doc, getDoc } from "firebase/firestore";
+import { useFirebase } from "context/firebaseContext";
 
 interface IStudentReduxStore {
   studentarray: [];
@@ -42,6 +42,9 @@ function ViewStudentProfile() {
   ) as StudentDetailsType[];
   const { id: studentDocId } = useParams();
 
+  //Get Firebase DB instance
+  const { db } = useFirebase();
+
   const [studentData, setStudentData] = useState<StudentDetailsType | null>(
     null
   );
@@ -58,7 +61,7 @@ function ViewStudentProfile() {
         try {
           const docRef = doc(db, "STUDENTS", studentDocId!);
           const docSnap = await getDoc(docRef);
-  
+
           if (docSnap.exists()) {
             const studentDocData = docSnap.data() as StudentDetailsType;
             setStudentData(studentDocData);
@@ -70,7 +73,7 @@ function ViewStudentProfile() {
         }
       }
     };
-  
+
     fetchStudentData();
   }, [studentDocId, studentStateData]);
 
@@ -135,7 +138,7 @@ function ViewStudentProfile() {
               {studentData ? <ProfileTab studentData={studentData!} /> : null}
             </TabPanel>
             <TabPanel value={1}>
-              {studentData?<PersonalTab studentData={studentData!} />:null}
+              {studentData ? <PersonalTab studentData={studentData!} /> : null}
             </TabPanel>
             <TabPanel value={2}>
               In Progress

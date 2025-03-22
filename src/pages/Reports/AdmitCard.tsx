@@ -9,11 +9,11 @@ import { admitCardType } from "types/admitCard";
 import { useState } from "react";
 import { SCHOOL_CLASSES } from "config/schoolConfig";
 import { GenerateAdmitCard } from "../../utilities/GenerateAdmitCard";
-import { db } from "../../firebase";
 import { StudentDetailsType } from "types/student";
 import { getClassNameByValue } from "utilities/UtilitiesFunctions";
 import { examData } from "components/Exams/ExamPlannerTable";
 import { collection, getDocs, query, where } from "firebase/firestore";
+import { useFirebase } from "context/firebaseContext";
 
 
 
@@ -24,6 +24,9 @@ const AdmitCard = () => {
   const [studentData, setStudentData] = useState<admitCardType[]>([]);
   const [pdfUrl, setPdfUrl] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
+
+  //Get Firebase DB instance
+  const {db} = useFirebase();
 
   const handleGenerateAdmitCard = async () => {
     if (!selectedClass || !selectedExam) {

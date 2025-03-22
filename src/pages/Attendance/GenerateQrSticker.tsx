@@ -22,7 +22,6 @@ import HeaderTitleCard from "components/Card/HeaderTitleCard";
 import Navbar from "components/Navbar/Navbar";
 import LSPage from "components/Utils/LSPage";
 import PageContainer from "components/Utils/PageContainer";
-import { db } from "../../firebase";
 import jsPDF from "jspdf";
 // import jsPDF from "jspdf"
 import { useState } from "react";
@@ -32,6 +31,7 @@ import { Add, Search } from "@mui/icons-material";
 import { enqueueSnackbar } from "notistack";
 import { generateQRCodeBase64 } from "utilities/UtilitiesFunctions";
 import { collection, getDocs, query, where } from "firebase/firestore";
+import { useFirebase } from "context/firebaseContext";
 
 type studentQrObjType = {
   qrImageBase64: string;
@@ -45,6 +45,10 @@ function GenerateQrSticker() {
   const [isFetchingDataOfUser, setIsFetchingDataOfUser] = useState(false);
   const [studentSearchInput, setStudentSearchInput] = useState<string>("");
   const [searchInput, setSearchInput] = useState<string>("");
+
+    //Get Firebase DB instance
+    const {db} = useFirebase();
+
 
   ///Generate by class
   const [selectedClass, setSelectedClass] = useState<number | null>(1);

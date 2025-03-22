@@ -26,13 +26,13 @@ import { SCHOOL_CLASSES, SCHOOL_SECTIONS } from "config/schoolConfig";
 import { Edit, Warning2 } from "iconsax-react";
 import { StudentDetailsType } from "types/student";
 import { z } from "zod";
-import  { db } from "../../../../firebase";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import LockIcon from "@mui/icons-material/Lock";
 import { doc, serverTimestamp, Timestamp, updateDoc } from "firebase/firestore";
+import { useFirebase } from "context/firebaseContext";
 
 const VisuallyHiddenInput = styled("input")`
   clip: rect(0 0 0 0);
@@ -133,6 +133,9 @@ const PersonalTab: React.FC<StudentProfileProps> = ({ studentData }) => {
 
   const [changeKeyInput, setChangeKeyInput] = useState<string>("");
   const [changeKeyAccessError, setChangeKeyAccessError] = useState<string>("");
+
+  //Get Firebase DB instance
+  const {db} = useFirebase();
 
   const {
     register,

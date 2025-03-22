@@ -1,6 +1,6 @@
 import { doc, getDoc } from "firebase/firestore";
-import { initializeApp, getApps,  FirebaseApp } from "firebase/app";
-import {db} from "../firebase";
+import { initializeApp, getApps, FirebaseApp } from "firebase/app";
+import { dbMaster } from "../firebase";
 
 const SCHOOL_CONFIG_KEY = "firebase_school_config"; // Local Storage Key
 const SCHOOL_ID_KEY = "schoolId"; // Key for storing school ID
@@ -24,10 +24,10 @@ export const getFirebaseConfig = async (schoolId: string): Promise<FirebaseConfi
   }
 
   console.log("Fetching Firebase Config for school:", schoolId);
-  
+
   try {
     // Fetch from master Firestore
-    const docRef = doc(db, "schools", schoolId);
+    const docRef = doc(dbMaster, "schools", schoolId);
     const docSnap = await getDoc(docRef);
 
     if (docSnap.exists()) {

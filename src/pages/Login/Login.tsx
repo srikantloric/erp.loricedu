@@ -17,15 +17,15 @@ import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 
 import IllustrationImg from "../../assets/illustration.png";
-import LoricEduLogo from "../../assets/whiteBgColor.png";
+import LoricEduLogo from "../../assets/loric-edu/loric-edu-color.png";
 
 import { useAuth } from "../../context/AuthContext";
 
 // 🔹 Import Firebase Modular SDK
 import { collection, query, where, getDocs } from "firebase/firestore";
-import { db } from "../../firebase"; // Ensure db is initialized using `getFirestore(app)`
 import { Typography } from "@mui/joy";
 import { useSchoolId } from "hooks/useSchoolId";
+import { dbMaster } from "../../firebase";
 
 function Login() {
   const [username, setUsername] = useState("");
@@ -53,7 +53,7 @@ function Login() {
     const schoolId = username.split("@")[1].split(".")[0];
     setLoading(true);
     try {
-      const q = query(collection(db, "admin_users"), where("user_email", "==", username));
+      const q = query(collection(dbMaster, "admin_users"), where("user_email", "==", username));
       const docSnap = await getDocs(q);
       if (!docSnap.empty) {
         await login(username, password);
@@ -135,7 +135,7 @@ function Login() {
           </form>
         </div>
         <Box>
-          <Typography>Contact +91-7979080633</Typography>
+          <Typography level="body-sm" sx={{ mb: 2 }}><span style={{ color: "#4A6CCD" }}>Loric Softwares </span>| Copyright 2017-2025. All Rights Reserved.</Typography>
         </Box>
       </div>
     </div>

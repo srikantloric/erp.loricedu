@@ -16,8 +16,8 @@ import { Warning2 } from "iconsax-react";
 import { useState } from "react";
 import LockIcon from "@mui/icons-material/Lock";
 import { enqueueSnackbar } from "notistack";
-import { db } from "../../firebase";
 import { arrayRemove, collection, doc, getDocs, query, where, writeBatch } from "firebase/firestore";
+import { useFirebase } from "context/firebaseContext";
 interface Props {
   open: boolean;
   setOpen: (props: boolean) => void;
@@ -31,6 +31,11 @@ const DeleteChallanConfirmationDialog: React.FC<Props> = ({
   studentId,
   challanId,
 }) => {
+
+    //Get Firebase DB instance
+    const {db} = useFirebase();
+  
+
   const [accessKeyInput, setAccessKeyInput] = useState<string>("");
   const [accessKeyError, setAccessKeyError] = useState<string>("");
 

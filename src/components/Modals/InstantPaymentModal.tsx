@@ -28,10 +28,10 @@ import {
 } from "utilities/UtilitiesFunctions";
 import { StudentDetailsType } from "types/student";
 import { enqueueSnackbar } from "notistack";
-import  { db } from "../../firebase";
 import { generateFeeHeadersForChallanWithMarkedAsPaid } from "utilities/PaymentUtilityFunctions";
 import { IChallanHeaderType, IChallanNL, IPaymentNL } from "types/payment";
 import { collection, doc, getDoc, serverTimestamp, Timestamp, writeBatch } from "firebase/firestore";
+import { useFirebase } from "context/firebaseContext";
 
 interface Props {
   open: boolean;
@@ -59,6 +59,10 @@ const InstantPaymentModal: React.FC<Props> = ({
   setOpen,
   studentMasterData,
 }) => {
+
+    //Get Firebase DB instance
+    const {db} = useFirebase();
+
   const [showMoreHeader, setShowMoreHeaders] = useState<boolean>(false);
 
   const currentMonth = new Date().getMonth() + 1;

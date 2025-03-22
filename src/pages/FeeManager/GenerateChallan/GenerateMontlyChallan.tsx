@@ -19,7 +19,6 @@ import Navbar from "components/Navbar/Navbar";
 import LSPage from "components/Utils/LSPage";
 import PageContainer from "components/Utils/PageContainer";
 import { SCHOOL_CLASSES, SCHOOL_FEE_MONTHS } from "config/schoolConfig";
-import { db } from "../../../firebase";
 import { useState } from "react";
 
 import { StudentDetailsType } from "types/student";
@@ -40,6 +39,7 @@ import {
 import { enqueueSnackbar } from "notistack";
 import { IChallanNL } from "types/payment";
 import { generateFeeHeadersForChallan } from "utilities/PaymentUtilityFunctions";
+import { useFirebase } from "context/firebaseContext";
 
 type StudentFeeDataType = {
   studentData: StudentDetailsType;
@@ -58,6 +58,9 @@ function GenerateMonthlyChallan() {
     getPaymentDueDate()
   );
   const [lateFine, setLateFine] = useState<number>(0);
+
+  //Get Firebase DB instance
+  const { db } = useFirebase();
 
   const handleFetch = async (e: any) => {
     e.preventDefault();

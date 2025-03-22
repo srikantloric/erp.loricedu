@@ -10,13 +10,14 @@ import {
 import { Paper } from "@mui/material";
 import FullAttendanceReport from "components/AttendanceReport/FullAttendanceSelected";
 import AttendanceCalendar from "components/Calendar/AttendanceCalendar";
-import { db } from "../../../firebase";
+
 import { SyntheticEvent, useEffect, useState } from "react";
 import { StudentDetailsType } from "types/student";
 import { enqueueSnackbar } from "notistack";
 import { StudentAttendanceGlobalSchema } from "types/attendance";
 import { Print } from "@mui/icons-material";
 import { collection, doc, getDocs, query, where } from "firebase/firestore";
+import { useFirebase } from "context/firebaseContext";
 
 function AttendanceByStudentId() {
   const [searchInput, setSearchInput] = useState<string>("");
@@ -29,14 +30,17 @@ function AttendanceByStudentId() {
   const [halfDayDates, setHalfDayDates] = useState<string[]>([]);
   const [notMarkedDates, setNotMarkedDates] = useState([]);
   const [futureDates, setFutureDates] = useState([]);
-  const[totalPresents,setTotalpresent]=useState<number|null>();
-  const[totalAbsents,setTotalAbsents]=useState<number|null>();
-  const[totalHalf,settotalHalf]= useState<number|null>();
-  const[fetchdone,setFetchdone]=useState<boolean>(false);
+  const [totalPresents, setTotalpresent] = useState<number | null>();
+  const [totalAbsents, setTotalAbsents] = useState<number | null>();
+  const [totalHalf, settotalHalf] = useState<number | null>();
+  const [fetchdone, setFetchdone] = useState<boolean>(false);
 
   const [attendanceData, setAttendanceData] = useState<
     StudentAttendanceGlobalSchema[]
   >([]);
+
+  //Get Firebase DB instance
+  const { db } = useFirebase();
 
   useEffect(() => {
     setAttendanceData([]);
@@ -47,64 +51,64 @@ function AttendanceByStudentId() {
 
   const handleSearch = async (e: SyntheticEvent) => {
     e.preventDefault();
-    
+
     if (!searchInput) {
       setLoading(false);
       enqueueSnackbar("Please enter Student Id", { variant: "error" });
       return;
     }
-  
+
     setLoading(true);
-  
+
     try {
       const studentQuery = query(
         collection(db, "STUDENTS"),
         where("admission_no", "==", searchInput)
       );
       const studentSnapshot = await getDocs(studentQuery);
-  
+
       if (studentSnapshot.empty) {
         setLoading(false);
         enqueueSnackbar("No student with this student ID!", { variant: "info" });
         return;
       }
-  
+
       const studentList: StudentDetailsType[] = studentSnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       })) as StudentDetailsType[];
-  
+
       setfilterdata(studentList);
-  
+
       const studentId = studentList[0].id;
       const attendanceRef = collection(doc(db, "STUDENTS", studentId), "ATTENDANCE");
-  
+
       // Fetch all attendance statuses in parallel
       const statuses = ["P", "H", "A"];
-      const attendanceQueries = statuses.map((status) => 
+      const attendanceQueries = statuses.map((status) =>
         getDocs(query(attendanceRef, where("attendanceStatus", "==", status)))
       );
-  
+
       const [presentSnapshot, halfDaySnapshot, absentSnapshot] = await Promise.all(attendanceQueries);
-  
+
       // Process attendance records
       const extractAttendanceDates = (snapshot: any) =>
         snapshot.docs.map((doc: any) => doc.data().attendanceDate);
-  
+
       const presentDates = extractAttendanceDates(presentSnapshot);
       const halfDayDates = extractAttendanceDates(halfDaySnapshot);
       const absentDates = extractAttendanceDates(absentSnapshot);
-  
+
       // Update state
       setTotalpresent(presentDates.length);
       setPresentDates(presentDates);
-      
+
       settotalHalf(halfDayDates.length);
       setHalfDayDates(halfDayDates);
-  
+
       setTotalAbsents(absentDates.length);
       setAbsentDates(absentDates);
-  
+
       setLoading(false);
       setFetchdone(true);
     } catch (error) {
@@ -147,7 +151,7 @@ function AttendanceByStudentId() {
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
             />
-            <Button sx={{ height: 20 }}  onClick={(e)=>handleSearch(e)} disabled={fetchdone}>
+            <Button sx={{ height: 20 }} onClick={(e) => handleSearch(e)} disabled={fetchdone}>
               Search
             </Button>
           </Stack>

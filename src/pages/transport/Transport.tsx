@@ -6,11 +6,11 @@ import BreadCrumbsV2 from "components/Breadcrumbs/BreadCrumbsV2"
 import Navbar from "components/Navbar/Navbar"
 import LSPage from "components/Utils/LSPage"
 import PageContainer from "components/Utils/PageContainer"
-import { db } from "../../firebase"
 import { useEffect, useState } from "react"
 import AddPickupPointModal from "components/Modals/transport/AddPickupPointModal"
 import EditPickupPointModal from "components/Modals/transport/EditPickupPointModal"
 import { doc, getDoc } from "firebase/firestore"
+import { useFirebase } from "context/firebaseContext"
 
 type SerialNumber = {
     serialNo?: number
@@ -29,6 +29,9 @@ function Transport() {
     const [transportData, setTransportData] = useState<TransportData[]>([])
     const [open, setOpen] = useState(false)
     const [selectedLocation, setSelectedLocation] = useState<TransportData | null>(null)
+
+     //Get Firebase DB instance
+  const {db} = useFirebase();
 
     const handleAddPickupPointModalClose = () => {
         setOpen(false)

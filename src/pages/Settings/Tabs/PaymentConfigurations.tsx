@@ -11,10 +11,10 @@ import {
   Switch,
   Typography,
 } from "@mui/joy";
-import { db } from "../../../firebase";
 import { useEffect, useState, useCallback, ChangeEvent, FormEvent } from "react";
 import { enqueueSnackbar } from "notistack";
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
+import { useFirebase } from "context/firebaseContext";
 
 interface MonthlyFee {
   class_1: number;
@@ -60,6 +60,9 @@ function PaymentConfigurations() {
     defaultMonthlyFee: initialMonthlyFee,
     applyLateFine: false,
   });
+
+  //Get Firebase DB instance
+  const {db} = useFirebase();
 
   useEffect(() => {
     const fetchPaymentConfig = async () => {

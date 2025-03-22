@@ -17,7 +17,6 @@ import {
   Grid,
 } from "@mui/material";
 import { ChangeEvent, useEffect, useState } from "react";
-import { db } from "../../firebase";
 import { VideoGalleryCategory } from "types/gallery";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
@@ -26,6 +25,7 @@ import { Formik, Form, Field } from "formik";
 import { videoGallerySchema } from "./validationSchemas";
 import Confirmation from "../../utilities/Confirmation";
 import { doc, getDoc, setDoc } from "firebase/firestore";
+import { useFirebase } from "context/firebaseContext";
 
 const VideoGalleryContent = () => {
   const [formData, setFormData] = useState<Partial<VideoGalleryCategory>[]>([]);
@@ -38,6 +38,10 @@ const VideoGalleryContent = () => {
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteEventIndex, setDeleteEventIndex] = useState<number | null>(null);
+
+
+   //Get Firebase DB instance
+   const {db} = useFirebase();
 
   useEffect(() => {
     const getVideoGalleryData = async () => {

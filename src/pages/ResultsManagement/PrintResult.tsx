@@ -19,7 +19,6 @@ import Navbar from "components/Navbar/Navbar";
 import LSPage from "components/Utils/LSPage";
 import PageContainer from "components/Utils/PageContainer";
 import { SCHOOL_CLASSES } from "config/schoolConfig";
-import { db } from "../../firebase";
 import { useEffect, useState } from "react";
 import { enqueueSnackbar } from "notistack";
 import {
@@ -35,6 +34,7 @@ import rank2Img from "../../assets/rank_images/2nd_rank.png";
 import rank3Img from "../../assets/rank_images/3rd_rank.png";
 import { getOrdinal } from "utilities/UtilitiesFunctions";
 import { collection, doc, getDoc, getDocs, query, setDoc, where } from "firebase/firestore";
+import { useFirebase } from "context/firebaseContext";
 
 type examType = {
   examId: string;
@@ -63,22 +63,23 @@ function PrintResult() {
   const [selectedClass, setSelectedClass] = useState<any | null>(null);
   const [examsList, setExamList] = useState<examType[]>([]);
   const [selectedExam, setSelectedExam] = useState<any | null>(null);
-
   const [marksheetList, setMarksheetList] = useState<marksheetType[]>([]);
   const [pdfUrl, setPdfUrl] = useState<string>();
   const [loading, setLoading] = useState(false);
   const [isGeneratingRank, setIsGeneratingRank] = useState<boolean>(false);
-
   const [studentRankDetails, setStudentRankDetails] = useState<
     rankTypeExtended[]
   >([]);
+
+  //Get Firebase DB instance
+  const { db } = useFirebase();
 
   useEffect(() => {
     const fetchExamConfig = async () => {
       try {
         const examConfigRef = doc(db, "CONFIG", "EXAM_CONFIG");
         const snap = await getDoc(examConfigRef);
-  
+
         if (snap.exists()) {
           const data = snap.data() as examConfig;
           setExamList(data.exams);
@@ -89,7 +90,7 @@ function PrintResult() {
         console.error("Error while fetching exams/papers:", err);
       }
     };
-  
+
     fetchExamConfig();
   }, []);
   const printMarkSheet = async (marksheetList: any) => {
@@ -101,32 +102,32 @@ function PrintResult() {
     try {
       console.log(`Selected Class: ${selectedClass}`);
       console.log(`Selected Exam: ${selectedExam}`);
-  
+
       setMarksheetList([]);
       setLoading(true);
-  
+
       // Fetch students for selected class
       const studentsQuery = query(collection(db, "STUDENTS"), where("class", "==", selectedClass));
       const studentsSnap = await getDocs(studentsQuery);
-  
+
       if (studentsSnap.empty) {
         setLoading(false);
         enqueueSnackbar("No result found :)", { variant: "warning" });
         return;
       }
-  
+
       let studentList: StudentDetailsType[] = [];
       studentsSnap.forEach((doc) => {
         studentList.push({ id: doc.id, ...doc.data() } as StudentDetailsType);
       });
-  
+
       let temMarkSheetList: marksheetType[] = [];
-  
+
       // Fetch results for all students using Promise.all for parallel fetching
       const resultPromises = studentList.map(async (student) => {
         const resultQuery = collection(db, "STUDENTS", student.id, "PUBLISHED_RESULTS");
         const resultSnap = await getDocs(resultQuery);
-  
+
         resultSnap.forEach((result) => {
           if (result.data().examId === selectedExam) {
             temMarkSheetList.push({
@@ -137,9 +138,9 @@ function PrintResult() {
           }
         });
       });
-  
+
       await Promise.all(resultPromises); // Wait for all result fetches
-  
+
       setMarksheetList(temMarkSheetList);
       setLoading(false);
     } catch (err) {
@@ -162,44 +163,44 @@ function PrintResult() {
       enqueueSnackbar("Please select exam!", { variant: "error" });
       return;
     }
-  
+
     try {
       setIsGeneratingRank(true);
-  
+
       // Fetch all students in the selected class
       const studentsQuery = query(collection(db, "STUDENTS"), where("class", "==", selectedClass));
       const studentsSnap = await getDocs(studentsQuery);
-  
+
       if (studentsSnap.empty) {
         setIsGeneratingRank(false);
         enqueueSnackbar("No student found!", { variant: "error" });
         return;
       }
-  
+
       let allStudentList: StudentDetailsType[] = [];
       studentsSnap.forEach((doc) => {
         allStudentList.push({ id: doc.id, ...doc.data() } as StudentDetailsType);
       });
-  
+
       let markSheetTempList: rankType[] = [];
       let markSheetTempListExtended: rankTypeExtended[] = [];
-  
+
       // Fetch all student results in parallel
       const resultPromises = allStudentList.map(async (student) => {
         const resultQuery = collection(db, "STUDENTS", student.id, "PUBLISHED_RESULTS");
         const resultSnap = await getDocs(resultQuery);
-  
+
         resultSnap.forEach((resDoc) => {
           const res = resDoc.data() as resultType;
           if (res.examId === selectedExam) {
             const totalMark = res.result.reduce((sum, paper) => sum + paper.paperMarkObtained, 0);
-  
+
             markSheetTempList.push({
               studentId: student.id,
               rankObtained: -1,
               marksObtained: totalMark,
             });
-  
+
             markSheetTempListExtended.push({
               studentId: student.admission_no,
               studentName: student.student_name,
@@ -210,30 +211,30 @@ function PrintResult() {
           }
         });
       });
-  
+
       await Promise.all(resultPromises); // Wait for all result fetches
-  
+
       // Sort results by marks obtained in descending order
       markSheetTempList.sort((a, b) => b.marksObtained - a.marksObtained);
       markSheetTempListExtended.sort((a, b) => b.marksObtained - a.marksObtained);
-  
+
       // Assign ranks
       markSheetTempList.forEach((student, index) => (student.rankObtained = index + 1));
       markSheetTempListExtended.forEach((student, index) => (student.rankObtained = index + 1));
-  
+
       // Upload rank to Firestore
       const rankData = {
         class: selectedClass,
         lastUpdated: new Date(),
         studentRanks: markSheetTempList,
       };
-  
+
       await setDoc(doc(db, "RESULTS", selectedClass), rankData);
-  
+
       setStudentRankDetails(markSheetTempListExtended);
       setIsGeneratingRank(false);
       enqueueSnackbar("Rank updated successfully!", { variant: "success" });
-  
+
     } catch (err) {
       console.error("Error generating student ranks:", err);
       setIsGeneratingRank(false);
@@ -321,7 +322,7 @@ function PrintResult() {
         )}
 
         <br />
-        {studentRankDetails.length>0 && (
+        {studentRankDetails.length > 0 && (
           <Sheet variant="outlined" sx={{ borderRadius: "10px" }}>
             <Stack
               direction="row"

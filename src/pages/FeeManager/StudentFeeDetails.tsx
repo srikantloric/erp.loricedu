@@ -16,7 +16,6 @@ import ControlPointIcon from "@mui/icons-material/ControlPoint";
 import { CurrencyRupee, Delete, MoreVert, Print } from "@mui/icons-material";
 import PaymentIcon from "@mui/icons-material/Payment";
 import { useLocation, useNavigate } from "react-router-dom";
-import { db } from "../../firebase";
 import { enqueueSnackbar } from "notistack";
 import {
   Box,
@@ -69,6 +68,7 @@ import { StudentDetailsType } from "types/student";
 import ModalLoader from "components/Loader/ModalLoader";
 import { GenerateFeeRecieptMonthly } from "utilities/GenerateFeeRecieptMonthly";
 import { collection, doc, getDoc, getDocs, onSnapshot, orderBy, query, Timestamp, where, writeBatch } from "firebase/firestore";
+import { useFirebase } from "context/firebaseContext";
 const SearchAnotherButton = () => {
   const historyRef = useNavigate();
   return (
@@ -92,6 +92,10 @@ interface ITotalFeeHeader {
 }
 
 function StudentFeeDetails() {
+
+  //Get Firebase DB instance
+  const { db } = useFirebase();
+
   const [selectedRow, setSelectedRow] = useState<IChallanNL | null>(null);
 
   const [loading, setLoading] = useState(false);
@@ -262,54 +266,54 @@ function StudentFeeDetails() {
     // Initialize fee collection date
     setFeeCollectionDate(getCurrentDate());
     setLoading(true);
-  
+
     if (!location.state?.[0]) {
       enqueueSnackbar("Failed to load student master data!", { variant: "warning" });
       setLoading(false);
       return;
     }
-  
+
     const fetchChallans = async () => {
       try {
         let isLateFineApplicable = false;
-  
+
         // Fetch late fine config
         const lateFineDocRef = doc(db, "CONFIG", "PAYMENT_CONFIG");
         const lateFineSnap = await getDoc(lateFineDocRef);
-  
+
         if (lateFineSnap.exists()) {
           isLateFineApplicable = lateFineSnap.data()?.applyLateFine || false;
         }
-  
+
         // Fetch student Fee details
         const studentId = location.state[0].id;
         const challansCollectionRef = collection(db, "STUDENTS", studentId, "CHALLANS");
         const challansQuery = query(challansCollectionRef, orderBy("createdOn", "desc"));
-  
+
         const unsubscribe = onSnapshot(challansQuery, (snapshot) => {
           if (!snapshot.empty) {
             const challans: IChallanNL[] = snapshot.docs.map((doc) => {
               const challan = doc.data() as IChallanNL;
-  
+
               // Remove late fee if not applicable
               if (!isLateFineApplicable && dueDateCheck(challan.dueDate)) {
                 challan.feeHeaders = challan.feeHeaders.filter(
                   (header) => header.headerTitle !== "lateFee"
                 );
               }
-  
+
               challan.totalDue = calculateTotalDueAmount(challan);
               return challan;
             });
-  
+
             setChallanList(challans);
           } else {
             enqueueSnackbar("No fee generated for student!", { variant: "info" });
           }
-  
+
           setLoading(false);
         });
-  
+
         return () => unsubscribe();
       } catch (err) {
         console.error("Error fetching challans:", err);
@@ -317,7 +321,7 @@ function StudentFeeDetails() {
         enqueueSnackbar("Error fetching challans. Please try again.", { variant: "error" });
       }
     };
-  
+
     fetchChallans();
   }, []);
 
@@ -329,13 +333,13 @@ function StudentFeeDetails() {
     try {
       setIsPaymentLoading(true);
       const batch = writeBatch(db);
-  
+
       // Payment References
       const paymentCollRef = doc(
         collection(db, "STUDENTS", paymentObjForPayment.studentId, "PAYMENTS")
       );
       const paymentCollRefOL = doc(collection(db, "MY_PAYMENTS"));
-  
+
       // Challan Reference
       const challanDocRef = doc(
         db,
@@ -344,21 +348,21 @@ function StudentFeeDetails() {
         "CHALLANS",
         paymentObjForChallan.challanId
       );
-  
+
       // Data for Challan Update
       const updatedFeeHeaders: IChallanHeaderTypeForChallan[] = paymentObjForChallan.breakdown;
-  
+
       batch.update(challanDocRef, {
         feeHeaders: updatedFeeHeaders,
         amountPaid: paymentObjForChallan.amountPaid,
         status: pStatus,
       });
-  
+
       batch.set(paymentCollRef, paymentObjForPayment);
       batch.set(paymentCollRefOL, paymentObjForPayment);
-  
+
       await batch.commit();
-  
+
       // Reset state after success
       setIsPaymentLoading(false);
       setRecievedAmountPartPayment(0);
@@ -450,7 +454,7 @@ function StudentFeeDetails() {
           status: "PAID",
           feeConsession: selectedChallanDetails.feeConsession,
         };
-        
+
         const paymentDataForChallan: IPaymentNLForChallan = {
           challanTitle: selectedChallanDetails.challanTitle,
           paymentId: generateAlphanumericUUID(8),
@@ -505,7 +509,7 @@ function StudentFeeDetails() {
       const paymentsRef = collection(db, "STUDENTS", studentId, "PAYMENTS");
       const recieptConfigRef = doc(db, "CONFIG", "RECIEPT_CONFIG");
       let q;
-  
+
       if (isMonthlyRecipet) {
         q = query(paymentsRef, where("challanId", "==", selectedRow?.challanId));
       } else {
@@ -513,45 +517,45 @@ function StudentFeeDetails() {
         today.setHours(0, 0, 0, 0);
         q = query(paymentsRef, where("timestamp", ">=", today));
       }
-  
+
       const snapshot = await getDocs(q);
       if (snapshot.empty) {
         setIsGeneratingFeeReciept(false);
         enqueueSnackbar("No fee reciept found, please pay fee and try again", { variant: "info" });
         return;
       }
-  
+
       const paymentsData: IPaymentNL[] = snapshot.docs.map(doc => ({ ...(doc.data() as IPaymentNL) }));
       console.log("Payment Data:", paymentsData);
-  
+
       const recieptSnap = await getDoc(recieptConfigRef);
       const accountantName = recieptSnap.exists() ? recieptSnap.data()?.accountantName || "" : "";
       const recieptGeneratorServer = recieptSnap.exists() ? recieptSnap.data()?.recieptGeneratorServerUrl || "" : "";
-  
+
       const recieptId = generateRandomSixDigitNumber().toString();
       const recieptDate = formatedDate(new Date(), "dd/MM/YYYY hh:mm:ss");
-  
+
       const extractedData = extractChallanIdsAndHeaders(paymentsData);
       const url = isMonthlyRecipet
         ? await GenerateFeeRecieptMonthly({
-            ...extractedData,
-            studentMasterData: location.state[0] as StudentDetailsType,
-            recieptId,
-            recieptDate,
-            accountantName,
-            recieptGeneratorServerUrl: recieptGeneratorServer,
-            challanMonths:extractedData.challanMonthYear
-          })
+          ...extractedData,
+          studentMasterData: location.state[0] as StudentDetailsType,
+          recieptId,
+          recieptDate,
+          accountantName,
+          recieptGeneratorServerUrl: recieptGeneratorServer,
+          challanMonths: extractedData.challanMonthYear
+        })
         : await GenerateFeeReciept({
-            ...extractedData,
-            studentMasterData: location.state[0] as StudentDetailsType,
-            recieptId,
-            recieptDate,
-            accountantName,
-            recieptGeneratorServerUrl: recieptGeneratorServer,
-            challanMonths:extractedData.challanMonthYear
-          });
-  
+          ...extractedData,
+          studentMasterData: location.state[0] as StudentDetailsType,
+          recieptId,
+          recieptDate,
+          accountantName,
+          recieptGeneratorServerUrl: recieptGeneratorServer,
+          challanMonths: extractedData.challanMonthYear
+        });
+
       if (url) {
         const iframe = document.createElement("iframe");
         iframe.style.display = "none";

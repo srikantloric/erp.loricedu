@@ -1,5 +1,4 @@
 import { DialogTitle, Modal, ModalDialog, Stack } from "@mui/joy";
-import { db } from "../../../firebase";
 import { enqueueSnackbar } from "notistack";
 import { TransportVehicleType } from "types/transport";
 
@@ -15,6 +14,7 @@ import LoadingButton from "components/FormsUi/LoadingButton";
 import { Divider } from "@mui/material";
 import { useState } from "react";
 import { arrayUnion, doc, updateDoc } from "firebase/firestore";
+import { useFirebase } from "context/firebaseContext";
 
 // Validation Schema
 const FormValidationSchema = Yup.object().shape({
@@ -41,6 +41,11 @@ type AddVehicleModalProps = {
 };
 
 function AddVehicleModal({ open, onClose, fetchVehicleData }: AddVehicleModalProps) {
+
+    //Get Firebase DB instance
+    const {db} = useFirebase();
+
+
   const [loading, setLoading] = useState(false);
 
   const FormInitialState: TransportVehicleType = {

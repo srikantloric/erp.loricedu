@@ -10,8 +10,9 @@ import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import { marksheetType, rankType } from "types/results";
 import { getClassNameByValue, getOrdinal } from "utilities/UtilitiesFunctions";
-import { db } from "../../firebase";
-import { getDoc,doc as docF } from "firebase/firestore";
+
+import { getDoc, doc as docF } from "firebase/firestore";
+import { getFirestoreInstance } from "context/firebaseUtility";
 
 
 type paperMarksTypeLocal = {
@@ -52,27 +53,29 @@ export const MarksheetReportGenerator = async (
         studentRanks: rankType[];
       };
 
-     
-        if (!resultData.length) return;
-        try {
-          const classId = resultData[0]?.student.class?.toString();
-          if (!classId) {
-            console.error("Class ID is undefined");
-            return;
-          }
-    
-          const rankRef = docF(db, "RESULTS", classId);
-          const rankSnap = await getDoc(rankRef);
-      
-          if (rankSnap.exists()) {
-            studentRanks = rankSnap.data() as rankDoctype;
-          } else {
-            console.warn("Rank data not found for class:", classId);
-          }
-        } catch (error) {
-          console.error("Error fetching student rank:", error);
+
+      if (!resultData.length) return;
+      try {
+        const classId = resultData[0]?.student.class?.toString();
+        if (!classId) {
+          console.error("Class ID is undefined");
+          return;
         }
-    
+
+        //Get Firebase DB instance
+        const db = await getFirestoreInstance();
+        const rankRef = docF(db, "RESULTS", classId);
+        const rankSnap = await getDoc(rankRef);
+
+        if (rankSnap.exists()) {
+          studentRanks = rankSnap.data() as rankDoctype;
+        } else {
+          console.warn("Rank data not found for class:", classId);
+        }
+      } catch (error) {
+        console.error("Error fetching student rank:", error);
+      }
+
 
       resultData.forEach((data, index) => {
 
@@ -468,13 +471,13 @@ export const MarksheetReportGenerator = async (
         // doc.addImage(PRINCIPAL_SIGN, startX + 2 * (cardWidth / 3)-5, startY-22, 40, 15);
         doc.text("Principal Sign", startX + 2 * (cardWidth / 3), startY);
 
- 
+
         if (index === resultData.length - 1) {
           const blob = doc.output("blob");
           const url = URL.createObjectURL(blob);
           resolve(url);
-        }else{
-          
+        } else {
+
           doc.addPage();
         }
       });

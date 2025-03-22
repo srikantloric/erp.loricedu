@@ -19,11 +19,11 @@ import {
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import { SchoolInfo } from "types/schoolInfo";
-import { db } from "../../firebase";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { useFirebase } from "context/firebaseContext";
 
 const WebsiteContent = () => {
   const [schoolInfo, setSchoolInfo] = useState<SchoolInfo | null>(null);
@@ -49,6 +49,10 @@ const WebsiteContent = () => {
     highlightedMessage: "",
   });
   const [editMessageIndex, setEditMessageIndex] = useState<number | null>(null);
+
+   //Get Firebase DB instance
+   const {db} = useFirebase();
+
 
   useEffect(() => {
     const getSchoolInfo = async () => {

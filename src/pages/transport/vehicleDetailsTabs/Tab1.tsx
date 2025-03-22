@@ -2,11 +2,11 @@ import MaterialTable from "@material-table/core";
 import { Add, Edit } from "@mui/icons-material";
 import { Button, Sheet } from "@mui/joy";
 import AddVehicleModal from "components/Modals/transport/AddVehicleModal";
-import { db } from "../../../firebase";
 import { useEffect, useState } from "react";
 import EditVehicleDetail from "components/Modals/transport/EditVehicleDetail";
 import { TransportVehicleType } from "types/transport";
 import { doc, getDoc } from "firebase/firestore";
+import { useFirebase } from "context/firebaseContext";
 
 
 function Tab1() {
@@ -14,6 +14,8 @@ function Tab1() {
   const [transportVehicles, setTransportVehicles] = useState<TransportVehicleType[]>([]);
   const [selectedVechile, setSelectedVehicle] = useState<TransportVehicleType | null>(null)
 
+   //Get Firebase DB instance
+   const {db} = useFirebase();
 
   const handleAddVehicleModalClose = () => {
     setIsAddVehicleModalOpen(false);

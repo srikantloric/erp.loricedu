@@ -5,10 +5,9 @@ import Login from "./pages/Login/Login";
 import { routesConfig } from "./components/Utils/RoutesConfig";
 import { useState, lazy, useEffect } from "react";
 import SideBarContext from "./context/SidebarContext";
-import { SCHOOL_NAME } from "config/schoolConfig";
 import {
   SearchDialogProvider,
-  useSearchDialog,
+
 } from "context/SearchDialogContext";
 
 // Layouts & Context
@@ -27,17 +26,8 @@ import { onAuthStateChanged } from "firebase/auth";
 
 
 // Lazy Loaded Components
-
-const FeeReceiptGenerator = Loadable(
-  lazy(() => import("components/FeeRecieptGenerator/FeeRecieptGenerator"))
-);
 const FeeReceipt = Loadable(lazy(() => import("pages/FeeManager/FeeReceipt")));
-const GenerateCustomFee = Loadable(
-  lazy(() => import("pages/FeeManager/GenerateChallan/GenerateCustomFee"))
-);
-const GenerateMonthlyFee = Loadable(
-  lazy(() => import("pages/FeeManager/GenerateChallan/GenerateMonthlyFee"))
-);
+
 const GenerateQrSticker = Loadable(
   lazy(() => import("pages/Attendance/GenerateQrSticker"))
 );
@@ -50,10 +40,9 @@ const ViewAttendance = Loadable(
 const AdmissionEnquiry = Loadable(
   lazy(() => import("pages/Admission/AdmissionEnquiry"))
 );
-// const AddEnquire = Loadable(lazy(() => import("pages/Admission/AddEnquriStudent")));
 
 const FacultyAttendance = Loadable(
-  lazy(() => import("pages/Attendance/FacultyAttendance/facultyAttendance"))
+  lazy(() => import("pages/Attendance/FacultyAttendance/FacultyAttendance"))
 );
 const GenerateMonthlyChallan = Loadable(
   lazy(() => import("pages/FeeManager/GenerateChallan/GenerateMontlyChallan"))
@@ -77,9 +66,6 @@ const DemandSlip = Loadable(lazy(() => import("pages/Reports/DemandSlip")));
 const Transport = Loadable(lazy(() => import("pages/transport/Transport")));
 const VehicleDetails = Loadable(
   lazy(() => import("pages/transport/VehicleDetails"))
-);
-const WebsiteConfig = Loadable(
-  lazy(() => import("pages/WebsiteConfig/WebsiteConfigPage"))
 );
 const AddStudentNew = Loadable(lazy(() => import("pages/Users/AddStudentNew")));
 
@@ -118,7 +104,7 @@ function App() {
   };
 
   useEffect(() => {
-    document.title = SCHOOL_NAME;
+    document.title = "Loric Edu";
   }, []);
 
   const [authKey, setAuthKey] = useState(0);

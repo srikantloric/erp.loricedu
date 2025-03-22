@@ -27,12 +27,12 @@ import BreadCrumbsV2 from "../../components/Breadcrumbs/BreadCrumbsV2";
 import HeaderTitleCard from "components/Card/HeaderTitleCard";
 import { SCHOOL_CLASSES} from "config/schoolConfig";
 import { enqueueSnackbar } from "notistack";
-import { db } from "../../firebase";
 import { StudentDetailsType } from "types/student";
 import { useState } from "react";
 import { StudentAttendanceSchema } from "types/attendance";
 import { getCurrentDate, makeDoubleDigit } from "utilities/UtilitiesFunctions";
 import { collection, doc, getDoc, onSnapshot, query, serverTimestamp, setDoc, where } from "firebase/firestore";
+import { useFirebase } from "context/firebaseContext";
 
 interface StudentAttendanceType extends StudentDetailsType {
   selected_option?: string | null;
@@ -49,6 +49,9 @@ function ManualAttendance() {
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [isSavingDone, setSavingDone] = useState<boolean>(false);
   const [messageText, setMessageText] = useState<string>("");
+
+   //Get Firebase DB instance
+   const {db} = useFirebase();
 
   const fetchStudent = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

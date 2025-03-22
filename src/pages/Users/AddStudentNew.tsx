@@ -18,7 +18,6 @@ import SelectCustom from "../../components/FormsUi/SelectCustom"
 import * as Yup from "yup"
 import { BLOOD_GROUPS, CASTES, RELIGIONS, SCHOOL_CLASSES, SCHOOL_GENDERS, SCHOOL_SECTIONS } from "config/schoolConfig";
 import { useEffect, useState } from "react";
-import { db } from "../../firebase";
 import { IconEdit } from "@tabler/icons-react";
 import { TransportLocationType, TransportVehicleType } from "types/transport";
 import TransportFeeField from "components/FormsUi/Textfield/TransportFeeField";
@@ -29,6 +28,7 @@ import { useDispatch } from "store";
 import { enqueueSnackbar } from "notistack";
 import LoadingButtonWrapper from "components/FormsUi/LoadingButton";
 import { doc, getDoc } from "firebase/firestore";
+import { useFirebase } from "context/firebaseContext";
 
 
 
@@ -106,6 +106,9 @@ function AddStudentNew() {
     const [isAdmissionFeeEditable, setIsAdmissionFeeEditable] = useState(true);
     const [isTransportationFeeEditable, setIsTransportationFeeEditable] = useState(true);
     const [defaultFee, setDefaultFee] = useState(null);
+
+    //Get Firebase DB instance
+   const {db} = useFirebase();
 
     const dispatch = useDispatch();
 

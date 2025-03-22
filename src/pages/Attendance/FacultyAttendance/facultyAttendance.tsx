@@ -31,15 +31,15 @@ import LSPage from "components/Utils/LSPage";
 
 import { FacultyAttendanceShema } from "types/facuities";
 import { enqueueSnackbar } from "notistack";
-import { db } from "../../../firebase";
 import { collection, doc, getDoc, onSnapshot, serverTimestamp, setDoc } from "firebase/firestore";
+import { useFirebase } from "context/firebaseContext";
 
 interface FacultyAttendanceType extends FacultyAttendanceShema {
   selected_option?: string | null;
   comment?: string;
 }
 
-export const FacultyAttendance = () => {
+function FacultyAttendance() {
   const [FacultyData, setFacultyData] = useState<FacultyAttendanceType[]>([]);
   const [selectedDate, setSelectedDate] = useState<string>(getCurrentDate());
   const [searchTerm, setSearchTerm] = useState<string>("");
@@ -47,6 +47,10 @@ export const FacultyAttendance = () => {
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [isSavingDone, setSavingDone] = useState<boolean>(false);
   const [messageText, setMessageText] = useState<string>("");
+
+    //Get Firebase DB instance
+    const {db} = useFirebase();
+
 
   useEffect(() => {
     setLoading(false);
@@ -137,7 +141,7 @@ export const FacultyAttendance = () => {
     /// Building final attendance
     let tempAttArr: FacultyAttendanceType[] = [];
     let tempAttArrGlobalSave: FacultyAttendanceType[] = [];
-  
+
     FacultyData.forEach((faculty) => {
       const attendanceDataForSave: FacultyAttendanceShema = {
         isSmartAttendance: false,
@@ -148,7 +152,7 @@ export const FacultyAttendance = () => {
         attendanceDate: selectedDate,
         attendanceStatus: faculty.selected_option!,
       };
-  
+
       const attendanceDataForGlobalSave: FacultyAttendanceShema = {
         isSmartAttendance: false,
         id: faculty.id,
@@ -160,16 +164,16 @@ export const FacultyAttendance = () => {
         faculty_image: faculty.faculty_image,
         faculty_phone: faculty.faculty_phone,
       };
-  
+
       tempAttArr.push(attendanceDataForSave);
       tempAttArrGlobalSave.push(attendanceDataForGlobalSave);
     });
-  
+
     setIsSaving(true);
-  
+
     // Format date for Firestore document ID
     const facultyAttendanceDocId = selectedDate.replace(/-/g, "");
-  
+
     // Save each attendance record
     for (let item of tempAttArr) {
       const attendanceRef = doc(
@@ -181,7 +185,7 @@ export const FacultyAttendance = () => {
       );
       await setDoc(attendanceRef, item);
     }
-  
+
     setSavingDone(true);
     setIsSaving(false);
     enqueueSnackbar("Attendance Saved Successfully!", { variant: "success" });
@@ -400,3 +404,5 @@ export const FacultyAttendance = () => {
     </>
   );
 };
+
+export default FacultyAttendance;

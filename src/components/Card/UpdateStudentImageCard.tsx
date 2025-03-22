@@ -15,11 +15,11 @@ import { styled } from "@mui/material/styles";
 import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
 import { useState } from "react";
 import FileResizer from "react-image-file-resizer";
-import { db, storageRef } from "../../firebase";
 import { enqueueSnackbar } from "notistack";
 import { CircularProgress } from "@mui/material";
 import { getDownloadURL, ref, uploadString } from "firebase/storage";
 import { doc, updateDoc } from "firebase/firestore";
+import { useFirebase } from "context/firebaseContext";
 
 const resizeFile = (file: any) =>
   new Promise((resolve) => {
@@ -45,6 +45,10 @@ function UpdateStudentImageCard(props: studentProfileUpdateCardProps) {
     null
   );
   const [uploadProgress, _] = useState<number | undefined>();
+
+
+  // Reference to DB and Storage
+  const {db,storage} = useFirebase()
 
   const VisuallyHiddenInput = styled("input")({
     clip: "rect(0 0 0 0)",
@@ -77,7 +81,7 @@ function UpdateStudentImageCard(props: studentProfileUpdateCardProps) {
       setIsUpdatingImage(true);
 
       const fileRef = ref(
-        storageRef,
+        storage,
         `profileImages/${props.doc_id}/${props.student_email}`
       );
 

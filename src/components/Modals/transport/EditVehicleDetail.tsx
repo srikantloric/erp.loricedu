@@ -1,6 +1,5 @@
 import { DialogTitle, Modal, ModalDialog, Stack } from "@mui/joy";
 
-import { db } from "../../../firebase";
 import { enqueueSnackbar } from "notistack";
 import { TransportVehicleType } from "types/transport";
 
@@ -17,6 +16,7 @@ import LoadingButton from "components/FormsUi/LoadingButton"
 import { Divider } from "@mui/material";
 import { useState } from "react";
 import { doc, updateDoc } from "firebase/firestore";
+import { useFirebase } from "context/firebaseContext";
 
 
 
@@ -42,6 +42,11 @@ type AddPickupPointDialogProps = {
 };
 
 function AddVehicleModal(props: AddPickupPointDialogProps) {
+
+    //Get Firebase DB instance
+    const {db} = useFirebase();
+
+
   const { open, onClose, fetchVehicleData, selectedVehicle, vehicleData } = props;
   const [loading, setLoading] = useState(false);
 

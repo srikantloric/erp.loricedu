@@ -15,7 +15,6 @@ import {
   Typography,
 } from "@mui/material";
 import LSBox from "components/Card/LSBox";
-import { db } from "../../firebase";
 import {
   doc,
   getDoc,
@@ -25,6 +24,7 @@ import {
 } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { enqueueSnackbar } from "notistack";
+import { useFirebase } from "context/firebaseContext";
 
 export interface ClassType {
   classId: string;
@@ -36,6 +36,9 @@ function AddClasses() {
   const [searchInput, setSearchInput] = useState<string>("");
   const [classes, setClasses] = useState<ClassType[]>([]);
   const [newClass, setNewClass] = useState<string>("");
+
+   //Get Firebase DB instance
+   const {db} = useFirebase();
 
   const handleSaveNewClass = async () => {
     if (newClass.trim() === "") {

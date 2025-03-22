@@ -1,8 +1,8 @@
 import { Box, Card, CardContent, FormControl, FormHelperText, FormLabel, Skeleton, Switch } from "@mui/joy";
-import { db } from "../../../firebase";
 import { useEffect, useState } from "react";
 import { enqueueSnackbar } from "notistack";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { useFirebase } from "context/firebaseContext";
 
 function SMSNotification() {
     const [notifications, setNotifications] = useState({
@@ -11,6 +11,8 @@ function SMSNotification() {
         sendAttendanceNotification: false
     });
     const [isLoading, setIsLoading] = useState<boolean>(true);
+    //Get Firebase DB instance
+    const { db } = useFirebase();
 
     useEffect(() => {
         const fetchSMSConfig = async () => {
@@ -18,7 +20,7 @@ function SMSNotification() {
                 setIsLoading(true);
                 const smsConfigRef = doc(db, "CONFIG", "SMS_CONFIG");
                 const smsConfigSnap = await getDoc(smsConfigRef);
-    
+
                 if (smsConfigSnap.exists()) {
                     const data = smsConfigSnap.data();
                     setNotifications({
@@ -34,22 +36,22 @@ function SMSNotification() {
                 setIsLoading(false);
             }
         };
-    
+
         fetchSMSConfig();
     }, []);
     const handleSwitchChange = async (field: string, value: boolean) => {
         try {
-          setNotifications((prev) => ({ ...prev, [field]: value }));
-      
-          const smsConfigRef = doc(db, "CONFIG", "SMS_CONFIG");
-          await updateDoc(smsConfigRef, { [field]: value });
-      
-          enqueueSnackbar("Settings updated successfully!", { variant: "success" });
+            setNotifications((prev) => ({ ...prev, [field]: value }));
+
+            const smsConfigRef = doc(db, "CONFIG", "SMS_CONFIG");
+            await updateDoc(smsConfigRef, { [field]: value });
+
+            enqueueSnackbar("Settings updated successfully!", { variant: "success" });
         } catch (err: any) {
-          console.error("Error updating data:", err);
-          enqueueSnackbar("Error updating data: " + err.message, { variant: "error" });
+            console.error("Error updating data:", err);
+            enqueueSnackbar("Error updating data: " + err.message, { variant: "error" });
         }
-      };
+    };
 
     const renderNotificationControl = (label: string, description: string, field: keyof typeof notifications) => (
         <Card key={field}>

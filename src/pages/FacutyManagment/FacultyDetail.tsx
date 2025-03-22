@@ -13,15 +13,17 @@ import { useEffect, useState } from "react";
 
 
 import { FacultyType } from "types/facuities";
-import { db } from "../../firebase";
 import { enqueueSnackbar } from "notistack";
 import { doc, getDoc } from "firebase/firestore";
+import { useFirebase } from "context/firebaseContext";
 
 
 function FacultyDetail() {
   const { id } = useParams();
   const [teacherData, setTeacherData] = useState<FacultyType>();
 
+   //Get Firebase DB instance
+   const {db} = useFirebase();
 
   useEffect(() => {
     if (!id) return; // Ensure 'id' is available

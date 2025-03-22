@@ -8,23 +8,25 @@ import { DueTable } from 'components/Tables/DueTable';
 import LSPage from "components/Utils/LSPage";
 import PageContainer from "components/Utils/PageContainer";
 import { SCHOOL_CLASSES, SCHOOL_FEE_MONTHS, SCHOOL_FEE_YEAR } from "config/schoolConfig";
-import { db } from '../../firebase';
 import { enqueueSnackbar } from 'notistack';
 import { useState } from 'react';
 import { DueReportType } from 'types/reports';
 import { getClassNameByValue, getMonthTitleByValue, makeDoubleDigit } from 'utilities/UtilitiesFunctions';
 import { StudentDetailsType } from 'types/student';
 import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
+import { useFirebase } from 'context/firebaseContext';
 
 
 
 function DueReport() {
-
     const [selectedClass, setSelectedClass] = useState<number | null>(null);
     const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
     const [selectedYear, setSelectedYear] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
     const [dueStudentList, setDueStudentList] = useState<DueReportType[]>([]);
+
+    //Get Firebase DB instance
+   const {db} = useFirebase();
 
     async function getDueListByClass(className: number) {
         const dueList: DueReportType[] = [];

@@ -4,8 +4,6 @@ import { getFirestore } from "firebase/firestore";
 import { getStorage, ref } from "firebase/storage";
 import { getRemoteConfig } from "firebase/remote-config";
 
-console.log(process.env);
-
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_API_KEY,
   authDomain: process.env.REACT_APP_AUTH_DOMAIN,
@@ -17,12 +15,12 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase App
-const app = initializeApp(firebaseConfig);
+const appMaster = initializeApp(firebaseConfig);
 
 // Export Firebase services
-export const auth = getAuth(app);
-export const db = getFirestore(app);
-export const storageRef = ref(getStorage(app));
-export const remoteConfig = getRemoteConfig(app);
+export const auth = getAuth(appMaster);
+export const dbMaster = getFirestore(appMaster);
+export const storageRef = ref(getStorage(appMaster));
+export const remoteConfig = getRemoteConfig(appMaster);
 
-export default app;
+export default appMaster;

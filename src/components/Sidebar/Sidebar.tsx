@@ -1,12 +1,9 @@
-import React, { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import "./Sidebar.scss";
-import { NavLink } from "react-router-dom";
 import { routesConfig } from "../Utils/RoutesConfig";
 import SideBarContext from "../../context/SidebarContext";
 import { motion } from "framer-motion";
-import { IconChevronDown, IconChevronUp, IconPoint } from "@tabler/icons-react";
 import SIdebarMenuItem from "./SIdebarMenuItem";
-import OPSLogo from "../../assets/opslogo.png";
 import { useFirebase } from "context/firebaseContext";
 import { doc, getDoc } from "firebase/firestore";
 

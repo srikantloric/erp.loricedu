@@ -1,9 +1,9 @@
 import { DialogTitle, Modal, ModalDialog, Stack } from "@mui/joy";
 import { Button, Divider, FormControl, FormHelperText, FormLabel, Input } from "@mui/joy";
 import { useState } from "react";
-import { db } from "../../../firebase";
 import { arrayUnion, doc, setDoc } from "firebase/firestore";
 import { enqueueSnackbar } from "notistack";
+import { useFirebase } from "context/firebaseContext";
 
 type SerialNumber = {
   serialNo?: number;
@@ -23,6 +23,10 @@ type AddPickupPointDialogProps = {
 };
 
 function AddPickupPointModal(props: AddPickupPointDialogProps) {
+
+  //Get Firebase DB instance
+  const { db } = useFirebase();
+
   const { open, onClose, fetchTransportData } = props;
   const [formState, setFormState] = useState<TransportData>({
     pickupPointName: "",

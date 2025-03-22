@@ -18,9 +18,9 @@ import { Additem } from "iconsax-react";
 // import { IStudentFeeChallanExtended } from "types/student";
 import { useState } from "react";
 import { enqueueSnackbar } from "notistack";
-import { db } from "../../firebase";
 import { IChallanNL } from "types/payment";
 import { doc, serverTimestamp, writeBatch } from "firebase/firestore";
+import { useFirebase } from "context/firebaseContext";
 
 interface Props {
   open: boolean;
@@ -33,6 +33,11 @@ const AddFeeConsessionModal: React.FC<Props> = ({
   setOpen,
   challanData,
 }) => {
+
+  //Get Firebase DB instance
+  const {db} = useFirebase();
+
+
   const [consessionAmount, setConsessionAmount] = useState<number>();
   const [consessionNarration, setConsessionNarration] = useState<string | null>(
     null

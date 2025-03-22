@@ -1,12 +1,11 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { db, storageRef } from "../../firebase";
 
 
 import FileResizer from "react-image-file-resizer";
 import { collection, deleteDoc, doc, getDoc, getDocs, orderBy, query, runTransaction, serverTimestamp, setDoc } from "firebase/firestore";
 import { StudentDetailsType } from "types/student";
 import { getDownloadURL, ref, uploadString } from "firebase/storage";
-import { getFirestoreInstance } from "context/firebaseUtility";
+import { getFirestoreInstance, getStorageInstance } from "context/firebaseUtility";
 
 const resizeFile = (file: any) =>
   new Promise((resolve) => {
@@ -29,7 +28,10 @@ const generateFirebaseUID = () => {
 export const addstudent = createAsyncThunk<StudentDetailsType, { studentData: StudentDetailsType }, { rejectValue: string }>(
   "add-students/addstudent",
   async ({ studentData }, { rejectWithValue }) => {
-    console.log("From Student Slice", studentData);
+
+    // get Firestore instance 
+    const db = await getFirestoreInstance()
+
     try {
       // Fetch previous admission count from Firestore
       const prevAdmissionDoc = await getDoc(doc(db, "ADMISSION_TRACKER", "admission_number_tracker"));
@@ -103,7 +105,8 @@ export const fetchstudent = createAsyncThunk("student/fetchstudent", async () =>
 export const deleteStudent = createAsyncThunk(
   "student/deleteStudent",
   async (id: string, { rejectWithValue }) => {
-    console.log("deleting Student:", id);
+
+    const db = await getFirestoreInstance()
 
     try {
       // Create a reference to the document
@@ -124,6 +127,10 @@ export const updatedatastudent = createAsyncThunk(
   "student/updatestudent",
   async ({ studentdata, imageupdate }: { studentdata: StudentDetailsType, imageupdate: File | null }, { rejectWithValue }) => {
     let studentData = { ...studentdata };
+
+    const db = await getFirestoreInstance()
+    const storageRef = await getStorageInstance();
+
     try {
       studentData["updated_at"] = serverTimestamp();
       if (imageupdate) {
