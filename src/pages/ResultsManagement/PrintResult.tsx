@@ -193,12 +193,21 @@ function PrintResult() {
         resultSnap.forEach((resDoc) => {
           const res = resDoc.data() as resultType;
           if (res.examId === selectedExam) {
-            const totalMark = res.result.reduce((sum, paper) => sum + paper.paperMarkObtained, 0);
+
+            let marksObtained = res.result.reduce((total, item) => {
+              const obtainedMarkCalculated =
+                item.paperId === "DRAWING"
+                  ? 0
+                  : Number(item.paperMarkTheory) + Number(item.paperMarkPractical);
+
+              return total + obtainedMarkCalculated;
+            }, 0);
+
 
             markSheetTempList.push({
               studentId: student.id,
               rankObtained: -1,
-              marksObtained: totalMark,
+              marksObtained: marksObtained,
             });
 
             markSheetTempListExtended.push({
@@ -206,7 +215,7 @@ function PrintResult() {
               studentName: student.student_name,
               studentFather: student.father_name,
               rankObtained: -1,
-              marksObtained: totalMark,
+              marksObtained: marksObtained,
             });
           }
         });

@@ -25,6 +25,7 @@ import { onAuthStateChanged } from "firebase/auth";
 
 
 
+
 // Lazy Loaded Components
 const FeeReceipt = Loadable(lazy(() => import("pages/FeeManager/FeeReceipt")));
 
@@ -120,111 +121,111 @@ function App() {
   return (
     <AuthProvider>
       <FirebaseProvider key={authKey}>
-        <SideBarContext.Provider value={{ isActive, toggle, setSidebarOpen }}>
-          <SearchDialogProvider>
-            <Suspense>
-              <Routes>
-                <Route path="/" element={<DashboardLayout />}>
-                  {routeItems}
-                  <Route
-                    path="students/add-students"
-                    element={<AddStudentNew />}
-                  />
-                  <Route
-                    path="students/Admission-students"
-                    element={<AdmissionEnquiry />}
-                  />
+          <SideBarContext.Provider value={{ isActive, toggle, setSidebarOpen }}>
+            <SearchDialogProvider>
+              <Suspense>
+                <Routes>
+                  <Route path="/" element={<DashboardLayout />}>
+                    {routeItems}
+                    <Route
+                      path="students/add-students"
+                      element={<AddStudentNew />}
+                    />
+                    <Route
+                      path="students/Admission-students"
+                      element={<AdmissionEnquiry />}
+                    />
 
-                  <Route
-                    path="students/view-students"
-                    element={<ViewStudents />}
-                  />
+                    <Route
+                      path="students/view-students"
+                      element={<ViewStudents />}
+                    />
 
-                  <Route path="/view-faculties" element={<UnderConstruction />} />
-                  <Route path="/Faculties/:id" element={<FacultyDetail />} />
-                  <Route path="/add-faculty" element={<UnderConstruction />} />
-                  <Route
-                    path="/FeeManagement/FeeDetails/:id"
-                    element={<StudentFeeDetails />}
-                  />
-                  <Route
-                    path="accountings/generate-monthly-fee"
-                    element={<GenerateMonthlyChallan />}
-                  />
-                  <Route
-                    path="accountings/generate-custom-fee"
-                    element={<GenerateMonthlyChallan />}
-                  />
-                  <Route
-                    path="attendance/show-student-attendance"
-                    element={<ViewAttendance />}
-                  />
-                  <Route
-                    path="attendance/mark-manual-attendance"
-                    element={<ManualAttendance />}
-                  />
-                  <Route
-                    path="attendance/generate-attendance-qr"
-                    element={<GenerateQrSticker />}
-                  />
-                  <Route
-                    path="attendance/Facuities"
-                    element={<FacultyAttendance />}
-                  />
-                  <Route
-                    path="/students/profile/:id"
-                    element={<ViewStudentProfile />}
-                  />
-                  <Route path="feeReciept" element={<FeeReceipt />} />
+                    <Route path="/view-faculties" element={<UnderConstruction />} />
+                    <Route path="/Faculties/:id" element={<FacultyDetail />} />
+                    <Route path="/add-faculty" element={<UnderConstruction />} />
+                    <Route
+                      path="/FeeManagement/FeeDetails/:id"
+                      element={<StudentFeeDetails />}
+                    />
+                    <Route
+                      path="accountings/generate-monthly-fee"
+                      element={<GenerateMonthlyChallan />}
+                    />
+                    <Route
+                      path="accountings/generate-custom-fee"
+                      element={<GenerateMonthlyChallan />}
+                    />
+                    <Route
+                      path="attendance/show-student-attendance"
+                      element={<ViewAttendance />}
+                    />
+                    <Route
+                      path="attendance/mark-manual-attendance"
+                      element={<ManualAttendance />}
+                    />
+                    <Route
+                      path="attendance/generate-attendance-qr"
+                      element={<GenerateQrSticker />}
+                    />
+                    <Route
+                      path="attendance/Facuities"
+                      element={<FacultyAttendance />}
+                    />
+                    <Route
+                      path="/students/profile/:id"
+                      element={<ViewStudentProfile />}
+                    />
+                    <Route path="feeReciept" element={<FeeReceipt />} />
 
-                  {/* Exam Management routes */}
-                  <Route
-                    path="/schoolResults/update-results"
-                    element={<UpdateResults />}
-                  />
-                  <Route
-                    path="/schoolResults/exam-planner"
-                    element={<ExamPlanner />}
-                  />
-                  <Route
-                    path="/schoolResults/print-results"
-                    element={<PrintResult />}
-                  />
-                  {/* Exam Management routes */}
-                  <Route path="/print-id-cards" element={<IdCardGeneration />} />
+                    {/* Exam Management routes */}
+                    <Route
+                      path="/schoolResults/update-results"
+                      element={<UpdateResults />}
+                    />
+                    <Route
+                      path="/schoolResults/exam-planner"
+                      element={<ExamPlanner />}
+                    />
+                    <Route
+                      path="/schoolResults/print-results"
+                      element={<PrintResult />}
+                    />
+                    {/* Exam Management routes */}
+                    <Route path="/print-id-cards" element={<IdCardGeneration />} />
 
 
-                  {/* Reports Routes */}
-                  <Route
-                    path="/reports/balance-sheet"
-                    element={<BalanceSheet />}
-                  />
+                    {/* Reports Routes */}
+                    <Route
+                      path="/reports/balance-sheet"
+                      element={<BalanceSheet />}
+                    />
 
-                  <Route path="/reports/due-report" element={<DueReport />} />
-                  <Route path="/reports/demand-slip" element={<DemandSlip />} />
-                  <Route path="/reports/admit-card" element={<AdmitCard />} />
+                    <Route path="/reports/due-report" element={<DueReport />} />
+                    <Route path="/reports/demand-slip" element={<DemandSlip />} />
+                    <Route path="/reports/admit-card" element={<AdmitCard />} />
 
-                  {"Transport"}
+                    {"Transport"}
+                    <Route
+                      path="/transport/transport-location"
+                      element={<Transport />}
+                    />
+                    <Route
+                      path="/transport/vehicle-details"
+                      element={<VehicleDetails />}
+                    />
+                  </Route>
                   <Route
-                    path="/transport/transport-location"
-                    element={<Transport />}
+                    path="update-student-profile-picture"
+                    element={<StudentProfilePictureUpdater />}
                   />
-                  <Route
-                    path="/transport/vehicle-details"
-                    element={<VehicleDetails />}
-                  />
-                </Route>
-                <Route
-                  path="update-student-profile-picture"
-                  element={<StudentProfilePictureUpdater />}
-                />
-                <Route path="/login" element={<AuthenticationLayout />}>
-                  <Route index element={<Login />} />
-                </Route>
-              </Routes>
-            </Suspense>
-          </SearchDialogProvider>
-        </SideBarContext.Provider>
+                  <Route path="/login" element={<AuthenticationLayout />}>
+                    <Route index element={<Login />} />
+                  </Route>
+                </Routes>
+              </Suspense>
+            </SearchDialogProvider>
+          </SideBarContext.Provider>
       </FirebaseProvider>
     </AuthProvider>
   );

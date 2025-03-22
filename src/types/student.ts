@@ -1,6 +1,5 @@
 import { FieldValue, Timestamp } from "firebase/firestore";
 
-
 export type StudentDetailsType = {
   aadhar_number: string;
   address: string;
@@ -37,7 +36,7 @@ export type StudentDetailsType = {
   transportation_fee: number | null;
   generatedChallans: string[];
   fee_discount?: number | null;
-  updated_at?:  FieldValue | null;
+  updated_at?: FieldValue | null;
   student_pass?:string
 };
 
@@ -54,11 +53,11 @@ export interface StudentFeeDetailsType {
   paid_amount: number;
   payment_date:
   | Timestamp
-  |  FieldValue | null;
-
+  | FieldValue
+  | null;
   payment_mode: string;
   payment_remarks: string;
-  created_at?: Timestamp |FieldValue;
+  created_at?: Timestamp | FieldValue;
   fee_month_year?: string;
   is_payment_done: boolean;
   doc_id: string;
@@ -112,7 +111,7 @@ export interface IStudentFeeChallan {
   docIdExt: string,
   studentId: string,
   challanDocId: string,
-  createdAt:FieldValue;
+  createdAt: FieldValue;
   createdBy?: string,
   paymentId: string,
   challanTitle: string,

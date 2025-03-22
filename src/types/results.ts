@@ -4,10 +4,10 @@ import { StudentDetailsType } from "./student";
 export type paperMarksType = {
   paperId: string;
   paperTitle: string;
-  paperMarkObtained: number;
-  paperMarkPractical: number;
-  paperMarkPassing: number;
-  paperMarkTheory: number;
+  paperMarkObtained: number|string;
+  paperMarkPractical: number|string;
+  paperMarkPassing: number|string;
+  paperMarkTheory: number|string;
 };
 
 export type resultType = {

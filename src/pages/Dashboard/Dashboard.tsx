@@ -33,6 +33,8 @@ import { useEffect, useState } from "react";
 import { fetchTotalStudents } from "store/reducers/dashboardSlice";
 import { RootState, useDispatch, useSelector } from "store";
 import MaleFemaleBarGraph from "components/Graph/MaleFemaleBarGraph";
+import { getAppConfig } from "hooks/getAppConfig";
+
 
 Chart.register(CategoryScale);
 
@@ -50,10 +52,12 @@ export const options = {
 };
 
 function Dashboard() {
-  const { totalStudents, totalFeeCollection,totalFemaleStudent,totalMaleStudent } = useSelector((state: RootState) => state.dashboard.dashboardAnalytics);
+  const { totalStudents, totalFeeCollection, totalFemaleStudent, totalMaleStudent } = useSelector((state: RootState) => state.dashboard.dashboardAnalytics);
   const [smsBalance, setSmsBalance] = useState<number>(0);
 
-  
+  const config = getAppConfig();
+  console.log("App Config",config);
+
   const dispatch = useDispatch();
 
   const fetchSMSBalance = async () => {
@@ -83,7 +87,7 @@ function Dashboard() {
             >
               <Grid xs={12} md={3.9} lg={3.9}>
                 <CardDashboard
-                  headerTitle={totalStudents||"-"}
+                  headerTitle={totalStudents || "-"}
                   subHeaderTitle="Total Students"
                   color="#81c784"
                   Icon={Profile2User}
@@ -241,9 +245,9 @@ function Dashboard() {
             >
               <Box>
                 <Typography level="title-md" textAlign="center">
-                 Male / Female Student Count
+                  Male / Female Student Count
                 </Typography>
-               <MaleFemaleBarGraph maleCount={totalMaleStudent} femaleCount={totalFemaleStudent}/>
+                <MaleFemaleBarGraph maleCount={totalMaleStudent} femaleCount={totalFemaleStudent} />
               </Box>
             </Sheet>
           </Grid>

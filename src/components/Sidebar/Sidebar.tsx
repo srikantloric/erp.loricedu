@@ -1,34 +1,17 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, } from "react";
 import "./Sidebar.scss";
 import { routesConfig } from "../Utils/RoutesConfig";
 import SideBarContext from "../../context/SidebarContext";
 import { motion } from "framer-motion";
 import SIdebarMenuItem from "./SIdebarMenuItem";
-import { useFirebase } from "context/firebaseContext";
-import { doc, getDoc } from "firebase/firestore";
+import { getAppConfig } from "hooks/getAppConfig";
+
 
 
 
 function Sidebar() {
   const status = useContext(SideBarContext);
-  const { db } = useFirebase()
-  const [sidebarLogo, setSidebarLogo] = useState("");
-
-  useEffect(() => {
-
-    const fetchData = async () => {
-      const docRef = doc(db, "CONFIG", "APP_CONFIG");
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        const data = docSnap.data()
-        console.log(data)
-        setSidebarLogo(data.sidebarLogo);
-
-      }
-    }
-    fetchData()
-  })
-
+  const appConfig = getAppConfig()
 
 
   const Sidebar_Animation = {
@@ -56,7 +39,7 @@ function Sidebar() {
     >
       <div className="sidebar">
         <div className="sidebar-logo">
-          <img src={sidebarLogo} alt="school logo" />
+          <img src={appConfig.schoolSidebarLogo} alt="school logo" />
         </div>
         <div className="sidebar-menu">
           {routesConfig.map((menus, index) => {

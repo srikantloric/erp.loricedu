@@ -1,6 +1,5 @@
 import { Timestamp } from "firebase/firestore";
 
-
 export type IPaymentStatus = "UNPAID" | "PARTIAL" | "PAID";
 export interface IChallanHeaderType {
   headerTitle: string;

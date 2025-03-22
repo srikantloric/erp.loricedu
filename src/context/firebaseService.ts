@@ -31,9 +31,11 @@ export const getFirebaseConfig = async (schoolId: string): Promise<FirebaseConfi
     const docSnap = await getDoc(docRef);
 
     if (docSnap.exists()) {
-      const config = docSnap.data().firebaseConfig as FirebaseConfig;
-      localStorage.setItem(`${SCHOOL_CONFIG_KEY}_${schoolId}`, JSON.stringify(config)); // Cache it
-      return config;
+      const data = docSnap.data();
+      const { firebaseConfig, ...appConfig } = data;
+      localStorage.setItem(`${SCHOOL_CONFIG_KEY}_${schoolId}`, JSON.stringify(firebaseConfig)); // Cache it
+      localStorage.setItem(`app_config_${schoolId}`, JSON.stringify(appConfig)); // Store school ID
+      return firebaseConfig;
     } else {
       throw new Error("Invalid School ID: No matching school found in Firestore.");
     }

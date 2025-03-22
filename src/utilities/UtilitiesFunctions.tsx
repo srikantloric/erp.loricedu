@@ -209,3 +209,31 @@ export function getOrdinal(number: number): string {
 
   return number + suffix(number);
 }
+
+
+
+export const GetGradeFromMark = (obtainedMark: string | number): string => {
+  if (typeof obtainedMark === "string") {
+    const validGrades = ["A+", "A", "B+", "B", "C+", "C", "D","F","AB"];
+    if (validGrades.includes(obtainedMark)) {
+      return obtainedMark; // Return the grade if it's already valid
+    }
+  }
+
+  const mark = Number(obtainedMark);
+  if (isNaN(mark) || mark < 0 || mark > 100) {
+    throw new Error("Invalid mark. Must be a number between 0 and 100.");
+  }
+
+  if (mark >= 91) return "A+";
+  if (mark >= 81) return "A";
+  if (mark >= 71) return "B+";
+  if (mark >= 61) return "B";
+  if (mark >= 51) return "C+";
+  if (mark >= 41) return "C";
+  if (mark >= 33) return "D";
+  if (mark < 33) return "F";
+  if (mark === 0) return "AB"; // Absent if mark is 0
+
+  return "F"; // Failing grade if below 33
+};
