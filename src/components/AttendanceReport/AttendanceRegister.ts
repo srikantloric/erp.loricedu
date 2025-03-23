@@ -7,14 +7,9 @@ import {
   POPPINS_SEMIBOLD,
 } from "utilities/Base64Url";
 
-import {
-  SCHOOL_ADDRESS,
-  SCHOOL_CONTACT,
-  SCHOOL_EMAIL,
-  SCHOOL_NAME,
-} from "config/schoolConfig";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { getAppConfig } from "hooks/getAppConfig";
 
 const AttendanceRegisterReport=():Promise<string>=>{
 
@@ -41,6 +36,18 @@ const AttendanceRegisterReport=():Promise<string>=>{
   ];
 
   return new Promise((resolve, reject) => {
+       const config = getAppConfig();
+        if (!config) {
+          console.error("Error: App config not found.");
+          return;
+        }
+        const {
+          schoolName: SCHOOL_NAME,
+          schoolAddress: SCHOOL_ADDRESS,
+          schoolContact: SCHOOL_CONTACT,
+          // schoolWebsite: SCHOOL_WEBSITE,
+          schoolEmail: SCHOOL_EMAIL,
+        } = config;
       try {
         const doc = new jsPDF({
           orientation: "l",

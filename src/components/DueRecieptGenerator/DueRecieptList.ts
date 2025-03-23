@@ -7,13 +7,10 @@ import {
     POPPINS_REGULAR,
     POPPINS_SEMIBOLD,
 } from "utilities/Base64Url";
-import {
-    SCHOOL_ADDRESS,
-    SCHOOL_CONTACT,
-    SCHOOL_NAME,
-} from "config/schoolConfig";
+
 
 import { DueReportType } from "types/reports";
+import { getAppConfig } from "hooks/getAppConfig";
 
 
 export const DueRecieptList = async (
@@ -21,6 +18,18 @@ export const DueRecieptList = async (
 ): Promise<string> => {
 
     return new Promise((resolve, reject) => {
+
+           const config = getAppConfig();
+            if (!config) {
+              console.error("Error: App config not found.");
+              return;
+            }
+            const {
+              schoolName: SCHOOL_NAME,
+              schoolAddress: SCHOOL_ADDRESS,
+              schoolContact: SCHOOL_CONTACT,
+            //   schoolWebsite: SCHOOL_WEBSITE,
+            } = config;
         try {
             const doc = new jsPDF({
                 orientation: "p",

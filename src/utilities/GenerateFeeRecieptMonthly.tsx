@@ -8,18 +8,15 @@ import {
   POPPINS_SEMIBOLD,
   SCISSOR_ICON,
 } from "./Base64Url";
-import {
-  SCHOOL_ADDRESS,
-  SCHOOL_CONTACT,
-  SCHOOL_EMAIL,
-  SCHOOL_NAME,
-} from "config/schoolConfig";
+
 import { StudentDetailsType } from "types/student";
 import { IChallanHeaderType } from "types/payment";
 import {
   generateQRCodeBase64,
   getClassNameByValue,
 } from "./UtilitiesFunctions";
+import { getAppConfig } from "hooks/getAppConfig";
+import { SchoolConfigType } from "types/root";
 // import { db } from "../firebase";
 
 interface Props {
@@ -47,6 +44,13 @@ export const GenerateFeeRecieptMonthly = async ({
   recieptGeneratorServerUrl,
   currentDueAmount,
 }: Props) => {
+
+  const schoolConfig  = getAppConfig() as SchoolConfigType;
+  if (!schoolConfig) {
+    console.error("School configuration not found");
+    return;
+  }
+
   if (studentMasterData) {
     //Page Size
     const pHeight = 210;
@@ -107,9 +111,9 @@ export const GenerateFeeRecieptMonthly = async ({
     //school name
     doc.setFontSize(18);
     doc.setFont("Poppins", "bold");
-    doc.text(SCHOOL_NAME, schoolHeaderStartX, schoolHeaderStartY);
+    doc.text(schoolConfig.schoolName, schoolHeaderStartX, schoolHeaderStartY);
     doc.text(
-      SCHOOL_NAME,
+      schoolConfig.schoolName,
       pBorderPaddOffsetX + schoolHeaderStartX - 5,
       schoolHeaderStartY
     );
@@ -137,12 +141,12 @@ export const GenerateFeeRecieptMonthly = async ({
     doc.setFontSize(6);
     doc.setFont("Poppins", "normal");
     doc.text(
-      SCHOOL_ADDRESS,
+      schoolConfig.schoolAddress,
       schoolHeaderStartX + 4,
       schoolContactDetailStartY + 3
     );
     doc.text(
-      SCHOOL_ADDRESS,
+      schoolConfig.schoolAddress,
       pBorderPaddOffsetX + schoolContactDetailStartX + 4,
       schoolContactDetailStartY + 3
     );
@@ -163,12 +167,12 @@ export const GenerateFeeRecieptMonthly = async ({
       3
     );
     doc.text(
-      SCHOOL_CONTACT,
+      schoolConfig.schoolContact,
       schoolHeaderStartX + 4,
       schoolContactDetailStartY + 8
     );
     doc.text(
-      SCHOOL_CONTACT,
+      schoolConfig.schoolContact,
       pBorderPaddOffsetX + schoolContactDetailStartX + 4,
       schoolContactDetailStartY + 8
     );
@@ -189,12 +193,12 @@ export const GenerateFeeRecieptMonthly = async ({
       3
     );
     doc.text(
-      SCHOOL_EMAIL,
+      schoolConfig.schoolEmail,
       schoolHeaderStartX + 4,
       schoolContactDetailStartY + 12.5
     );
     doc.text(
-      SCHOOL_EMAIL,
+      schoolConfig.schoolEmail,
       pBorderPaddOffsetX + schoolContactDetailStartX + 4,
       schoolContactDetailStartY + 12.5
     );
@@ -353,7 +357,7 @@ export const GenerateFeeRecieptMonthly = async ({
 
     doc.text(
       "Address :",
-       pBorderPadd + 3,
+      pBorderPadd + 3,
       studentDetailsStartY + 16.5
     );
 

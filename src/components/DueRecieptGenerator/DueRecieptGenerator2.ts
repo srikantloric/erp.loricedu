@@ -7,13 +7,9 @@ import {
   POPPINS_REGULAR,
   POPPINS_SEMIBOLD,
 } from "utilities/Base64Url";
-import {
-  SCHOOL_ADDRESS,
-  SCHOOL_CONTACT,
-  SCHOOL_EMAIL,
-  SCHOOL_NAME,
-} from "config/schoolConfig";
+
 import { DueRecieptPropsType } from "types/student";
+import { getAppConfig } from "hooks/getAppConfig";
 
 let paymentTracArr = [
   { date: "05-05-24", amount: 5000 },
@@ -26,6 +22,20 @@ export const generateDueReciept2 = async (
   recieptData: DueRecieptPropsType[]
 ): Promise<string> => {
   return new Promise((resolve, reject) => {
+
+       const config = getAppConfig();
+        if (!config) {
+          console.error("Error: App config not found.");
+          return;
+        }
+        const {
+          schoolName: SCHOOL_NAME,
+          schoolAddress: SCHOOL_ADDRESS,
+          schoolContact: SCHOOL_CONTACT,
+          schoolEmail: SCHOOL_EMAIL,
+          // schoolWebsite: SCHOOL_WEBSITE,
+        } = config;
+
     try {
       const doc = new jsPDF({
         orientation: "p",

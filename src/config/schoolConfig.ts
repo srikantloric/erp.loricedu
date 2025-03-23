@@ -1,9 +1,3 @@
-export const SCHOOL_NAME = "Apex International School"
-export const SCHOOL_ADDRESS = "At-Golhaiya (Choura), Jamua, Giridih, Jharkhand - 815312"
-export const SCHOOL_CONTACT = "+91-7070829020, +91-8084216804"
-export const SCHOOL_EMAIL = "contact@apxschool.org"
-export const SCHOOL_WEBSITE = "https://apxschool.org"
-export const SCHOOL_ACCOUNTANT = 'Ajay Verma'
 
 export interface SchoolClass {
   title: string;

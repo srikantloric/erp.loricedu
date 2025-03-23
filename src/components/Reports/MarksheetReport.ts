@@ -1,18 +1,18 @@
 import {
-  LOGO_BASE_64,
   POPPINS_BOLD,
   POPPINS_REGULAR,
   POPPINS_SEMIBOLD,
   PRINCIPAL_SIGN,
-
 } from "utilities/Base64Url";
-import { SCHOOL_NAME } from "config/schoolConfig";
+
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import { marksheetType, rankType } from "types/results";
-import { getClassNameByValue, GetGradeFromMark, getOrdinal } from "utilities/UtilitiesFunctions";
+import {  getClassNameByValue, GetGradeFromMark, getOrdinal } from "utilities/UtilitiesFunctions";
 import { getFirestoreInstance } from "context/firebaseUtility";
 import { doc, getDoc } from "firebase/firestore";
+import { getAppConfig } from "hooks/getAppConfig";
+import imageToBase64 from "image-to-base64"
 
 
 
@@ -42,10 +42,26 @@ const getStudentRank = async (classId: string | undefined) => {
   return rankDocSnap.exists() ? (rankDocSnap.data() as rankDoctype) : null;
 };
 
+
 export const MarksheetReportGenerator = async (
   resultData: marksheetType[],
 ): Promise<string> => {
   return new Promise(async (resolve, reject) => {
+    const config = getAppConfig();
+    if (!config) {
+      console.error("Error: App config not found.");
+      return;
+    }
+    const {
+      schoolName: SCHOOL_NAME,
+      schoolAddress: SCHOOL_ADDRESS,
+      schoolContact: SCHOOL_CONTACT,
+      schoolWebsite: SCHOOL_WEBSITE,
+      schoolLogoTransparent: schoolLogoTransparent,
+    } = config;
+
+    const SCHOOL_LOGO_BASE64 = await imageToBase64(schoolLogoTransparent);
+    console.log("Converted base64 logo",SCHOOL_LOGO_BASE64);
     try {
       const doc = new jsPDF({
         orientation: "p",
@@ -67,6 +83,7 @@ export const MarksheetReportGenerator = async (
       // Usage
       const classId = resultData.at(0)?.student.class?.toString();
       const studentRanks = await getStudentRank(classId);
+
 
       resultData.forEach((data, index) => {
 
@@ -258,7 +275,7 @@ export const MarksheetReportGenerator = async (
         // doc.addImage(LOGO_BASE_64, x + 8, y + 12, 25, 23);
 
         //right logo
-        doc.addImage(LOGO_BASE_64, cardWidth - 25, y + 2, 27, 25);
+        doc.addImage(SCHOOL_LOGO_BASE64, cardWidth - 25, y + 2, 27, 25);
 
         const schoolHeaderStartX = x + 10;
         const schoolHeaderStartY = y + 10;
@@ -287,7 +304,7 @@ export const MarksheetReportGenerator = async (
         const schoolContactDetailStartY = schoolHeaderStartY + 5;
         doc.setFontSize(9);
         doc.setFont("Poppins", "normal");
-        const address = "Address: At-Golhaiya (Choura), Jamua, Giridih, Jharkhand – 815312";
+        const address = "Address: " + SCHOOL_ADDRESS;
         doc.text(
           address,
           schoolHeaderStartX,
@@ -300,7 +317,7 @@ export const MarksheetReportGenerator = async (
         //     (pageWidth - doc.getTextWidth(address2)) / 2,
         //     schoolContactDetailStartY + 9
         //   ); 
-        const contact = "Phone:  +91-6204313113, +91-7634932030,+91-6205447024 ";
+        const contact = "Phone: " + SCHOOL_CONTACT;
         doc.text(
           contact,
           schoolHeaderStartX,
@@ -312,7 +329,7 @@ export const MarksheetReportGenerator = async (
         //   (pageWidth - doc.getTextWidth(contact2)) / 2,
         //   schoolContactDetailStartY + 17
         // );
-        const websiteName = "www.apxschool.org";
+        const websiteName = "" + SCHOOL_WEBSITE;
         doc.text(
           websiteName,
           schoolHeaderStartX,

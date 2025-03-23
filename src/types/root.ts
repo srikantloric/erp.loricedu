@@ -32,3 +32,14 @@ export interface GenericCardProps {
   color?: string;
   size?: string;
 }
+
+
+export type SchoolConfigType = {
+  schoolName:string,
+  schoolAddress:string,
+  schoolEmail:string,
+  schoolContact:string,
+  schoolLogo:string,
+  schoolWebsite:string,
+
+}

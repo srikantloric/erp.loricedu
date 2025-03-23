@@ -15,6 +15,8 @@ export const generateQRCodeBase64 = async (text: string) => {
   }
 };
 
+
+
 export function makeDoubleDigit(num: string) {
   // Convert the number to a string
   const numStr = num.toString();

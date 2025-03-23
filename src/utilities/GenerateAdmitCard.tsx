@@ -1,19 +1,16 @@
 import jsPDF from "jspdf";
 import { admitCardType } from "types/admitCard";
-import {
-  SCHOOL_NAME,
-  SCHOOL_ADDRESS,
-  SCHOOL_WEBSITE,
-} from "config/schoolConfig";
+
 import { POPPINS_BOLD, POPPINS_REGULAR, POPPINS_SEMIBOLD, PROFILE_PLACEHOLDER_BASE64 } from "./Base64Url";
 
 import { examData } from "components/Exams/ExamPlannerTable";
+import { getAppConfig } from "hooks/getAppConfig";
 export const getScheduleForClassAndSession = (className: string, sessionName: string) => {
   return examData
     .map((exam) => ({
       date: exam.date,
       sessions: exam.sessions
-        .filter((session) => session.session === sessionName) 
+        .filter((session) => session.session === sessionName)
         .map((session) => ({
           session: session.session,
           subject: session.subjects[className] || "No Exam",
@@ -27,6 +24,18 @@ export const GenerateAdmitCard = async (
   data: admitCardType[]
 ): Promise<string> => {
   return new Promise(async (resolve, reject) => {
+
+    const config = getAppConfig();
+    if (!config) {
+      console.error("Error: App config not found.");
+      return;
+    }
+    const {
+      schoolName: SCHOOL_NAME,
+      schoolAddress: SCHOOL_ADDRESS,
+      schoolWebsite: SCHOOL_WEBSITE
+    } = config;
+
 
     const doc = new jsPDF({
       orientation: "portrait",
@@ -44,11 +53,11 @@ export const GenerateAdmitCard = async (
     doc.addFileToVFS("Poppins-Semibold", POPPINS_SEMIBOLD);
     doc.addFont("Poppins-Semibold", "Poppins", "semibold");
 
-    const cardHeight = (297 / 3)-2;
+    const cardHeight = (297 / 3) - 2;
     const margin = 5; // Margin around the admit card
 
     data.forEach((studentData, index) => {
-      const positionY = (index % 3) * cardHeight + margin+6;
+      const positionY = (index % 3) * cardHeight + margin + 6;
       if (index > 0 && index % 3 === 0) {
         doc.addPage();
       }
@@ -59,7 +68,7 @@ export const GenerateAdmitCard = async (
 
       // School Header
 
-       doc.addImage(PROFILE_PLACEHOLDER_BASE64, "PNG", margin + 6, positionY + 30, 25, 30); // Adjust the position and size as needed
+      doc.addImage(PROFILE_PLACEHOLDER_BASE64, "PNG", margin + 6, positionY + 30, 25, 30); // Adjust the position and size as needed
 
       doc.setFont("Poppins", "bold");
       doc.setFontSize(26);
@@ -185,7 +194,7 @@ export const GenerateAdmitCard = async (
       doc.setFont("Poppins", "normal");
       doc.setFontSize(10);
       // doc.text("(Exam Controller)", margin + 20, signatureY);
-      doc.text("(Exam Controller)",150, signatureY);
+      doc.text("(Exam Controller)", 150, signatureY);
       // doc.text("(Class Teacher)", 85, signatureY);
       // doc.text("(Director)", 150, signatureY);
     });

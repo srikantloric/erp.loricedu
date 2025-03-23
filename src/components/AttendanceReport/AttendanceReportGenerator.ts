@@ -6,15 +6,11 @@ import {
   POPPINS_REGULAR,
   POPPINS_SEMIBOLD,
 } from "utilities/Base64Url";
-import {
-  SCHOOL_ADDRESS,
-  SCHOOL_CONTACT,
-  SCHOOL_EMAIL,
-  SCHOOL_NAME,
-} from "config/schoolConfig";
+
 import { StudentAttendanceGlobalSchema } from "../../types/attendance";
 import { jsPDF } from "jspdf";
 import autoTable, { CellInput } from "jspdf-autotable";
+import { getAppConfig } from "hooks/getAppConfig";
 
 type AttendanceHeaderDataType = {
   totalStudent: number;
@@ -54,6 +50,18 @@ export const AttendanceReportGenerator = async (
   ];
 
   return new Promise((resolve, reject) => {
+       const config = getAppConfig();
+        if (!config) {
+          console.error("Error: App config not found.");
+          return;
+        }
+        const {
+          schoolName: SCHOOL_NAME,
+          schoolAddress: SCHOOL_ADDRESS,
+          schoolContact: SCHOOL_CONTACT,
+          // schoolWebsite: SCHOOL_WEBSITE,
+          schoolEmail: SCHOOL_EMAIL,
+        } = config;
     try {
       const doc = new jsPDF({
         orientation: "p",

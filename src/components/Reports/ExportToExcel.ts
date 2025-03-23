@@ -1,11 +1,24 @@
 import * as XLSX from "xlsx";
 import { StudentDetailsType } from "types/student";
-import { SCHOOL_NAME } from "config/schoolConfig";
+
 import { getClassNameByValue } from "utilities/UtilitiesFunctions";
+import { getAppConfig } from "hooks/getAppConfig";
 
 const companyName = "ORIENT PUBLIC SCHOOL";
 
 const ExportToExcel = (students: StudentDetailsType[]) => {
+
+     const config = getAppConfig();
+      if (!config) {
+        console.error("Error: App config not found.");
+        return;
+      }
+      const {
+        schoolName: SCHOOL_NAME,
+        // schoolAddress: SCHOOL_ADDRESS,
+        // schoolContact: SCHOOL_CONTACT,
+        // schoolWebsite: SCHOOL_WEBSITE,
+      } = config;
 
   const headerStyle = {
     fill: { fgColor: { rgb: "000080" } },

@@ -8,18 +8,14 @@ import {
   POPPINS_SEMIBOLD,
   SCISSOR_ICON,
 } from "./Base64Url";
-import {
-  SCHOOL_ADDRESS,
-  SCHOOL_CONTACT,
-  SCHOOL_EMAIL,
-  SCHOOL_NAME,
-} from "config/schoolConfig";
+
 import { StudentDetailsType } from "types/student";
 import { IChallanHeaderType } from "types/payment";
 import {
   generateQRCodeBase64,
   getClassNameByValue,
 } from "./UtilitiesFunctions";
+import { getAppConfig } from "hooks/getAppConfig";
 // import { db } from "../firebase";
 
 interface Props {
@@ -53,6 +49,18 @@ export const GenerateFeeReciept = async ({
   recieptGeneratorServerUrl,
   currentDueAmount,
 }: Props) => {
+  const config = getAppConfig();
+  if (!config) {
+    console.error("Error: App config not found.");
+    return;
+  }
+  const { 
+    schoolName: SCHOOL_NAME, 
+    schoolAddress: SCHOOL_ADDRESS, 
+    schoolContact: SCHOOL_CONTACT, 
+    schoolEmail: SCHOOL_EMAIL 
+  } = config;
+
   if (studentMasterData) {
     //Page Size
     const pHeight = 210;
@@ -358,7 +366,7 @@ export const GenerateFeeReciept = async ({
 
     doc.text(
       "Address :",
-       pBorderPadd + 3,
+      pBorderPadd + 3,
       studentDetailsStartY + 16.5
     );
 
@@ -513,8 +521,8 @@ export const GenerateFeeReciept = async ({
         amount: 0,
       };
 
-      if ((item.amountPaid === 0) && (item.amountDue===0)) continue;
-      
+      if ((item.amountPaid === 0) && (item.amountDue === 0)) continue;
+
       feeTypeLayoutHeight = feeSectionStartPointY + (counter + 2) * 6;
       counter++;
 

@@ -6,16 +6,12 @@ import {
   POPPINS_REGULAR,
   POPPINS_SEMIBOLD,
 } from "utilities/Base64Url";
-import {
-  SCHOOL_ADDRESS,
-  SCHOOL_CONTACT,
-  SCHOOL_EMAIL,
-  SCHOOL_NAME,
-} from "config/schoolConfig";
+
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import { StudentDetailsType } from "types/student";
 import { getClassNameByValue } from "utilities/UtilitiesFunctions";
+import { getAppConfig } from "hooks/getAppConfig";
 
 
 const AttendanceHeader = [
@@ -41,6 +37,19 @@ const studentData = [  // Replace with your actual student data
 export const StudReportPDF = async (students: StudentDetailsType[]) => {
 
   return new Promise((resolve, reject) => {
+
+    const config = getAppConfig();
+    if (!config) {
+      console.error("Error: App config not found.");
+      return;
+    }
+    const {
+      schoolName: SCHOOL_NAME,
+      schoolAddress: SCHOOL_ADDRESS,
+      schoolContact: SCHOOL_CONTACT,
+      schoolEmail: SCHOOL_EMAIL,
+    } = config;
+    
     try {
       const doc = new jsPDF({
         orientation: "l",
@@ -145,23 +154,23 @@ export const StudReportPDF = async (students: StudentDetailsType[]) => {
       doc.setFont("Poppins", "semibold");
       doc.setFontSize(9);
       doc.setTextColor("#fff");
-      doc.text("STUDENT DETAILS", cardWidth / 2 -10, y + 30);
+      doc.text("STUDENT DETAILS", cardWidth / 2 - 10, y + 30);
 
       let tableX = x + 5;
       let tableY = y + 25;
-      let classValue=null;
+      let classValue = null;
 
       autoTable(doc, {
         head: [AttendanceHeader],
-        body: students.map((item,index) => {
+        body: students.map((item, index) => {
           const stringArr: string[] = [];
-          
-          stringArr.push((index+1).toString());
+
+          stringArr.push((index + 1).toString());
           stringArr.push(item.admission_no);
           stringArr.push(item.student_name);
           stringArr.push(item.father_name);
-          classValue=getClassNameByValue(item.class!);
-          stringArr.push(classValue? classValue.toString():"");
+          classValue = getClassNameByValue(item.class!);
+          stringArr.push(classValue ? classValue.toString() : "");
           stringArr.push(item.section);
           stringArr.push(item.class_roll);
           stringArr.push(item.contact_number);
@@ -184,13 +193,13 @@ export const StudReportPDF = async (students: StudentDetailsType[]) => {
         },
         columnStyles: {
           0: { cellWidth: 10 }, //SL no
-          1:{cellWidth: 30}, //Addm no
-          2:{cellWidth: 35}, //Student Name
-          3:{cellWidth: 40}, //Father Name
-          4:{cellWidth: 20}, //Class
-          5:{cellWidth: 15}, //Section
-          6:{cellWidth: 15}, //Roll
-          7:{cellWidth: 25}, //Contact
+          1: { cellWidth: 30 }, //Addm no
+          2: { cellWidth: 35 }, //Student Name
+          3: { cellWidth: 40 }, //Father Name
+          4: { cellWidth: 20 }, //Class
+          5: { cellWidth: 15 }, //Section
+          6: { cellWidth: 15 }, //Roll
+          7: { cellWidth: 25 }, //Contact
           // 8: { cellWidth: 35 }, //Address
         },
       });
