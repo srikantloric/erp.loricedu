@@ -23,9 +23,6 @@ import { FirebaseProvider } from "context/firebaseContext";
 import { auth } from "./firebase";
 import { onAuthStateChanged } from "firebase/auth";
 
-
-
-
 // Lazy Loaded Components
 const FeeReceipt = Loadable(lazy(() => import("pages/FeeManager/FeeReceipt")));
 
