@@ -35,7 +35,7 @@ export const FirebaseProvider = ({ children }: { children: ReactNode }) => {
       <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
         <Box textAlign="center">
           <CircularProgress />
-          <Typography variant="body1" mt={2}>Initializing Firebase...</Typography>
+          <Typography variant="body1" mt={2}>Initializing Application...</Typography>
         </Box>
       </Box>
     );

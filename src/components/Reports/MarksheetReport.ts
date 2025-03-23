@@ -2,13 +2,12 @@ import {
   POPPINS_BOLD,
   POPPINS_REGULAR,
   POPPINS_SEMIBOLD,
-  PRINCIPAL_SIGN,
 } from "utilities/Base64Url";
 
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import { marksheetType, rankType } from "types/results";
-import {  getClassNameByValue, GetGradeFromMark, getOrdinal } from "utilities/UtilitiesFunctions";
+import { getClassNameByValue, GetGradeFromMark, getOrdinal } from "utilities/UtilitiesFunctions";
 import { getFirestoreInstance } from "context/firebaseUtility";
 import { doc, getDoc } from "firebase/firestore";
 import { getAppConfig } from "hooks/getAppConfig";
@@ -57,6 +56,7 @@ export const MarksheetReportGenerator = async (
       schoolContact: SCHOOL_CONTACT,
       schoolWebsite: SCHOOL_WEBSITE,
       schoolLogoBase64: SCHOOL_LOGO_BASE64,
+      schoolPrincipalSignBase64: PRINCIPAL_SIGN,
     } = config;
 
     try {
