@@ -22,9 +22,7 @@ import ExamPlanner from "pages/ResultsManagement/ExamPlanner";
 import { FirebaseProvider } from "context/firebaseContext";
 import { auth } from "./firebase";
 import { onAuthStateChanged } from "firebase/auth";
-
-
-
+import FacultyAttendance from "pages/Attendance/FacultyAttendance/facultyAttendance";
 
 // Lazy Loaded Components
 const FeeReceipt = Loadable(lazy(() => import("pages/FeeManager/FeeReceipt")));
@@ -42,9 +40,7 @@ const AdmissionEnquiry = Loadable(
   lazy(() => import("pages/Admission/AdmissionEnquiry"))
 );
 
-const FacultyAttendance = Loadable(
-  lazy(() => import("pages/Attendance/FacultyAttendance/FacultyAttendance"))
-);
+
 const GenerateMonthlyChallan = Loadable(
   lazy(() => import("pages/FeeManager/GenerateChallan/GenerateMontlyChallan"))
 );

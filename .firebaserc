@@ -1,6 +1,7 @@
 {
   "projects": {
-    "prod": "loric-edu-master-prod"
+    "prod": "loric-edu-master-prod",
+    "default": "loric-edu-master-prod"
   },
   "targets": {},
   "etags": {}
