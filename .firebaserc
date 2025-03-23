@@ -1,5 +1,7 @@
 {
   "projects": {
-    "default": "apx-international-dev"
-  }
+    "prod": "loric-edu-master-prod"
+  },
+  "targets": {},
+  "etags": {}
 }
