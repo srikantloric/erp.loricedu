@@ -45,7 +45,7 @@ function FacultyDetail() {
     };
   
     fetchFaculty();
-  }, [id]); // Depend on 'id'
+  }, [id,db]); // Depend on 'id'
 
   return (
     <>
@@ -77,6 +77,7 @@ function FacultyDetail() {
                   height="100%"
                   width={100}
                   style={{ objectFit: "cover" }}
+                  alt="faculty profile"
                 />
               </div>
               <div style={{ padding: "5px 15px" }}>

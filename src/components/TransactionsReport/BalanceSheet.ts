@@ -156,7 +156,7 @@ export const BalanceSheet = async (
 
       for (i = 1; i <= 12; i++) {
         doc.line(bodyX, bodyY + 5, cardWidth-4.5, bodyY+5);
-        (i % 4 == 0) ? (bodyY += 10) : (bodyY += 5);
+        (i % 4 === 0) ? (bodyY += 10) : (bodyY += 5);
       }
       //Vertical Line
       for (i = 1; i <= 3; i++) {
@@ -247,22 +247,22 @@ export const BalanceSheet = async (
       i = 0;
 
       for (i; i < data2.length; i += 3) {
-        var x1 = tableX+5;
-        doc.text(data2[i][0], x1, tableY);
-        doc.text(data2[i][1], x1 + 60, tableY);
+        var x1x = tableX+5;
+        doc.text(data2[i][0], x1x, tableY);
+        doc.text(data2[i][1], x1x + 60, tableY);
         // doc.rect(x1-2, tableY-5, x1+50, 7);
         if (data2[i + 1]) {
-          x1+=cellWidth;
-          doc.text(data2[i + 1][0], x1 , tableY);
-          doc.text(data2[i + 1][1], x1 +60, tableY);
+          x1x+=cellWidth;
+          doc.text(data2[i + 1][0], x1x , tableY);
+          doc.text(data2[i + 1][1], x1x +60, tableY);
           // doc.rect(x1+73, tableY-5, x1+55, 7);
         } else {
           console.log("Data ended");
         }
         if (data2[i + 2]) {
-          x1+=cellWidth;
-          doc.text(data2[i + 2][0], x1 , tableY);
-          doc.text(data2[i + 2][1], x1 + 60, tableY);
+          x1x+=cellWidth;
+          doc.text(data2[i + 2][0], x1x , tableY);
+          doc.text(data2[i + 2][1], x1x + 60, tableY);
           // doc.rect(x1+155, tableY-5, x1+55, 7);
         } else {
           console.log("Data ended");
