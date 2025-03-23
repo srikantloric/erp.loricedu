@@ -114,6 +114,8 @@ function App() {
     return () => unsubscribe();
   }, []);
 
+  console.log("Version: 1.0.0");
+
   return (
     <AuthProvider>
       <FirebaseProvider key={authKey}>
