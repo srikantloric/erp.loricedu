@@ -84,6 +84,7 @@ function PaymentConfigurations() {
     };
   
     fetchPaymentConfig();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>, key: keyof MonthlyFee) => {
@@ -138,6 +139,7 @@ function PaymentConfigurations() {
       console.error("Error updating config:", error);
       enqueueSnackbar("Error while updating config!", { variant: "error" });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   
   const renderInputFields = () => {

@@ -1,6 +1,5 @@
 import React, { useContext, useState, useEffect } from "react";
 import "./Navbar.scss";
-import ProfileImage from "../../assets/images.jpg";
 import {
   Avatar,
   Badge,
@@ -38,7 +37,7 @@ function Navbar() {
   };
   /////
 
-  const { isOpen, openDialog } = useSearchDialog();
+  const {  openDialog } = useSearchDialog();
 
   const notificationsLabel = (count) => {
     if (count === 0) {
@@ -81,7 +80,7 @@ function Navbar() {
     return () => {
       window.removeEventListener("resize", updateDimension);
     };
-  }, [screenSize]);
+  }, [screenSize,status]);
 
 
   return (

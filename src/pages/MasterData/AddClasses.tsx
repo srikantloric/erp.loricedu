@@ -86,7 +86,8 @@ function AddClasses() {
     };
 
     fetchClasses();
-  }, []); // ✅ Added dependency array to prevent infinite re-renders
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); 
 
   return (
     <>

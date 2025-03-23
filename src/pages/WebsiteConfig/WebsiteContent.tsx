@@ -74,7 +74,8 @@ const WebsiteContent = () => {
       }
     }
     getSchoolInfo();
-  }, []);
+
+  }, [db]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;

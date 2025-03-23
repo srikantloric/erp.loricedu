@@ -16,7 +16,7 @@ import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
 import { useState } from "react";
 import FileResizer from "react-image-file-resizer";
 import { enqueueSnackbar } from "notistack";
-import { CircularProgress } from "@mui/material";
+// import { CircularProgress } from "@mui/material";
 import { getDownloadURL, ref, uploadString } from "firebase/storage";
 import { doc, updateDoc } from "firebase/firestore";
 import { useFirebase } from "context/firebaseContext";
@@ -44,7 +44,7 @@ function UpdateStudentImageCard(props: studentProfileUpdateCardProps) {
   const [previewImage, setPreviewImage] = useState<string | ArrayBuffer | null>(
     null
   );
-  const [uploadProgress, _] = useState<number | undefined>();
+  // const [uploadProgress, setUploadProgress] = useState<number | undefined>();
 
 
   // Reference to DB and Storage
@@ -76,7 +76,7 @@ function UpdateStudentImageCard(props: studentProfileUpdateCardProps) {
   };
 
   const uploadImage = async () => {
-    console.log(props.doc_id);
+ 
     if (profil) {
       setIsUpdatingImage(true);
 
@@ -182,7 +182,7 @@ return (
               src={previewImage?.toString()}
               sx={{ "--Avatar-size": "8rem" }}
             />
-            {uploadProgress && isUpdatingImage ? (
+            {/* {uploadProgress && isUpdatingImage ? (
               <div style={{ display: "flex", alignItems: "center" }}>
                 {`Uploading .. ${uploadProgress}%`}
                 <CircularProgress
@@ -192,7 +192,7 @@ return (
                   size={"sm"}
                 />
               </div>
-            ) : null}
+            ) : null} */}
           </CardContent>
           <CardOverflow sx={{ bgcolor: "background.level1" }}>
             <CardActions buttonFlex="1">

@@ -70,7 +70,7 @@ function Dashboard() {
   useEffect(() => {
     dispatch(fetchTotalStudents());
     fetchSMSBalance();
-  }, []);
+  }, [dispatch]);
 
   return (
     <>
@@ -95,7 +95,7 @@ function Dashboard() {
               </Grid>
               <Grid xs={12} md={3.9} lg={3.9}>
                 <CardDashboard
-                  headerTitle={`₹${totalFeeCollection && totalFeeCollection.thisYear || "-"}`}
+                  headerTitle={`₹${(totalFeeCollection && totalFeeCollection.thisYear) || "-"}`}
                   subHeaderTitle="Total Income This Year"
                   color="#9575cd"
                   Icon={MoneySend}
@@ -111,7 +111,7 @@ function Dashboard() {
               </Grid>
               <Grid xs={12} md={3.9} lg={3.9}>
                 <CardDashboard
-                  headerTitle={`₹${totalFeeCollection && totalFeeCollection.thisMonth || "-"}`}
+                  headerTitle={`₹${(totalFeeCollection && totalFeeCollection.thisMonth) || "-"}`}
                   subHeaderTitle="Income This Month"
                   color="#64b5f6"
                   Icon={Money}
@@ -119,7 +119,7 @@ function Dashboard() {
               </Grid>
               <Grid xs={12} md={3.9} lg={3.9}>
                 <CardDashboard
-                  headerTitle={`₹${totalFeeCollection && totalFeeCollection.today || "-"}`}
+                  headerTitle={`₹${(totalFeeCollection && totalFeeCollection.today) || "-"}`}
                   subHeaderTitle="Income Today"
                   color="#E48F45"
                   Icon={Money}

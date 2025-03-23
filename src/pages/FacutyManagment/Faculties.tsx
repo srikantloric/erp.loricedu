@@ -19,7 +19,7 @@ function Faculties() {
 
   useEffect(() => {
     dipatch(fetchTeacher());
-  }, []);
+  }, [dipatch]);
 
 
   return (

@@ -6,7 +6,7 @@ import BreadCrumbsV2 from "components/Breadcrumbs/BreadCrumbsV2"
 import Navbar from "components/Navbar/Navbar"
 import LSPage from "components/Utils/LSPage"
 import PageContainer from "components/Utils/PageContainer"
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import AddPickupPointModal from "components/Modals/transport/AddPickupPointModal"
 import EditPickupPointModal from "components/Modals/transport/EditPickupPointModal"
 import { doc, getDoc } from "firebase/firestore"
@@ -30,45 +30,49 @@ function Transport() {
     const [open, setOpen] = useState(false)
     const [selectedLocation, setSelectedLocation] = useState<TransportData | null>(null)
 
-     //Get Firebase DB instance
-  const {db} = useFirebase();
+    //Get Firebase DB instance
+    const { db } = useFirebase();
 
     const handleAddPickupPointModalClose = () => {
         setOpen(false)
         setSelectedLocation(null)
     }
 
-    const fetchTransportData = async () => {
+    const fetchTransportData = useCallback(async () => {
         try {
-          const transportRef = doc(db, "TRANSPORT", "transportLocations");
-          const transportSnap = await getDoc(transportRef);
-      
-          if (transportSnap.exists()) {
-            const data = transportSnap.data();
-            if (data?.locations) {
-              const locationsWithSerialNo = data.locations.map(
-                (location: TransportData, index: number) => ({
-                  ...location,
-                  serialNo: index + 1,
-                })
-              );
-      
-              setTransportData(locationsWithSerialNo);
+            const transportRef = doc(db, "TRANSPORT", "transportLocations");
+            const transportSnap = await getDoc(transportRef);
+
+            if (transportSnap.exists()) {
+                const data = transportSnap.data();
+                if (data?.locations) {
+                    const locationsWithSerialNo = data.locations.map(
+                        (location: TransportData, index: number) => ({
+                            ...location,
+                            serialNo: index + 1,
+                        })
+                    );
+
+                    setTransportData(locationsWithSerialNo);
+                } else {
+                    setTransportData([]);
+                    console.log("No locations found!");
+                }
             } else {
-              setTransportData([]);
-              console.log("No locations found!");
+                setTransportData([]);
+                console.log("No such document!");
             }
-          } else {
-            setTransportData([]);
-            console.log("No such document!");
-          }
         } catch (error) {
-          console.error("Error fetching transport data:", error);
+            console.error("Error fetching transport data:", error);
         }
-      };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     useEffect(() => {
         fetchTransportData();
-    }, [])
+    }, [fetchTransportData])
+
+    
     const columnMat = [
         { title: "S.No", field: "serialNo" },
         { title: "Pickup Point Name", field: "pickupPointName" },
@@ -121,7 +125,7 @@ function Transport() {
                                 icon: () => <Edit sx={{ color: "var(--bs-primary)" }} />,
                                 tooltip: "Edit Row",
                                 onClick: (event, rowData) => {
-                                  
+
                                     setSelectedLocation(rowData as TransportData);
                                     setOpen(true);
                                 },

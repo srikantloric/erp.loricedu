@@ -38,6 +38,7 @@ function SMSNotification() {
         };
 
         fetchSMSConfig();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
     const handleSwitchChange = async (field: string, value: boolean) => {
         try {

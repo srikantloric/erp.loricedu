@@ -107,6 +107,7 @@ function ViewStudents() {
     if (Array.from(data).length === 0) {
       dipatch(fetchstudent());
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

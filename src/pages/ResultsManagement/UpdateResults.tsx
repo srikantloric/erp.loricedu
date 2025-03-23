@@ -91,7 +91,7 @@ function UpdateResults() {
   );
 
   const { db } = useFirebase()
-
+  const grades = ["A+", "A", "B+", "B", "C+", "C", "D", "F","AB"];
 
 
   useEffect(() => {
@@ -119,6 +119,7 @@ function UpdateResults() {
     };
 
     fetchExamConfig();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -145,7 +146,9 @@ function UpdateResults() {
 
       return () => unsubscribe();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentSelectedStudent]);
+
 
   useEffect(() => {
     if (!selectedClass) return;
@@ -185,7 +188,10 @@ function UpdateResults() {
     };
 
     fetchStudents();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedClass]);
+
+
 
   const handleStudentSearch = async () => {
     try {
@@ -216,6 +222,7 @@ function UpdateResults() {
     }
   };
 
+
   const handleNextStudentBtn = () => {
     if (currentSelectedStudent) {
       const currentIndex = studentList.indexOf(currentSelectedStudent);
@@ -231,7 +238,7 @@ function UpdateResults() {
   const handlePrevStudentBtn = () => {
     if (currentSelectedStudent) {
       const currentIndex = studentList.indexOf(currentSelectedStudent);
-      if (currentIndex == 0) {
+      if (currentIndex === 0) {
         setPrevBtnDisabled(true);
         setNextBtnDisabled(false);
         return;
@@ -241,13 +248,11 @@ function UpdateResults() {
     }
   };
 
-  const handleAddPaperBtn = () => {
-    console.log(selectedPapers);
 
-    selectedPapers.map((selectedPaper) => {
-      const paper = paperList
-        .filter((paper) => paper.paperId === selectedPaper)
-        .at(0);
+  const handleAddPaperBtn = () => {
+    selectedPapers.forEach((selectedPaper) => { 
+      const paper = paperList.find((paper) => paper.paperId === selectedPaper); 
+      
       if (paper) {
         const paperWithMarks: paperMarksType = {
           paperId: paper.paperId,
@@ -257,55 +262,46 @@ function UpdateResults() {
           paperMarkPassing: 33,
           paperMarkPractical: 20,
         };
-
-        const isPaperAlreadyExising = studentSelectedMarkList.filter(
+  
+        const isPaperAlreadyExisting = studentSelectedMarkList.some(
           (item) => item.paperId === paperWithMarks.paperId
-        );
-        if (isPaperAlreadyExising.length > 0) {
-          return;
-        } else {
+        ); 
+  
+        if (!isPaperAlreadyExisting) {
           setStudentSelectedMarkList((prev) => [...prev, paperWithMarks]);
         }
       }
-    })
+    });
   };
+
+
 
   const handlePaperDeleteBtn = (paper: paperMarksType) => {
     setStudentSelectedMarkList(
-      studentSelectedMarkList.filter((item) => item.paperId != paper.paperId)
+      studentSelectedMarkList.filter((item) => item.paperId !== paper.paperId)
     );
   };
 
-  const handleMarkUpdate = (
-    val: string,
-    paper: paperMarksType,
-    type: string
-  ) => {
-    if (type === "THEORY") {
-      setStudentSelectedMarkList((prev) =>
-        prev.map((item) =>
-          item.paperId === paper.paperId
-            ? { ...item, paperMarkTheory: Number(val) }
-            : item
-        )
-      );
-    } else if (type === "PRAC") {
-      setStudentSelectedMarkList((prev) =>
-        prev.map((item) =>
-          item.paperId === paper.paperId
-            ? { ...item, paperMarkPractical: Number(val) }
-            : item
-        )
-      );
-    } else {
-      setStudentSelectedMarkList((prev) =>
-        prev.map((item) =>
-          item.paperId === paper.paperId
-            ? { ...item, paperMarkObtained: Number(val) }
-            : item
-        )
-      );
-    }
+  const handleMarkUpdate = (val: string, paper: paperMarksType, type: string) => {
+    setStudentSelectedMarkList((prev) =>
+      prev.map((item) =>
+        item.paperId === paper.paperId
+          ? {
+            ...item,
+            ...(type === "THEORY" &&
+              (item.paperId === "DRAWING"
+                ? { paperMarkTheory: val } // Assign grade for DRAWING
+                : { paperMarkTheory: Number(val) })), // Assign number for other subjects
+            ...(type === "PRAC" && { paperMarkPractical: Number(val) }), // Keep practical as number
+            ...(item.paperId !== "DRAWING" && {
+              paperMarkObtained:
+                (type === "THEORY" ? Number(val) : Number(item.paperMarkTheory || 0)) +
+                (type === "PRAC" ? Number(val) : Number(item.paperMarkPractical || 0)),
+            }),
+          }
+          : item
+      )
+    );
   };
 
   const handleSaveResultBtn = async () => {
@@ -414,293 +410,294 @@ function UpdateResults() {
 
   return (
     <PageContainer>
-      <Navbar />
-      <LSPage>
-        <BreadCrumbsV2
-          Icon={IconBrandTinder}
-          Path="School Results/Update Results"
-        />
-        <Paper sx={{ p: "10px", mt: "8px" }}>
-          <Stack
-            direction="row"
-            alignItems="center"
-            justifyContent="space-between"
-          >
-            <Box>
-              <Typography level="title-md">Search Student</Typography>
-            </Box>
-            <Stack direction="row" alignItems="center" gap={1.5}>
-              <Input
-                placeholder="Search by student id.."
-                value={studentIdInput!}
-                onChange={(e) => setStudentIdInput(e.target.value)}
-              ></Input>
-              <Typography>Or</Typography>
-              <Select
-                placeholder="choose class"
-                onChange={(e, val) => setSelectedClass(val)}
-              >
-                {SCHOOL_CLASSES.map((item) => {
-                  return <Option value={item.value}>{item.title}</Option>;
+    <Navbar />
+    <LSPage>
+      <BreadCrumbsV2
+        Icon={IconBrandTinder}
+        Path="School Results/Update Results"
+      />
+      <Paper sx={{ p: "10px", mt: "8px" }}>
+        <Stack
+          direction="row"
+          alignItems="center"
+          justifyContent="space-between"
+        >
+          <Box>
+            <Typography level="title-md">Search Student</Typography>
+          </Box>
+          <Stack direction="row" alignItems="center" gap={1.5}>
+            <Input
+              placeholder="Search by student id.."
+              value={studentIdInput!}
+              onChange={(e) => setStudentIdInput(e.target.value)}
+            ></Input>
+            <Typography>Or</Typography>
+            <Select
+              placeholder="choose class"
+              onChange={(e, val) => setSelectedClass(val)}
+            >
+              {SCHOOL_CLASSES.map((item) => {
+                return <Option value={item.value}>{item.title}</Option>;
+              })}
+            </Select>
+            <Select
+              placeholder="choose roll"
+              onChange={(e, val) => setSelectedRoll(val)}
+            >
+              {rollNoList &&
+                rollNoList.map((item, key) => {
+                  return <Option value={item}>{item}</Option>;
                 })}
-              </Select>
-              <Select
-                placeholder="choose roll"
-                onChange={(e, val) => setSelectedRoll(val)}
-              >
-                {rollNoList &&
-                  rollNoList.map((item, key) => {
-                    return <Option value={item}>{item}</Option>;
-                  })}
-              </Select>
-              <Button
-                sx={{ ml: "8px" }}
-                startDecorator={<Search />}
-                onClick={handleStudentSearch}
-              ></Button>
-              <Button
-                variant="soft"
-                sx={{ ml: "8px" }}
-                onClick={handleInputResetBtn}
-              >
-                Reset
-              </Button>
-            </Stack>
+            </Select>
+            <Button
+              sx={{ ml: "8px" }}
+              startDecorator={<Search />}
+              onClick={handleStudentSearch}
+            ></Button>
+            <Button
+              variant="soft"
+              sx={{ ml: "8px" }}
+              onClick={handleInputResetBtn}
+            >
+              Reset
+            </Button>
           </Stack>
-          {currentSelectedStudent ? (
+        </Stack>
+        {currentSelectedStudent ? (
+          <Box>
+            <Divider sx={{ mt: "12px", mb: "8px" }} />
             <Box>
-              <Divider sx={{ mt: "12px", mb: "8px" }} />
-              <Box>
-                <Stack
-                  direction="row"
-                  justifyContent="space-between"
-                  alignItems="center"
+              <Stack
+                direction="row"
+                justifyContent="space-between"
+                alignItems="center"
+              >
+                <Button
+                  startDecorator={<NavigateBeforeIcon />}
+                  variant="plain"
+                  onClick={handlePrevStudentBtn}
+                  disabled={prevBtnDisabled}
                 >
-                  <Button
-                    startDecorator={<NavigateBeforeIcon />}
-                    variant="plain"
-                    onClick={handlePrevStudentBtn}
-                    disabled={prevBtnDisabled}
+                  Back
+                </Button>
+                <Box>
+                  <Chip size="lg" color="primary">
+                    {currentSelectedStudent
+                      ? `Name- ${currentSelectedStudent.student_name}, Id- ${currentSelectedStudent.admission_no}, Roll No- ${currentSelectedStudent.class_roll}`
+                      : "No Student Found"}
+                  </Chip>
+                </Box>
+                <Button
+                  endDecorator={<NavigateNextIcon />}
+                  variant="plain"
+                  onClick={handleNextStudentBtn}
+                  disabled={nextBtnDisabled}
+                >
+                  Next
+                </Button>
+              </Stack>
+            </Box>
+            <Divider sx={{ mt: "12px", mb: "8px" }} />
+            <Box padding="10px">
+              <Grid container spacing={2} sx={{ flexGrow: 1 }}>
+                {fetchingStudentPublishedResult ? (
+                  <Grid
+                    xs={12}
+                    alignItems={"center"}
+                    justifyContent={"center"}
+                    sx={{ display: "flex", flexDirection: "column" }}
                   >
-                    Back
-                  </Button>
-                  <Box>
-                    <Chip size="lg" color="primary">
-                      {currentSelectedStudent
-                        ? `Name- ${currentSelectedStudent.student_name}, Id- ${currentSelectedStudent.admission_no}, Roll No- ${currentSelectedStudent.class_roll}`
-                        : "No Student Found"}
-                    </Chip>
-                  </Box>
-                  <Button
-                    endDecorator={<NavigateNextIcon />}
-                    variant="plain"
-                    onClick={handleNextStudentBtn}
-                    disabled={nextBtnDisabled}
-                  >
-                    Next
-                  </Button>
-                </Stack>
-              </Box>
-              <Divider sx={{ mt: "12px", mb: "8px" }} />
-              <Box padding="10px">
-                <Grid container spacing={2} sx={{ flexGrow: 1 }}>
-                  {fetchingStudentPublishedResult ? (
-                    <Grid
-                      xs={12}
-                      alignItems={"center"}
-                      justifyContent={"center"}
-                      sx={{ display: "flex", flexDirection: "column" }}
-                    >
-                      <CircularProgress />
-                      <Typography>Fetching...</Typography>
-                    </Grid>
-                  ) : null}
-                  {studentPublishedResults &&
-                    studentPublishedResults.map((result) => {
-                      return (
-                        <Grid>
-                          <Sheet
-                            variant="soft"
-                            color="success"
-                            sx={{
-                              borderRadius: "8px",
-                              border: "1px solid var(--bs-gray)",
-                            }}
+                    <CircularProgress />
+                    <Typography>Fetching...</Typography>
+                  </Grid>
+                ) : null}
+                {studentPublishedResults &&
+                  studentPublishedResults.map((result) => {
+                    return (
+                      <Grid>
+                        <Sheet
+                          variant="soft"
+                          color="success"
+                          sx={{
+                            borderRadius: "8px",
+                            border: "1px solid var(--bs-gray)",
+                          }}
+                        >
+                          <Stack
+                            direction="row"
+                            height="90px"
+                            alignItems="center"
+                            sx={{ m: "10px" }}
+                            justifyContent="space-between"
                           >
                             <Stack
-                              direction="row"
-                              height="90px"
-                              alignItems="center"
-                              sx={{ m: "10px" }}
-                              justifyContent="space-between"
+                              direction={"column"}
+                              flex={1}
+                              height="100%"
                             >
-                              <Stack
-                                direction={"column"}
+                              <Box
                                 flex={1}
-                                height="100%"
+                                display="flex"
+                                alignItems="center"
                               >
-                                <Box
-                                  flex={1}
-                                  display="flex"
-                                  alignItems="center"
+                                <Typography
+                                  level="title-lg"
+                                  sx={{ ml: "1.2rem", mr: "1.2rem" }}
                                 >
-                                  <Typography
-                                    level="title-lg"
-                                    sx={{ ml: "1.2rem", mr: "1.2rem" }}
-                                  >
-                                    {result.examTitle}
-                                  </Typography>
-                                </Box>
-                                <Divider />
-                                <Typography level="body-sm" textAlign="center">
-                                  Published:
-                                  {result.publishedOn
-                                    .toDate()
-                                    .toLocaleDateString()}
+                                  {result.examTitle}
                                 </Typography>
-                              </Stack>
-
-                              <Divider
-                                orientation="vertical"
-                                sx={{ ml: "8px", mr: "8px" }}
-                              />
-                              <Stack direction={"column"}>
-                                <Button
-                                  variant="plain"
-                                  color="primary"
-                                  size="sm"
-                                  onClick={() =>
-                                    handleEditPublishedResult(result)
-                                  }
-                                  startDecorator={<EditIcon />}
-                                ></Button>
-                                <Button
-                                  variant="plain"
-                                  color="danger"
-                                  size="sm"
-                                  onClick={() =>
-                                    handleResultDeleteBtn(result.docId!)
-                                  }
-                                  startDecorator={<Delete />}
-                                ></Button>
-                                <Button
-                                  variant="plain"
-                                  color="success"
-                                  size="sm"
-                                  onClick={() => printStudentMarksheet(result)}
-                                  startDecorator={<Print />}
-                                ></Button>
-                              </Stack>
+                              </Box>
+                              <Divider />
+                              <Typography level="body-sm" textAlign="center">
+                                Published:
+                                {result.publishedOn
+                                  .toDate()
+                                  .toLocaleDateString()}
+                              </Typography>
                             </Stack>
-                          </Sheet>
-                        </Grid>
-                      );
-                    })}
 
-                  <Grid>
-                    <Button
-                      variant="outlined"
-                      color="neutral"
-                      onClick={() => setUpdateResultDialogOpen(true)}
-                      sx={{ height: "110px", width: "90px" }}
-                      startDecorator={<AddIcon />}
-                    ></Button>
-                  </Grid>
+                            <Divider
+                              orientation="vertical"
+                              sx={{ ml: "8px", mr: "8px" }}
+                            />
+                            <Stack direction={"column"}>
+                              <Button
+                                variant="plain"
+                                color="primary"
+                                size="sm"
+                                onClick={() =>
+                                  handleEditPublishedResult(result)
+                                }
+                                startDecorator={<EditIcon />}
+                              ></Button>
+                              <Button
+                                variant="plain"
+                                color="danger"
+                                size="sm"
+                                onClick={() =>
+                                  handleResultDeleteBtn(result.docId!)
+                                }
+                                startDecorator={<Delete />}
+                              ></Button>
+                              <Button
+                                variant="plain"
+                                color="success"
+                                size="sm"
+                                onClick={() => printStudentMarksheet(result)}
+                                startDecorator={<Print />}
+                              ></Button>
+                            </Stack>
+                          </Stack>
+                        </Sheet>
+                      </Grid>
+                    );
+                  })}
+
+                <Grid>
+                  <Button
+                    variant="outlined"
+                    color="neutral"
+                    onClick={() => setUpdateResultDialogOpen(true)}
+                    sx={{ height: "110px", width: "90px" }}
+                    startDecorator={<AddIcon />}
+                  ></Button>
                 </Grid>
-              </Box>
+              </Grid>
             </Box>
-          ) : null}
-        </Paper>
-        <Modal
-          open={updateResultDialogOpen}
-          onClose={() => setUpdateResultDialogOpen(false)}
+          </Box>
+        ) : null}
+      </Paper>
+      <Modal
+        open={updateResultDialogOpen}
+        onClose={() => setUpdateResultDialogOpen(false)}
+      >
+        <ModalDialog
+          variant="outlined"
+          role="alertdialog"
+          sx={{ minWidth: "580px", minHeight: "90%" }}
         >
-          <ModalDialog
-            variant="outlined"
-            role="alertdialog"
-            sx={{ minWidth: "580px", minHeight: "90%" }}
-          >
-            <DialogTitle>
-              <UpdateIcon />
-              Update Exam Result
-            </DialogTitle>
-            <Divider />
-            <DialogContent sx={{ display: "flex" }}>
-              <Sheet variant="outlined">
-                <Stack direction="row" p="10px" alignItems="center" gap={2}>
-                  <Typography>Select Examination</Typography>
+          <DialogTitle>
+            <UpdateIcon />
+            Update Exam Result
+          </DialogTitle>
+          <Divider />
+          <DialogContent sx={{ display: "flex" }}>
+            <Sheet variant="outlined">
+              <Stack direction="row" p="10px" alignItems="center" gap={2}>
+                <Typography>Select Examination</Typography>
+                <Select
+                  placeholder="select exam..."
+                  sx={{ flex: 1 }}
+                  value={selectedExam}
+                  onChange={(e, val) => setSelectedExam(val)}
+                >
+                  {examsList.map((item) => {
+                    return (
+                      <Option key={item.examId} value={item.examId}>
+                        {item.examTitle}
+                      </Option>
+                    );
+                  })}
+                </Select>
+              </Stack>
+            </Sheet>
+            <Sheet variant="outlined">
+              <Stack
+                direction="row"
+                p="10px"
+                justifyContent="space-between"
+                alignItems="center"
+              >
+                <Typography>Add Paper</Typography>
+                <Stack direction={"row"} gap={2}>
                   <Select
-                    placeholder="select exam..."
-                    sx={{ flex: 1 }}
-                    value={selectedExam}
-                    onChange={(e, val) => setSelectedExam(val)}
+                    multiple
+                    placeholder="select paper..."
+                    onChange={(e, val) => {
+                      setSelectedPapers(val as string[])
+                    }}
+                    renderValue={(selected) => (
+                      <Box sx={{ display: 'flex', gap: '0.25rem' }}>
+                        {selected.map((selectedOption) => (
+                          <Chip variant="soft" color="primary">
+                            {selectedOption.label}
+                          </Chip>
+                        ))}
+                      </Box>
+                    )}
                   >
-                    {examsList.map((item) => {
+                    {paperList.map((item) => {
                       return (
-                        <Option key={item.examId} value={item.examId}>
-                          {item.examTitle}
+                        <Option key={item.paperId} value={item.paperId}>
+                          {item.paperTitle}
                         </Option>
                       );
                     })}
                   </Select>
+                  <Button
+                    startDecorator={<ArrowDownwardIcon />}
+                    size="sm"
+                    onClick={handleAddPaperBtn}
+                  ></Button>
                 </Stack>
-              </Sheet>
-              <Sheet variant="outlined">
-                <Stack
-                  direction="row"
-                  p="10px"
-                  justifyContent="space-between"
-                  alignItems="center"
-                >
-                  <Typography>Add Paper</Typography>
-                  <Stack direction={"row"} gap={2}>
-                    <Select
-                      multiple
-                      placeholder="select paper..."
-                      onChange={(e, val) => {
-                        setSelectedPapers(val as string[])
-                      }}
-                      renderValue={(selected) => (
-                        <Box sx={{ display: 'flex', gap: '0.25rem' }}>
-                          {selected.map((selectedOption) => (
-                            <Chip variant="soft" color="primary">
-                              {selectedOption.label}
-                            </Chip>
-                          ))}
-                        </Box>
-                      )}
-                    >
-                      {paperList.map((item) => {
-                        return (
-                          <Option key={item.paperId} value={item.paperId}>
-                            {item.paperTitle}
-                          </Option>
-                        );
-                      })}
-                    </Select>
-                    <Button
-                      startDecorator={<ArrowDownwardIcon />}
-                      size="sm"
-                      onClick={handleAddPaperBtn}
-                    ></Button>
-                  </Stack>
-                </Stack>
-              </Sheet>
-              <Divider sx={{ mt: "8px", mb: "8px" }} />
-              <Typography level="title-sm">
-                Please fill marks for respective papers.
-              </Typography>
+              </Stack>
+            </Sheet>
+            <Divider sx={{ mt: "8px", mb: "8px" }} />
+            <Typography level="title-sm">
+              Please fill marks for respective papers.
+            </Typography>
 
-              <Typography textAlign="center">Total Theory | Total Practical | Marks Obtained</Typography>
-              <Sheet
-                sx={{ mt: "6px", flex: 1, p: "10px" }}
-                variant="soft"
-                color="neutral"
-              >
-                {studentSelectedMarkList.length == 0 ? (
-                  <Typography>No Paper Selected</Typography>
-                ) : null}
-                {studentSelectedMarkList.map((paper, index) => {
+            <Typography textAlign="center">Theory Marks + Practical Marks = Total Marks</Typography>
+            <Sheet
+              sx={{ mt: "6px", flex: 1, p: "10px" }}
+              variant="soft"
+              color="neutral"
+            >
+              {studentSelectedMarkList.length === 0 ? (
+                <Typography>No Paper Selected</Typography>
+              ) : null}
+              {studentSelectedMarkList.map((paper, index) => {
+                if (paper.paperId === "DRAWING") {
                   return (
                     <Stack
                       key={paper.paperId}
@@ -712,7 +709,43 @@ function UpdateResults() {
                       <Typography level="title-md" sx={{ mr: "8px" }}>
                         {index + 1}. {paper.paperTitle}
                       </Typography>
-                      <Stack direction={"row"} gap={2}>
+                      <Stack direction={"row"} gap={2} justifyContent={"center"} alignItems={"center"}>
+                        <Typography>Grade:</Typography>
+                        <Select
+                          sx={{ width: "150px" }}
+                          onChange={(e, val) => handleMarkUpdate(val as string, paper, "THEORY")}
+                          value={paper.paperMarkTheory as string}
+                        >
+                          {grades.map((grade) => (
+                            <Option key={grade} value={grade}>
+                              {grade}
+                            </Option>
+                          ))}
+                        </Select>
+                        <Button
+                          size="sm"
+                          variant="plain"
+                          color="danger"
+                          onClick={() => handlePaperDeleteBtn(paper)}
+                          startDecorator={<Delete />}
+                        ></Button>
+                      </Stack>
+                    </Stack>
+                  );
+                } else {
+
+                  return (
+                    <Stack
+                      key={paper.paperId}
+                      direction="row"
+                      alignItems="center"
+                      mb={"1rem"}
+                      justifyContent="space-between"
+                    >
+                      <Typography level="title-md" sx={{ mr: "8px" }}>
+                        {index + 1}. {paper.paperTitle}
+                      </Typography>
+                      <Stack direction={"row"} gap={2} justifyContent={"center"} alignItems={"center"}>
                         <Input
                           type="text"
                           sx={{ width: "90px" }}
@@ -721,6 +754,7 @@ function UpdateResults() {
                           }
                           value={paper.paperMarkTheory || 0}
                         />
+                        +
                         <Input
                           type="text"
                           sx={{ width: "90px" }}
@@ -729,13 +763,11 @@ function UpdateResults() {
                           }
                           value={paper.paperMarkPractical || 0}
                         />
-                        <Divider orientation="vertical" />
+                        =
                         <Input
                           type="text"
                           sx={{ width: "90px" }}
-                          onChange={(e) =>
-                            handleMarkUpdate(e.target.value, paper, "OBTAINED")
-                          }
+                          disabled
                           value={paper.paperMarkObtained || 0}
                         />
                         <Button
@@ -748,61 +780,62 @@ function UpdateResults() {
                       </Stack>
                     </Stack>
                   );
-                })}
-              </Sheet>
-            </DialogContent>
-            <DialogActions>
-              <Button
-                variant="solid"
-                color="success"
-                onClick={handleSaveResultBtn}
-              >
-                {isUpdatingResult ? "Update Result" : "Save Result"}
-              </Button>
+                }
+              })}
+            </Sheet>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              variant="solid"
+              color="success"
+              onClick={handleSaveResultBtn}
+            >
+              {isUpdatingResult ? "Update Result" : "Save Result"}
+            </Button>
 
-              <Button
-                variant="plain"
-                color="neutral"
-                onClick={() => setUpdateResultDialogOpen(false)}
-              >
-                Cancel
-              </Button>
-            </DialogActions>
-          </ModalDialog>
-        </Modal>
-        <Modal
-          open={isDeleteConfimDialogOpen}
-          onClose={() => setIsDeleteConfirmDialogOpen(false)}
-        >
-          <ModalDialog variant="outlined" role="alertdialog">
-            <DialogTitle>
-              <WarningRoundedIcon />
-              Confirmation
-            </DialogTitle>
-            <Divider />
-            <DialogContent>
-              Are you sure you want to delete exam result?
-            </DialogContent>
-            <DialogActions>
-              <Button
-                variant="solid"
-                color="danger"
-                onClick={handleDeletePaperAfterConfirmation}
-              >
-                Delete Result
-              </Button>
-              <Button
-                variant="plain"
-                color="neutral"
-                onClick={() => setIsDeleteConfirmDialogOpen(false)}
-              >
-                Cancel
-              </Button>
-            </DialogActions>
-          </ModalDialog>
-        </Modal>
-      </LSPage>
-    </PageContainer>
+            <Button
+              variant="plain"
+              color="neutral"
+              onClick={() => setUpdateResultDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+          </DialogActions>
+        </ModalDialog>
+      </Modal>
+      <Modal
+        open={isDeleteConfimDialogOpen}
+        onClose={() => setIsDeleteConfirmDialogOpen(false)}
+      >
+        <ModalDialog variant="outlined" role="alertdialog">
+          <DialogTitle>
+            <WarningRoundedIcon />
+            Confirmation
+          </DialogTitle>
+          <Divider />
+          <DialogContent>
+            Are you sure you want to delete exam result?
+          </DialogContent>
+          <DialogActions>
+            <Button
+              variant="solid"
+              color="danger"
+              onClick={handleDeletePaperAfterConfirmation}
+            >
+              Delete Result
+            </Button>
+            <Button
+              variant="plain"
+              color="neutral"
+              onClick={() => setIsDeleteConfirmDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+          </DialogActions>
+        </ModalDialog>
+      </Modal>
+    </LSPage>
+  </PageContainer>
   );
 }
 

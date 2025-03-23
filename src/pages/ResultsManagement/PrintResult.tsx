@@ -92,6 +92,7 @@ function PrintResult() {
     };
 
     fetchExamConfig();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const printMarkSheet = async (marksheetList: any) => {
     const pdfUrl = await MarksheetReportGenerator(marksheetList);

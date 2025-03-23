@@ -61,7 +61,7 @@ const PhotoGalleryContent = () => {
     };
 
     getPhotoGalleryData();
-  }, []);
+  }, [db]);
 
   const handleRowClick = (index: number) => {
     setEditEventData(formData[index]);

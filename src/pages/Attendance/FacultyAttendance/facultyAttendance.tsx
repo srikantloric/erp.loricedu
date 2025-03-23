@@ -249,7 +249,7 @@ function FacultyAttendance() {
               </div>
             </Box>
 
-            {messageText != "" ? (
+            {messageText !== "" ? (
               <>
                 <br />
                 <Chip color="warning" variant="soft">

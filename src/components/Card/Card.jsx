@@ -1,4 +1,4 @@
-import  {useState } from "react";
+import { useState } from "react";
 import Styles from "./Cards.module.scss";
 import { Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";
@@ -27,17 +27,19 @@ function Card({ facultyData }) {
             }}
           >
             <img
-              className={`${Styles.facultyImage} ${
-                imageLoaded && Styles.loaded
-              }`}
+              className={`${Styles.facultyImage} ${imageLoaded && Styles.loaded
+                }`}
               src={facultyData.faculty_image}
               loading="lazy"
               onLoad={handleImageOnLoad}
+              alt="facultyImage"
             ></img>
           </div>
 
           {facultyData.is_from_management && imageLoaded ? (
-            <img className={Styles.badge}></img>
+            <img className={Styles.badge}
+              alt="badge"
+            ></img>
           ) : null}
         </div>
         <div className={Styles.cardBody}>

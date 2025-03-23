@@ -72,7 +72,7 @@ function AddReligions() {
             }
         };
         fetchReligions();
-    }, []);
+    }, [db]);
 
     return (
         <>

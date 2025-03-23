@@ -1,4 +1,4 @@
-import { Grid } from "@mui/joy";
+import { Button, Grid } from "@mui/joy";
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
 // import RoundIconCard from "components/Card/RoundIconCard";
 import DailyAttendance from "components/AttendanceReport/DailyAttendanceReport";
@@ -63,7 +63,20 @@ function AttendanceIndex() {
                                         <TableCell>{row.column1}</TableCell>
                                         <TableCell>{row.column2}</TableCell>
                                         <TableCell>
-                                            <a onClick={row.clickHandler} style={{textDecoration:"underline",color:"var(--bs-primary)",cursor:"pointer"}}>Open Report</a>
+                                            <Button
+                                                onClick={row.clickHandler}
+                                                style={{
+                                                    background: "none",
+                                                    border: "none",
+                                                    textDecoration: "underline",
+                                                    color: "var(--bs-primary)",
+                                                    cursor: "pointer",
+                                                    padding: 0,
+                                                    fontSize: "inherit"
+                                                }}
+                                            >
+                                                Open Report
+                                            </Button>
                                         </TableCell>
                                     </TableRow>
                                 ))}

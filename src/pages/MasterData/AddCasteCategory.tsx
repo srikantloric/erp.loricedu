@@ -77,6 +77,7 @@ function AddCasteCategory() {
             }
         };
         fetchClasses();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return (

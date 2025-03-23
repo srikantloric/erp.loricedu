@@ -22,7 +22,7 @@ function BreadCrumbsV2({Icon,Path}:BreadcrumProps) {
           >
             <Breadcrumbs aria-label="breadcrumb">
               {breadCrumbPath.map((item,key)=>{
-                if(key==0){
+                if(key===0){
                   return(
                     <Link to="/" key={key} style={{
                       textDecoration: "none",
@@ -37,7 +37,7 @@ function BreadCrumbsV2({Icon,Path}:BreadcrumProps) {
                     </Typography>
                     </Link>
                   )
-                }else if(key == breadCrumbPath.length-1){
+                }else if(key === breadCrumbPath.length-1){
                   return(
                   <Typography
                   key={key}

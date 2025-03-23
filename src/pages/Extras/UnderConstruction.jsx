@@ -14,6 +14,7 @@ function UnderConstruction() {
           <img
             src={UnderConstructionImage}
             style={{ marginTop: "50px", width: "30%",padding:"40px" }}
+            alt="Under Construction"
           ></img>
           <Typography>You are not authorised to use this access. Please contact your administrator.</Typography>
         </center>

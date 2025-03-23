@@ -2,7 +2,7 @@ import MaterialTable from "@material-table/core";
 import { Add, Edit } from "@mui/icons-material";
 import { Button, Sheet } from "@mui/joy";
 import AddVehicleModal from "components/Modals/transport/AddVehicleModal";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import EditVehicleDetail from "components/Modals/transport/EditVehicleDetail";
 import { TransportVehicleType } from "types/transport";
 import { doc, getDoc } from "firebase/firestore";
@@ -14,8 +14,8 @@ function Tab1() {
   const [transportVehicles, setTransportVehicles] = useState<TransportVehicleType[]>([]);
   const [selectedVechile, setSelectedVehicle] = useState<TransportVehicleType | null>(null)
 
-   //Get Firebase DB instance
-   const {db} = useFirebase();
+  //Get Firebase DB instance
+  const { db } = useFirebase();
 
   const handleAddVehicleModalClose = () => {
     setIsAddVehicleModalOpen(false);
@@ -32,12 +32,12 @@ function Tab1() {
     { title: "Available Seat", field: "monthlyCharge" },
   ];
 
-  const fetchVehicleData = async () => {
+  const fetchVehicleData = useCallback(async () => {
     try {
       setTransportVehicles([]);
       const transportRef = doc(db, "TRANSPORT", "transportLocations");
       const transportSnap = await getDoc(transportRef);
-  
+
       if (transportSnap.exists()) {
         const data = transportSnap.data();
         setTransportVehicles(data?.vehicles || []);
@@ -48,10 +48,12 @@ function Tab1() {
     } catch (error) {
       console.error("Error fetching vehicle data:", error);
     }
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   useEffect(() => {
     fetchVehicleData();
-  }, []);
+  }, [fetchVehicleData]);
 
   return (
     <>

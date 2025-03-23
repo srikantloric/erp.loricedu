@@ -105,6 +105,7 @@ const InstantPaymentModal: React.FC<Props> = ({
       };
       setFeeDetails(feeInitialData);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

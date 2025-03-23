@@ -26,7 +26,7 @@ function BreadCrumbsV3({Icon,Path,ActionBtn}:BreadcrumProps) {
 
               {breadCrumbPath.map((item,key)=>{
 
-                if(key==0){
+                if(key===0){
                   return(
                    <Link to="/" style={{
                       textDecoration: "none",
@@ -40,7 +40,7 @@ function BreadCrumbsV3({Icon,Path,ActionBtn}:BreadcrumProps) {
                     </Typography>
                     </Link>
                   )
-                }else if(key == breadCrumbPath.length-1){
+                }else if(key === breadCrumbPath.length-1){
                   return(
                   <Typography
                   sx={{ display: "flex", alignItems: "center" }}

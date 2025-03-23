@@ -1,16 +1,10 @@
 import Dashboard from "../../pages/Dashboard/Dashboard";
 import Faculties from "../../pages/FacutyManagment/Faculties";
-import Attendance from "../../pages/Attendance/ViewAttendance";
 import {
   IconCoinRupee,
   IconDashboard,
-  IconFingerprint,
   IconFriends,
-  IconMail,
-  IconNotes,
-  IconReceipt2,
   IconUsers,
-  IconMoneybag,
   IconSettings,
   IconReportAnalytics,
   IconReport,
@@ -22,20 +16,15 @@ import UnderConstruction from "../../pages/Extras/UnderConstruction";
 import FeeManager from "../../pages/FeeManager/FeeManager";
 import FeaturesConfig from "../../FeaturesConfig";
 import ViewStudents from "../../pages/Users/ViewStudents";
-import FeeReceipt from "pages/FeeManager/FeeReceipt";
-import Transaction from "pages/Transaction/Transaction";
-import GenerateMonthlyChallan from "pages/FeeManager/GenerateChallan/GenerateMontlyChallan";
-import ViewStudentProfile from "pages/Users/StudentProfile/ViewStudentProfile";
 import SettingsPage from "pages/Settings/SettingsPage";
 import UpdateResults from "pages/ResultsManagement/UpdateResults";
 import PrintResult from "pages/ResultsManagement/PrintResult";
-import FeeReports from "pages/Reports/Reports";
 import MasterData from "pages/MasterData/MasterData";
 import Reports from "pages/Reports/Reports";
-import Transport from "pages/transport/Transport";
 import WebsiteConfig from "pages/WebsiteConfig/WebsiteConfigPage";
 import AddStudentNew from "pages/Users/AddStudentNew";
 import ExamPlanner from "pages/ResultsManagement/ExamPlanner";
+import Transport from "pages/transport/Transport";
 
 export const routesConfig = [
   {

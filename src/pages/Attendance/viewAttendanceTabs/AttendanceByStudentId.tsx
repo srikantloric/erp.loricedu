@@ -178,6 +178,7 @@ function AttendanceByStudentId() {
                       width={100}
                       height="100%"
                       style={{ objectFit: "cover" }}
+                      alt="student"
                     ></img>
                   </div>
                   <div

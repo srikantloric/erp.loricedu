@@ -116,7 +116,7 @@ const AdmissionEnquiry = () => {
     });
   
     return () => unsubscribe();
-  }, []);
+  }, [db]);
 
 
   const processAdmision = (items: EnquiryFormFields) => {

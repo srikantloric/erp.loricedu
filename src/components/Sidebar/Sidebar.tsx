@@ -47,9 +47,9 @@ function Sidebar() {
               return <p key={index}>{menus.title}</p>;
             } else {
               return (
-                <>
-                  <SIdebarMenuItem key={index} menus={menus} />
-                </>
+
+                <SIdebarMenuItem key={index} menus={menus} />
+
               );
             }
           })}

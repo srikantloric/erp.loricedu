@@ -17,13 +17,13 @@ import { useNavigate } from "react-router-dom";
 import {
   Autocomplete,
   AutocompleteOption,
+  LinearProgress,
   ListItemContent,
   ListItemDecorator,
 } from "@mui/joy";
 import { useDispatch, useSelector } from "react-redux";
 import { enqueueSnackbar } from "notistack";
 import BreadCrumbsV2 from "components/Breadcrumbs/BreadCrumbsV2";
-import { StudentDetailsType } from "types/student";
 import { fetchstudent } from "store/reducers/studentSlice";
 
 function CustomTabPanel(props) {
@@ -111,7 +111,7 @@ function FeeManager() {
   }, [data, dispatch]);
 
   const filterOptions = createFilterOptions({
-    stringify: (option) => option.name + option.sId + option.admission+option.fatherName,
+    stringify: (option) => option.name + option.sId + option.admission + option.fatherName,
   });
 
   const handleNextPageBtn = (e) => {
@@ -129,9 +129,9 @@ function FeeManager() {
   };
 
   useEffect(() => {
-   console.log("error")
-   console.log(searchBoxRef)
-      searchBoxRef.current.focus();
+    console.log("error")
+    console.log(searchBoxRef)
+    searchBoxRef.current.focus();
   }, []);
 
   return (
@@ -164,6 +164,9 @@ function FeeManager() {
               />
             </Tabs>
           </Box>
+          {loading &&
+            <LinearProgress />
+          }
           <CustomTabPanel value={value} index={0}>
             <div
               style={{
@@ -173,7 +176,7 @@ function FeeManager() {
                 height: "30vh",
               }}
             >
-              <Box component="form" onSubmit={handleNextPageBtn} sx={{display:"flex",alignItems:"center",justifyContent:"center"}}>
+              <Box component="form" onSubmit={handleNextPageBtn} sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <Autocomplete
                   ref={searchBoxRef}
                   id="country-select-demo"
@@ -181,7 +184,7 @@ function FeeManager() {
                   onChange={(e, val) => {
                     setSelectedDoc(val && val.id);
                   }}
-                  
+
                   placeholder="Search with Student ID/Admission No"
                   sx={{ width: "450px", m: "10px" }}
                   options={searchList}

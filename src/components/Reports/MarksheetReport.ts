@@ -12,7 +12,6 @@ import {  getClassNameByValue, GetGradeFromMark, getOrdinal } from "utilities/Ut
 import { getFirestoreInstance } from "context/firebaseUtility";
 import { doc, getDoc } from "firebase/firestore";
 import { getAppConfig } from "hooks/getAppConfig";
-import imageToBase64 from "image-to-base64"
 
 
 
@@ -57,11 +56,9 @@ export const MarksheetReportGenerator = async (
       schoolAddress: SCHOOL_ADDRESS,
       schoolContact: SCHOOL_CONTACT,
       schoolWebsite: SCHOOL_WEBSITE,
-      schoolLogoTransparent: schoolLogoTransparent,
+      schoolLogoBase64: SCHOOL_LOGO_BASE64,
     } = config;
 
-    const SCHOOL_LOGO_BASE64 = await imageToBase64(schoolLogoTransparent);
-    console.log("Converted base64 logo",SCHOOL_LOGO_BASE64);
     try {
       const doc = new jsPDF({
         orientation: "p",
@@ -157,7 +154,7 @@ export const MarksheetReportGenerator = async (
           return total + fullMark;
         }, 0);
 
-        data.result.map((item) => {
+        data.result.forEach((item) => {
           if (item.paperId === "DRAWING" || item.paperId === "ORAL") {
             //do nothing
           } else {

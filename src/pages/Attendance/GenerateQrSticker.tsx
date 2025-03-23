@@ -160,20 +160,20 @@ function GenerateQrSticker() {
 
   const handleGeneratePdf = async (props:string) => {
     
-    if (props=="individual" && individualStudentData) {
+    if (props==="individual" && individualStudentData) {
       console.log("qr for individual")
       setPreviewUrl(null)
       const tempArr: StudentDetailsType[] = [];
       tempArr.push(individualStudentData);
       const result = await generateQRCodes(tempArr);
       generatePDF(result!);
-    } else if (props=="bulk" && selectedStudentArray.length > 0) {
+    } else if (props==="bulk" && selectedStudentArray.length > 0) {
       console.log("qr for bulk")
       setPreviewUrl(null)
       const result = await generateQRCodes(selectedStudentArray);
       console.log(result);
       generatePDF(result!);
-    } else if (props == "byClass" && selectedStudentArrayForClass.length > 0) {
+    } else if (props === "byClass" && selectedStudentArrayForClass.length > 0) {
       setPreviewUrl(null)
       const result = await generateQRCodes(selectedStudentArrayForClass);
       console.log("qr for class")
@@ -224,12 +224,12 @@ function GenerateQrSticker() {
   const handleRemoveStudent = (student: StudentDetailsType) => {
     if (selectedStudentArray.length > 0) {
       const filteredData = selectedStudentArray.filter(
-        (item) => item.admission_no != student.admission_no
+        (item) => item.admission_no !== student.admission_no
       );
       setSelectedStudentArray(filteredData);
     } else {
       const filteredData = selectedStudentArrayForClass.filter(
-        (item) => item.admission_no != student.admission_no
+        (item) => item.admission_no !== student.admission_no
       );
       setSelectedStudentArrayForClass(filteredData);
     }
@@ -321,7 +321,7 @@ function GenerateQrSticker() {
                           individualStudentData &&
                           individualStudentData.profil_url
                         }
-                        alt="Student Image"
+                        alt="Student Profile"
                         width="100%"
                         height={150}
                         style={{

@@ -56,7 +56,6 @@ function ViewStudentProfile() {
           (students) => students.id === studentDocId
         );
         setStudentData(currentFilteredStudent!);
-        console.log(studentData);
       } else {
         try {
           const docRef = doc(db, "STUDENTS", studentDocId!);
@@ -75,7 +74,9 @@ function ViewStudentProfile() {
     };
 
     fetchStudentData();
-  }, [studentDocId, studentStateData]);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [studentDocId, studentStateData,db]);
 
   return (
     <PageContainer>

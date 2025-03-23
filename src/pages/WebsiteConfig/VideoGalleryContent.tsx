@@ -62,7 +62,7 @@ const VideoGalleryContent = () => {
     };
 
     getVideoGalleryData();
-  }, []);
+  }, [db]);
 
   const handleRowClick = (index: number) => {
     setEditEventData(formData[index]);

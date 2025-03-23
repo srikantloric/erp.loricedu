@@ -40,10 +40,12 @@ function RecieptConfigurations() {
     imageRef.current.onload = () => {
       drawCanvas();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     drawCanvas();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [accountantName, messageText]);
 
   const drawCanvas = () => {
@@ -84,6 +86,7 @@ function RecieptConfigurations() {
     };
   
     fetchReceiptConfig();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   
   const handleChangeAccountantName = async () => {
