@@ -195,6 +195,10 @@ function PrintResult() {
           const res = resDoc.data() as resultType;
           if (res.examId === selectedExam) {
 
+            if (!Array.isArray(res.result)) {
+              console.error("Error: res.result is not an array!", res.result);
+              return; // Prevent further processing if the data is invalid
+            }
             let marksObtained = res.result.reduce((total, item) => {
               const obtainedMarkCalculated =
                 item.paperId === "DRAWING"
@@ -238,8 +242,12 @@ function PrintResult() {
         lastUpdated: new Date(),
         studentRanks: markSheetTempList,
       };
-
-      await setDoc(doc(db, "RESULTS", selectedClass), rankData);
+      try {
+        const docRef = doc(db, "RESULTS", "" + selectedClass);
+        await setDoc(docRef, rankData);
+      } catch (err) {
+        console.error("Error updating student ranks:", err);
+      }
 
       setStudentRankDetails(markSheetTempListExtended);
       setIsGeneratingRank(false);
