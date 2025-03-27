@@ -25,6 +25,7 @@ import { StudentDetailsType } from "types/student";
 import { collection, doc, getDoc, getDocs, query, where } from "firebase/firestore";
 import { useFirebase } from "context/firebaseContext";
 import { ExamRankListGenerator } from "components/Reports/GenerateRankList";
+import { getClassNameByValue } from "utilities/UtilitiesFunctions";
 
 type examType = {
   examId: string;
@@ -94,10 +95,14 @@ function PrintRankList() {
 
 
   const printRankList = async (marksheetList: any) => {
+
+    const selectedClassA = getClassNameByValue(selectedClass) || "N/A";
+    const selectedExamA = examsList.find((item) => item.examId === selectedExam)?.examTitle || "N/A";
+
     const pdfUrl = await ExamRankListGenerator(marksheetList,
-      "Mid-Term Exam",
-      "2023-2024",
-      "Class 10",
+      selectedExamA,
+      "2024-2025",
+      selectedClassA,
       fullMarks);
     setPdfUrl(pdfUrl);
   };
