@@ -42,12 +42,14 @@ type examConfig = {
 };
 
 const fullMarks = {
-  Math: 100,
-  Science: 100,
-  English: 100,
+  MATHS: 100,
+  SCIENCE: 100,
+  ENGLISH: 100,
   SST: 100,
-  Computer: 100,
+  COMPUTER: 100,
   GK: 100,
+  DRAWING:100,
+  ORAL:100
 };
 
 
