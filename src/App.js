@@ -23,6 +23,7 @@ import { FirebaseProvider } from "context/firebaseContext";
 import { auth } from "./firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import FacultyAttendance from "pages/Attendance/FacultyAttendance/facultyAttendance";
+import PrintRankList from "pages/ResultsManagement/PrintRankList";
 
 // Lazy Loaded Components
 const FeeReceipt = Loadable(lazy(() => import("pages/FeeManager/FeeReceipt")));
@@ -180,6 +181,10 @@ function App() {
                     <Route
                       path="/schoolResults/update-results"
                       element={<UpdateResults />}
+                    />
+                    <Route
+                      path="/schoolResults/print-rank-list"
+                      element={<PrintRankList />}
                     />
                     <Route
                       path="/schoolResults/exam-planner"

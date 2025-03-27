@@ -25,6 +25,7 @@ import WebsiteConfig from "pages/WebsiteConfig/WebsiteConfigPage";
 import AddStudentNew from "pages/Users/AddStudentNew";
 import ExamPlanner from "pages/ResultsManagement/ExamPlanner";
 import Transport from "pages/transport/Transport";
+import PrintRankList from "pages/ResultsManagement/PrintRankList";
 
 export const routesConfig = [
   {
@@ -216,6 +217,13 @@ export const routesConfig = [
         isCollapsable: false,
         isHeader: false,
         Component: <PrintResult />,
+      },
+      {
+        title: "Print Rank List",
+        to: "schoolResults/print-rank-list",
+        isCollapsable: false,
+        isHeader: false,
+        Component: <PrintRankList />,
       },
     ],
   },
