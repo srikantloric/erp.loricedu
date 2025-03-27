@@ -48,9 +48,9 @@ const fullMarks = {
   SST: 100,
   COMPUTER: 100,
   GK: 100,
-  DRAWING:0,
-  ORAL:100,
-  HINDI:100
+  DRAWING: 0,
+  ORAL: 100,
+  HINDI: 100
 };
 
 
@@ -208,6 +208,12 @@ function PrintRankList() {
               return; // Prevent further processing if the data is invalid
             }
 
+            //calculate total marks
+            let totalMarks = res.result.reduce((total, item) => {
+              const fullMarkForSubject = fullMarks[item.paperId as keyof typeof fullMarks] || 0;
+              return total + fullMarkForSubject;
+            }, 0);
+
             let marksObtained = res.result.reduce((total, item) => {
               const obtainedMarkCalculated =
                 item.paperId === "DRAWING"
@@ -223,7 +229,7 @@ function PrintRankList() {
               fatherName: student.father_name,
               rankObtained: -1,
               marksObtained: marksObtained,
-              percentage: (marksObtained / 600) * 100,
+              percentage: (marksObtained / totalMarks) * 100,
               rollNumber: Number(student.class_roll),
               subjectMarks: res.result.map((item) => ({
                 subject: item.paperId,
