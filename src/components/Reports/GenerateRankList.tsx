@@ -65,13 +65,13 @@ export const ExamRankListGenerator = async (
       );
 
       // School logos on both sides
-      doc.addImage(SCHOOL_LOGO_BASE64, pageMargin + 5, pageMargin + 3, 25, 20); // Left logo
+      doc.addImage(SCHOOL_LOGO_BASE64, pageMargin + 5, pageMargin + 3, 25, 22); // Left logo
       doc.addImage(
         SCHOOL_LOGO_BASE64,
         doc.internal.pageSize.getWidth() - pageMargin - 30,
         pageMargin + 3,
         25,
-        20
+        22
       ); // Right logo
 
       // School header
@@ -166,10 +166,12 @@ export const ExamRankListGenerator = async (
       head: [["Roll", "Name", ...allSubjects, "Total", "Percentage", "Rank"]],
       body: [
         [
-          "Ref",
-          "Full Marks",
+          "",
+          "",
           ...allSubjects.map((subject) => fullMarks[subject] || "-"),
-          Object.values(fullMarks).reduce((sum, marks) => sum + marks, 0), // Total full marks
+          Object.keys(fullMarks)
+            .filter((subject) => allSubjects.includes(subject))
+            .reduce((sum, subject) => sum + (fullMarks[subject] || 0), 0),
           "100%",
           "",
         ],
