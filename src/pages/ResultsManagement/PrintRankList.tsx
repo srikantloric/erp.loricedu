@@ -48,7 +48,7 @@ const fullMarks = {
   SST: 100,
   COMPUTER: 100,
   GK: 100,
-  DRAWING:100,
+  DRAWING:0,
   ORAL:100,
   HINDI:100
 };
