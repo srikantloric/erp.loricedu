@@ -406,14 +406,14 @@ function UpdateResults() {
     const schoolId = localStorage.getItem("schoolId");
 
     let pdfUrl;
-    if (schoolId === "apxschool") {
+    if (schoolId === "school_apxschool") {
       pdfUrl = await MarksheetReportGenerator(
         [
           { student: currentSelectedStudent!, result: result.result, examTitle: result.examTitle },
         ],
         "theory-practical-design"
       );
-    } else if (schoolId === "opsschool") {
+    } else if (schoolId === "school_opsschool" || schoolId === "school_ops") {
       pdfUrl = await MarksheetReportGenerator(
         [
           { student: currentSelectedStudent!, result: result.result, examTitle: result.examTitle },
@@ -421,6 +421,7 @@ function UpdateResults() {
         "total-pass-design"
       );
     }
+    console.log(pdfUrl)
     // const pdfUrl = await MarksheetReportGenerator([
     //   { student: currentSelectedStudent!, result: result.result, examTitle: result.examTitle },
     // ]);
@@ -639,7 +640,6 @@ function UpdateResults() {
                           >
                             <Stack
                               direction="row"
-                              height="90px"
                               alignItems="center"
                               sx={{ m: "10px" }}
                               justifyContent="space-between"

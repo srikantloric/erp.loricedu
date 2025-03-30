@@ -95,7 +95,22 @@ function PrintResult() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const printMarkSheet = async (marksheetList: any) => {
-    const pdfUrl = await MarksheetReportGenerator(marksheetList);
+
+    const schoolId = localStorage.getItem("schoolId");
+
+    let pdfUrl;
+    if (schoolId === "school_apxschool") {
+      pdfUrl = await MarksheetReportGenerator(
+        marksheetList,
+        "theory-practical-design"
+      );
+    } else if (schoolId === "school_opsschool" || schoolId === "school_ops") {
+      pdfUrl = await MarksheetReportGenerator(
+        marksheetList,
+        "total-pass-design"
+      );
+    }
+
     setPdfUrl(pdfUrl);
   };
 

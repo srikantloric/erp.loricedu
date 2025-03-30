@@ -9,10 +9,10 @@ import { getClassNameByValue, GetGradeFromMark, getOrdinal } from "utilities/Uti
 
 type paperMarksTypeLocal = {
   paperTitle: string;
-  paperMarkObtained: number | string;
-  paperMarkPractical: number | string;
-  paperMarkTheory: number | string;
+  paperMarkTotal: number | string;
   paperMarkPassing: number | string;
+  paperMarkObtained: number | string;
+  paperGradeObtained: number | string;
 };
 
 
@@ -82,11 +82,11 @@ export const MarksheetDesign1 = {
             styles: { halign: "center", fillColor: [195, 240, 255] },
           },
           {
-            content: "Theory (80)",
+            content: "Total Marks",
             styles: { halign: "center", fillColor: [195, 240, 255] },
           },
           {
-            content: "Pract.(20)",
+            content: "Passing Marks",
             styles: { halign: "center", fillColor: [195, 240, 255] },
           },
           {
@@ -105,21 +105,18 @@ export const MarksheetDesign1 = {
 
       let resDataTable: paperMarksTypeLocal[] = [];
       data.result.forEach((item) => {
-        const obtainedMarkCaculated = item.paperId === "DRAWING" ? item.paperMarkTheory : Number(item.paperMarkTheory) + Number(item.paperMarkPractical)
-
+        // Calculate obtained marks based on paperId
+        const passingMark = (0.33 * (Number(item.paperMarkTheory) + Number(item.paperMarkPractical))).toFixed(0); // Calculate 33% of total marks
         const res: paperMarksTypeLocal = {
           paperTitle: item.paperTitle,
-          paperMarkTheory: item.paperId === "DRAWING" ? "-" : Number(item.paperMarkTheory),
-          paperMarkPractical: item.paperId === "DRAWING" ? "-" : Number(item.paperMarkPractical),
-
-          paperMarkObtained: item.paperId === "DRAWING"
-            ? item.paperMarkTheory // Assign grade for DRAWING
-            : obtainedMarkCaculated === 0
+          paperMarkTotal: Number(item.paperMarkTheory) + Number(item.paperMarkPractical),
+          paperMarkPassing: passingMark,
+          paperMarkObtained:
+            item.paperMarkObtained === 0
               ? "AB"
-              : obtainedMarkCaculated, // Assign numeric value for other subjects
-          paperMarkPassing: GetGradeFromMark(obtainedMarkCaculated)
+              : item.paperMarkObtained, // Assign numeric value for other subjects
+          paperGradeObtained: GetGradeFromMark(item.paperMarkObtained), // Assign numeric value for other subjects
         };
-
         resDataTable.push(res);
       });
       // const y=cardHeight+margin;
@@ -127,37 +124,22 @@ export const MarksheetDesign1 = {
 
       let totalAllMarks = 0;
 
-      const fullMarks = data.result.reduce((total, item) => {
-        const fullMark =
-          item.paperId === "DRAWING"
-            ? 0
-            : Number(item.paperMarkTheory) + Number(item.paperMarkPractical);
-
-        return total + fullMark;
+      const fullMarksObtained = data.result.reduce((total, item) => {
+        const fullMark = Number(item.paperMarkObtained);
+        return total + fullMark
       }, 0);
 
       data.result.forEach((item) => {
-        if (item.paperId === "DRAWING" || item.paperId === "ORAL") {
-          //do nothing
-        } else {
-          totalAllMarks += 100;
-        }
+        totalAllMarks += Number(item.paperMarkTheory) + Number(item.paperMarkPractical);
       })
 
-
-
       let marksObtained = data.result.reduce((total, item) => {
-        const obtainedMarkCalculated =
-          item.paperId === "DRAWING"
-            ? 0
-            : Number(item.paperMarkTheory) + Number(item.paperMarkPractical);
-
+        const obtainedMarkCalculated = Number(item.paperMarkObtained)
         return total + obtainedMarkCalculated;
       }, 0);
 
 
-      let percentage = (fullMarks / totalAllMarks) * 100;
-
+      let percentage = (fullMarksObtained / totalAllMarks) * 100;
       let calculatedRank = "N/A";
 
       if (studentRanks && studentRanks.studentRanks.length > 0) {
@@ -174,7 +156,7 @@ export const MarksheetDesign1 = {
         [
           { content: "Total", styles: { halign: "center" } },
           {
-            content: `${fullMarks}/${totalAllMarks}`,
+            content: `${totalAllMarks}`,
             colSpan: 2,
             styles: { halign: "center" },
           },
@@ -211,8 +193,8 @@ export const MarksheetDesign1 = {
       doc.addFont("Poppins-Regular", "Poppins", "normal");
       doc.addFileToVFS("Poppins-Semibold", POPPINS_SEMIBOLD);
       doc.addFont("Poppins-Semibold", "Poppins", "semibold");
-     
-     
+
+
       ///Start of PDF Design
 
       //right logo
@@ -252,24 +234,14 @@ export const MarksheetDesign1 = {
         schoolContactDetailStartY + 5,
         { align: "left" }
       );
-      //  const address2 = "Giridih, Jharkhand – 815312";
-      //   doc.text(
-      //     address2,
-      //     (pageWidth - doc.getTextWidth(address2)) / 2,
-      //     schoolContactDetailStartY + 9
-      //   ); 
+
       const contact = "Phone: " + SCHOOL_CONTACT;
       doc.text(
         contact,
         schoolHeaderStartX,
         schoolContactDetailStartY + 9
       );
-      // const contact2 = "+91-6205447024";
-      // doc.text(
-      //   contact2,
-      //   (pageWidth - doc.getTextWidth(contact2)) / 2,
-      //   schoolContactDetailStartY + 17
-      // );
+
       const websiteName = "" + SCHOOL_WEBSITE;
       doc.text(
         websiteName,
@@ -295,7 +267,7 @@ export const MarksheetDesign1 = {
       doc.setFontSize(12);
       doc.setTextColor("#000");
 
-      const classText = `Class - ${getClassNameByValue(
+      const classText = `Class : ${getClassNameByValue(
         data.student.class!
       )}`;
       doc.text(
@@ -355,19 +327,7 @@ export const MarksheetDesign1 = {
         leftXStartContent,
         studentDetailsStartY + 24
       );
-      // doc.text("Address", leftXStart, studentDetailsStartY + 36);
-      // // doc.text(
-      // //   ": #" + data.student.address,
-      // //   leftXStartContent,
-      // //   studentDetailsStartY + 36
-      // // );
-      // let text = ": " + data.student.address;
-      // const wrapx = leftXStartContent;
-      // const wrapy = studentDetailsStartY + 36;
-      // const maxWidth = 90;
 
-      // Call the wrapText function
-      // wrapText(doc, text, wrapx, wrapy, maxWidth);
 
       //right side
       const rightXStart = cardWidth - 60;
