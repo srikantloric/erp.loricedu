@@ -2,8 +2,8 @@
 import { BarChart, Bar, Rectangle, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 function BarGraphChart() {
-    
-const data = [
+
+  const data = [
     {
       name: 'Jan',
       unpaid: 4000,
@@ -77,31 +77,31 @@ const data = [
       amt: 2100,
     },
   ];
-  
-  
+
+
   return (
     <ResponsiveContainer height="100%" aspect={2}>
-        <BarChart
-          width="600px"
+      <BarChart
+        width="600px"
         height="600px"
-        
-          data={data}
-          margin={{
-            top: 5,
-            right: 30,
-            left: 20,
-            bottom: 5,
-          }}
-        >
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="name" />
-          <YAxis />
-          <Tooltip />
-          <Legend />
-          <Bar dataKey="paid" fill="#82ca9d" activeBar={<Rectangle fill="pink" stroke="blue" />} />
-          <Bar dataKey="unpaid" fill="#8884d8" activeBar={<Rectangle fill="gold" stroke="purple" />} />
-        </BarChart>
-      </ResponsiveContainer>
+
+        data={data}
+        margin={{
+          top: 5,
+          right: 30,
+          left: 20,
+          bottom: 5,
+        }}
+      >
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="name" />
+        <YAxis />
+        <Tooltip />
+        <Legend />
+        <Bar dataKey="paid" fill="#82ca9d" activeBar={<Rectangle fill="pink" stroke="blue" />} />
+        <Bar dataKey="unpaid" fill="#8884d8" activeBar={<Rectangle fill="gold" stroke="purple" />} />
+      </BarChart>
+    </ResponsiveContainer>
   )
 }
 

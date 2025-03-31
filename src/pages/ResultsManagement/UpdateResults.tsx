@@ -25,8 +25,7 @@ import {
   Typography,
 } from "@mui/joy";
 import { Paper } from "@mui/material";
-import { IconBrandTinder } from "@tabler/icons-react";
-import BreadCrumbsV2 from "components/Breadcrumbs/BreadCrumbsV2";
+
 import Navbar from "components/Navbar/Navbar";
 import LSPage from "components/Utils/LSPage";
 import PageContainer from "components/Utils/PageContainer";
@@ -42,6 +41,7 @@ import { collection, deleteDoc, doc, getDoc, getDocs, onSnapshot, orderBy, query
 import { useFirebase } from "context/firebaseContext";
 import { getClassNameByValue } from "utilities/UtilitiesFunctions";
 import axios from "axios";
+import PageHeaderWithHelpButton from "components/Breadcrumbs/PageHeaderWithHelpButton";
 
 type examType = {
   examId: string;
@@ -527,10 +527,7 @@ function UpdateResults() {
     <PageContainer>
       <Navbar />
       <LSPage>
-        <BreadCrumbsV2
-          Icon={IconBrandTinder}
-          Path="School Results/Update Results"
-        />
+        <PageHeaderWithHelpButton title="Update Students Result" />
         <Paper sx={{ p: "10px", mt: "8px" }}>
           <Stack
             direction="row"
@@ -552,7 +549,7 @@ function UpdateResults() {
                 onChange={(e, val) => setSelectedClass(val)}
               >
                 {SCHOOL_CLASSES.map((item) => {
-                  return <Option value={item.value}>{item.title}</Option>;
+                  return <Option value={item.value} key={item.id}>{item.title}</Option>;
                 })}
               </Select>
               <Select

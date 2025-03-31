@@ -16,6 +16,8 @@ import {
   getClassNameByValue,
 } from "./UtilitiesFunctions";
 import { getAppConfig } from "hooks/getAppConfig";
+import { enqueueSnackbar } from "notistack";
+import { SchoolConfigType } from "types/root";
 // import { db } from "../firebase";
 
 interface Props {
@@ -49,16 +51,18 @@ export const GenerateFeeReciept = async ({
   recieptGeneratorServerUrl,
   currentDueAmount,
 }: Props) => {
-  const config = getAppConfig();
+  const config = getAppConfig() as SchoolConfigType;
   if (!config) {
     console.error("Error: App config not found.");
+    enqueueSnackbar("Failed to load school configurations,please contact software vendor!")
     return;
   }
-  const { 
-    schoolName: SCHOOL_NAME, 
-    schoolAddress: SCHOOL_ADDRESS, 
-    schoolContact: SCHOOL_CONTACT, 
-    schoolEmail: SCHOOL_EMAIL 
+  const {
+    schoolName: SCHOOL_NAME,
+    schoolAddress: SCHOOL_ADDRESS,
+    schoolContact: SCHOOL_CONTACT,
+    schoolEmail: SCHOOL_EMAIL,
+    schoolLogoBase64:SCHOOL_LOGO_BASE64
   } = config;
 
   if (studentMasterData) {
@@ -110,11 +114,8 @@ export const GenerateFeeReciept = async ({
     ); // x, y, width, height
 
     //School logo
-
-    const logoImg = new Image();
-    logoImg.src = "/logotransparent.png";
-    doc.addImage(logoImg, "PNG", 12, 10, 25, 23);
-    doc.addImage(logoImg, "PNG", pBorderPaddOffsetX + 5, 10, 25, 23);
+    doc.addImage(SCHOOL_LOGO_BASE64, "PNG", 12, 10, 25, 23);
+    doc.addImage(SCHOOL_LOGO_BASE64, "PNG", pBorderPaddOffsetX + 5, 10, 25, 23);
 
     const schoolHeaderStartX = 40;
     const schoolHeaderStartY = 18;

@@ -2,6 +2,7 @@
 import { marksheetType } from "types/results";
 import { getAppConfig } from "hooks/getAppConfig";
 import { getDesignModule } from "./Marksheets/DesignLoader";
+import { enqueueSnackbar } from "notistack";
 
 export const MarksheetReportGenerator = async (
   resultData: marksheetType[],
@@ -11,6 +12,7 @@ export const MarksheetReportGenerator = async (
     const config = getAppConfig();
     if (!config) {
       console.error("Error: App config not found.");
+      enqueueSnackbar("Failed to load school configurations,please contact software vendor!")
       return;
     }
     try {

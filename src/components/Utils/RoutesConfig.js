@@ -11,6 +11,7 @@ import {
   IconServer,
   IconBus,
   IconDatabaseCog,
+  IconMoneybag,
 } from "@tabler/icons-react";
 import UnderConstruction from "../../pages/Extras/UnderConstruction";
 import FeeManager from "../../pages/FeeManager/FeeManager";
@@ -26,6 +27,7 @@ import AddStudentNew from "pages/Users/AddStudentNew";
 import ExamPlanner from "pages/ResultsManagement/ExamPlanner";
 import Transport from "pages/transport/Transport";
 import PrintRankList from "pages/ResultsManagement/PrintRankList";
+import Expenses from "pages/expenses/Expenses";
 
 export const routesConfig = [
   {
@@ -91,6 +93,14 @@ export const routesConfig = [
     isCollapsable: false,
     isHeader: false,
     Component: FeaturesConfig.PAYMENT_FEATURE ? FeeManager : UnderConstruction,
+  },
+  {
+    title: "Expense Tracker",
+    to: "/expense-tracker",
+    icon: IconMoneybag,
+    isCollapsable: false,
+    isHeader: false,
+    Component: Expenses,
   },
   // {
   //   title: "Accountings",
@@ -181,14 +191,6 @@ export const routesConfig = [
       },
     ],
   },
-  // {
-  //   title: "Fee Receipts",
-  //   to: "/FeeReceipt",
-  //   icon: IconNotes,
-  //   isCollapsable: false,
-  //   isHeader: false,
-  //   Component: FeeReceipt,
-  // },
   {
     title: "Exams & Results",
     to: "/SchoolResults",
@@ -239,22 +241,6 @@ export const routesConfig = [
     isHeader: false,
     Component: Reports,
   },
-  // {
-  //   title: "Transaction",
-  //   to: "/Transaction",
-  //   icon: IconReceipt2,
-  //   isCollapsable: false,
-  //   isHeader: false,
-  //   Component: Transaction,
-  // },
-  // {
-  //   title: "Message",
-  //   to: "/Message",
-  //   icon: IconMail,
-  //   isCollapsable: false,
-  //   isHeader: false,
-  //   Component: UnderConstruction,
-  // },
   {
     title: "Controls",
     isHeader: true,
