@@ -30,6 +30,7 @@ import { getClassNameByValue } from "utilities/UtilitiesFunctions";
 type examType = {
   examId: string;
   examTitle: string;
+  marksheetDesign: string
 };
 
 type paperType = {
@@ -50,7 +51,9 @@ const fullMarks = {
   GK: 100,
   DRAWING: 0,
   ORAL: 100,
-  HINDI: 100
+  HINDI: 100,
+  DRAWINGACTIVITY: 100,
+  SOCIALSCIENCE: 100,
 };
 
 
@@ -98,6 +101,14 @@ function PrintRankList() {
 
 
   const printRankList = async (marksheetList: any) => {
+    if (!selectedClass) {
+      enqueueSnackbar("Please select class!", { variant: "info" });
+      return
+    }
+    if (!examsList) {
+      enqueueSnackbar("Unable to load exam config, please try after again!", { variant: "info" });
+      return
+    }
 
     const selectedClassA = getClassNameByValue(selectedClass) || "N/A";
     const selectedExamA = examsList.find((item) => item.examId === selectedExam)?.examTitle || "N/A";
@@ -106,61 +117,10 @@ function PrintRankList() {
       selectedExamA,
       "2024-2025",
       selectedClassA,
-      fullMarks);
+      fullMarks
+    );
     setPdfUrl(pdfUrl);
   };
-
-  // const fetchResults = async () => {
-  //   try {
-  //     console.log(`Selected Class: ${selectedClass}`);
-  //     console.log(`Selected Exam: ${selectedExam}`);
-
-  //     setMarksheetList([]);
-  //     setLoading(true);
-
-  //     // Fetch students for selected class
-  //     const studentsQuery = query(collection(db, "STUDENTS"), where("class", "==", selectedClass));
-  //     const studentsSnap = await getDocs(studentsQuery);
-
-  //     if (studentsSnap.empty) {
-  //       setLoading(false);
-  //       enqueueSnackbar("No result found :)", { variant: "warning" });
-  //       return;
-  //     }
-
-  //     let studentList: StudentDetailsType[] = [];
-  //     studentsSnap.forEach((doc) => {
-  //       studentList.push({ id: doc.id, ...doc.data() } as StudentDetailsType);
-  //     });
-
-  //     let temMarkSheetList: marksheetType[] = [];
-
-  //     // Fetch results for all students using Promise.all for parallel fetching
-  //     const resultPromises = studentList.map(async (student) => {
-  //       const resultQuery = collection(db, "STUDENTS", student.id, "PUBLISHED_RESULTS");
-  //       const resultSnap = await getDocs(resultQuery);
-
-  //       resultSnap.forEach((result) => {
-  //         if (result.data().examId === selectedExam) {
-  //           temMarkSheetList.push({
-  //             student,
-  //             examTitle: result.data().examTitle,
-  //             result: result.data().result as paperMarksType[],
-  //           });
-  //         }
-  //       });
-  //     });
-
-  //     await Promise.all(resultPromises); // Wait for all result fetches
-
-  //     setMarksheetList(temMarkSheetList);
-  //     setLoading(false);
-  //   } catch (err) {
-  //     console.error("Error fetching results:", err);
-  //     enqueueSnackbar("Error fetching results!", { variant: "error" });
-  //     setLoading(false);
-  //   }
-  // };
 
 
   //Generate Student Rank
@@ -172,6 +132,17 @@ function PrintRankList() {
     if (!selectedExam) {
       enqueueSnackbar("Please select exam!", { variant: "error" });
       return;
+    }
+    if (!examsList) {
+      enqueueSnackbar("Failed to load exam config, please try again", { variant: "info" });
+      return
+    }
+
+    const themeExam = examsList.find((item) => item.examId === selectedExam)?.marksheetDesign
+
+    if (!themeExam) {
+      enqueueSnackbar("Failed to load exam theme!", { variant: "info" });
+      return
     }
 
     try {
@@ -214,15 +185,24 @@ function PrintRankList() {
               return total + fullMarkForSubject;
             }, 0);
 
+            //paper mark obtained
             let marksObtained = res.result.reduce((total, item) => {
-              const obtainedMarkCalculated =
-                item.paperId === "DRAWING"
-                  ? 0
-                  : Number(item.paperMarkTheory) + Number(item.paperMarkPractical);
 
-              return total + obtainedMarkCalculated;
+              let obtainedMarkCalculated;
+              if (themeExam === "total-pass-design") {
+                obtainedMarkCalculated = Number(item.paperMarkObtained);
+
+              } else {
+                obtainedMarkCalculated =
+                  item.paperId === "DRAWING"
+                    ? 0
+                    : Number(item.paperMarkTheory) + Number(item.paperMarkPractical);
+              }
+
+              return total + obtainedMarkCalculated!;
             }, 0);
 
+            console.log("Marks Obtained:", marksObtained)
             markSheetTempListExtended.push({
               studentId: student.admission_no,
               studentName: student.student_name,
@@ -233,7 +213,7 @@ function PrintRankList() {
               rollNumber: Number(student.class_roll),
               subjectMarks: res.result.map((item) => ({
                 subject: item.paperId,
-                marks: Number(item.paperMarkTheory) + Number(item.paperMarkPractical),
+                marks: themeExam === "total-pass-design" ? Number(item.paperMarkObtained) : Number(item.paperMarkTheory) + Number(item.paperMarkPractical),
               }),
               ),
             });
