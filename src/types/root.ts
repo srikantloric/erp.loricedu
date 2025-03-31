@@ -15,12 +15,12 @@ export type KeyedObject = {
 
 export type OverrideIcon =
   | (OverridableComponent<SvgIconTypeMap<{}, "svg">> & {
-      muiName: string;
-    })
+    muiName: string;
+  })
   | ComponentClass<any>
   | FunctionComponent<any>
   | Icon;
-  
+
 export interface GenericCardProps {
   title?: string;
   primary?: string | number | undefined;
@@ -35,11 +35,12 @@ export interface GenericCardProps {
 
 
 export type SchoolConfigType = {
-  schoolName:string,
-  schoolAddress:string,
-  schoolEmail:string,
-  schoolContact:string,
-  schoolLogo:string,
-  schoolWebsite:string,
+  schoolName: string,
+  schoolAddress: string,
+  schoolEmail: string,
+  schoolContact: string,
+  schoolLogo: string,
+  schoolWebsite: string,
+  schoolLogoBase64: string
 
 }

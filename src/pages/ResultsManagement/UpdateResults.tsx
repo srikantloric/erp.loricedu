@@ -25,13 +25,12 @@ import {
   Typography,
 } from "@mui/joy";
 import { Paper } from "@mui/material";
-import { IconBrandTinder } from "@tabler/icons-react";
-import BreadCrumbsV2 from "components/Breadcrumbs/BreadCrumbsV2";
+
 import Navbar from "components/Navbar/Navbar";
 import LSPage from "components/Utils/LSPage";
 import PageContainer from "components/Utils/PageContainer";
 import { SCHOOL_CLASSES } from "config/schoolConfig";
-import { Delete, Print, Search, Send } from "@mui/icons-material";
+import { Delete, Print, Search } from "@mui/icons-material";
 import { useEffect, useState } from "react";
 import { StudentDetailsType } from "types/student";
 import { enqueueSnackbar } from "notistack";
@@ -40,12 +39,13 @@ import { MarksheetReportGenerator } from "components/Reports/MarksheetReport";
 import { paperMarksType, resultType } from "types/results";
 import { collection, deleteDoc, doc, getDoc, getDocs, onSnapshot, orderBy, query, setDoc, Timestamp, updateDoc, where } from "firebase/firestore";
 import { useFirebase } from "context/firebaseContext";
-import { getClassNameByValue } from "utilities/UtilitiesFunctions";
-import axios from "axios";
+
+import PageHeaderWithHelpButton from "components/Breadcrumbs/PageHeaderWithHelpButton";
 
 type examType = {
   examId: string;
   examTitle: string;
+  marksheetDesign?: string;
 };
 
 type paperType = {
@@ -109,9 +109,9 @@ function UpdateResults() {
 
         if (snap.exists()) {
           const data = snap.data() as examConfig;
-          console.log(data);
           setPaperList(data.examPapers);
           setExamList(data.exams);
+
         } else {
           console.log("No data retrieved from exam config..");
         }
@@ -402,135 +402,127 @@ function UpdateResults() {
   }, [updateResultDialogOpen]);
 
   const printStudentMarksheet = async (result: resultType) => {
-
-    const schoolId = localStorage.getItem("schoolId");
-
-    let pdfUrl;
-    if (schoolId === "school_apxschool") {
-      pdfUrl = await MarksheetReportGenerator(
-        [
-          { student: currentSelectedStudent!, result: result.result, examTitle: result.examTitle },
-        ],
-        "theory-practical-design"
-      );
-    } else if (schoolId === "school_opsschool" || schoolId === "school_ops") {
-      pdfUrl = await MarksheetReportGenerator(
-        [
-          { student: currentSelectedStudent!, result: result.result, examTitle: result.examTitle },
-        ],
-        "total-pass-design"
-      );
+    if (!examsList) {
+      enqueueSnackbar("Failed to load exams configurations!", { variant: "error" });
+      return;
     }
-    console.log(pdfUrl)
-    // const pdfUrl = await MarksheetReportGenerator([
-    //   { student: currentSelectedStudent!, result: result.result, examTitle: result.examTitle },
-    // ]);
+
+    const examTheme = examsList.find((item) => item.examId === result.examId)?.marksheetDesign;
+    if (!examTheme) {
+      enqueueSnackbar("Marksheet theme not found for the selected exam!", { variant: "error" });
+      return
+    }
+
+    const pdfUrl = await MarksheetReportGenerator(
+      [
+        { student: currentSelectedStudent!, result: result.result, examTitle: result.examTitle },
+      ],
+      examTheme
+    );
+
     const createPDFWindow =
       "width=600,height=400,toolbar=no,location=no,status=no,menubar=no,scrollbars=yes,resizable=yes";
     window.open(pdfUrl, "_blank", createPDFWindow);
   };
 
 
-  const sendWhatsappMessage = () => {
-    const student = currentSelectedStudent;
-    if (!student) return;
+  // const sendWhatsappMessage = () => {
+  //   const student = currentSelectedStudent;
+  //   if (!student) return;
 
-    if (student.contact_number === "") {
-      enqueueSnackbar("Contact number is not available!", { variant: "error" });
-      return;
-    }
-    if (student.contact_number.length !== 10) {
-      enqueueSnackbar("Invalid contact number!", { variant: "error" });
-      return;
-    }
+  //   if (student.contact_number === "") {
+  //     enqueueSnackbar("Contact number is not available!", { variant: "error" });
+  //     return;
+  //   }
+  //   if (student.contact_number.length !== 10) {
+  //     enqueueSnackbar("Invalid contact number!", { variant: "error" });
+  //     return;
+  //   }
 
-    if (student.class === undefined) {
-      enqueueSnackbar("Class is not available!", { variant: "error" });
-      return;
-    }
+  //   if (student.class === undefined) {
+  //     enqueueSnackbar("Class is not available!", { variant: "error" });
+  //     return;
+  //   }
 
-    const messagePayload = {
-      messaging_product: "whatsapp",
-      to: "91" + student.contact_number,
-      type: "template",
-      template: {
-        name: "result_announded_hindi",
-        language: {
-          code: "hi",
-        },
-        components: [
-          {
-            type: "header",
-            parameters: [
-              {
-                type: "image",
-                image: {
-                  link: "https://firebasestorage.googleapis.com/v0/b/haristudio-69dee.appspot.com/o/result_announced.jpg?alt=media&token=015c33c1-8f70-4922-a7eb-30d79972782d",
-                },
-              },
-            ],
-          },
-          {
-            type: "body",
-            parameters: [
-              {
-                type: "text",
-                text: student.student_name.toUpperCase() || "Student",
-              },
-              {
-                type: "text",
-                text: getClassNameByValue(student.class!)?.toUpperCase() || "Grade",
-              },
-            ],
-          },
-          {
-            type: "button",
-            sub_type: "url",
-            index: "0",
-            parameters: [
-              {
-                type: "text",
-                text: student.admission_no,
-              },
-            ],
-          },
-        ],
-      },
-    };
+  //   const messagePayload = {
+  //     messaging_product: "whatsapp",
+  //     to: "91" + student.contact_number,
+  //     type: "template",
+  //     template: {
+  //       name: "result_announded_hindi",
+  //       language: {
+  //         code: "hi",
+  //       },
+  //       components: [
+  //         {
+  //           type: "header",
+  //           parameters: [
+  //             {
+  //               type: "image",
+  //               image: {
+  //                 link: "https://firebasestorage.googleapis.com/v0/b/haristudio-69dee.appspot.com/o/result_announced.jpg?alt=media&token=015c33c1-8f70-4922-a7eb-30d79972782d",
+  //               },
+  //             },
+  //           ],
+  //         },
+  //         {
+  //           type: "body",
+  //           parameters: [
+  //             {
+  //               type: "text",
+  //               text: student.student_name.toUpperCase() || "Student",
+  //             },
+  //             {
+  //               type: "text",
+  //               text: getClassNameByValue(student.class!)?.toUpperCase() || "Grade",
+  //             },
+  //           ],
+  //         },
+  //         {
+  //           type: "button",
+  //           sub_type: "url",
+  //           index: "0",
+  //           parameters: [
+  //             {
+  //               type: "text",
+  //               text: student.admission_no,
+  //             },
+  //           ],
+  //         },
+  //       ],
+  //     },
+  //   };
 
-    const whatsappApiUrl = "https://graph.facebook.com/v22.0/560510770487956/messages";
+  //   const whatsappApiUrl = "https://graph.facebook.com/v22.0/560510770487956/messages";
 
-    const wsAuthKey = localStorage.getItem("wsAuthKey");
-    if (!wsAuthKey) {
-      enqueueSnackbar("WhatsApp authorization key is missing!", { variant: "error" });
-      return;
-    }
-    const whatsappApiHeaders = {
-      Authorization: "Bearer " + wsAuthKey,
-      "Content-Type": "application/json",
-    };
-    axios
-      .post(whatsappApiUrl, messagePayload, {
-        headers: whatsappApiHeaders,
-      })
-      .then(async (res: any) => {
-        enqueueSnackbar("Message sent successfully! To " + student.contact_number, { variant: "success" });
-        console.log(`Message sent to ${student.contact_number}: ${res.data.messages[0].id}`);
-      })
-      .catch(async (error: any) => {
-        enqueueSnackbar("Failed to send message!", { variant: "error" });
-        console.error(`Failed to send message to ${student.contact_number}: ${error.message}`);
-      });
-  }
+  //   const wsAuthKey = localStorage.getItem("wsAuthKey");
+  //   if (!wsAuthKey) {
+  //     enqueueSnackbar("WhatsApp authorization key is missing!", { variant: "error" });
+  //     return;
+  //   }
+  //   const whatsappApiHeaders = {
+  //     Authorization: "Bearer " + wsAuthKey,
+  //     "Content-Type": "application/json",
+  //   };
+  //   axios
+  //     .post(whatsappApiUrl, messagePayload, {
+  //       headers: whatsappApiHeaders,
+  //     })
+  //     .then(async (res: any) => {
+  //       enqueueSnackbar("Message sent successfully! To " + student.contact_number, { variant: "success" });
+  //       console.log(`Message sent to ${student.contact_number}: ${res.data.messages[0].id}`);
+  //     })
+  //     .catch(async (error: any) => {
+  //       enqueueSnackbar("Failed to send message!", { variant: "error" });
+  //       console.error(`Failed to send message to ${student.contact_number}: ${error.message}`);
+  //     });
+  // }
 
   return (
     <PageContainer>
       <Navbar />
       <LSPage>
-        <BreadCrumbsV2
-          Icon={IconBrandTinder}
-          Path="School Results/Update Results"
-        />
+        <PageHeaderWithHelpButton title="Update Students Result" />
         <Paper sx={{ p: "10px", mt: "8px" }}>
           <Stack
             direction="row"
@@ -552,7 +544,7 @@ function UpdateResults() {
                 onChange={(e, val) => setSelectedClass(val)}
               >
                 {SCHOOL_CLASSES.map((item) => {
-                  return <Option value={item.value}>{item.title}</Option>;
+                  return <Option value={item.value} key={item.id}>{item.title}</Option>;
                 })}
               </Select>
               <Select
@@ -693,7 +685,7 @@ function UpdateResults() {
                                   }
                                   startDecorator={<Delete />}
                                 ></Button>
-                                <Button
+                                {/* <Button
                                   variant="plain"
                                   color="primary"
                                   size="sm"
@@ -701,7 +693,7 @@ function UpdateResults() {
                                     sendWhatsappMessage()
                                   }
                                   startDecorator={<Send />}
-                                ></Button>
+                                ></Button> */}
                                 <Button
                                   variant="plain"
                                   color="success"
@@ -856,7 +848,6 @@ function UpdateResults() {
                       </Stack>
                     );
                   } else {
-
                     return (
                       <Stack
                         key={paper.paperId}

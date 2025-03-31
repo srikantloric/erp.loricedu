@@ -39,6 +39,7 @@ import { useFirebase } from "context/firebaseContext";
 type examType = {
   examId: string;
   examTitle: string;
+  marksheetDesign?: string
 };
 
 type paperType = {
@@ -94,25 +95,29 @@ function PrintResult() {
     fetchExamConfig();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  const printMarkSheet = async (marksheetList: any) => {
+  const printMarkSheet = async (marksheetList: marksheetType[]) => {
+    if (!selectedExam || !examsList) {
+      enqueueSnackbar("Failed to load exam configuration!", { variant: "error" });
+      return
+    }
+    const examTheme = examsList.find((item) => item.examId === selectedExam)?.marksheetDesign;
 
-    const schoolId = localStorage.getItem("schoolId");
-
-    let pdfUrl;
-    if (schoolId === "school_apxschool") {
-      pdfUrl = await MarksheetReportGenerator(
-        marksheetList,
-        "theory-practical-design"
-      );
-    } else if (schoolId === "school_opsschool" || schoolId === "school_ops") {
-      pdfUrl = await MarksheetReportGenerator(
-        marksheetList,
-        "total-pass-design"
-      );
+    if (!examTheme) {
+      enqueueSnackbar("Failed to load exam theme!", { variant: "error" });
+      return
     }
 
+    if (marksheetList.length === 0) {
+      enqueueSnackbar("No result found for selected options!", { variant: "info" });
+    }
+
+    const pdfUrl = await MarksheetReportGenerator(
+      marksheetList,
+      examTheme
+    );
     setPdfUrl(pdfUrl);
   };
+
 
   const fetchResults = async () => {
     try {
@@ -121,6 +126,7 @@ function PrintResult() {
 
       setMarksheetList([]);
       setLoading(true);
+      setPdfUrl("");
 
       // Fetch students for selected class
       const studentsQuery = query(collection(db, "STUDENTS"), where("class", "==", selectedClass));
@@ -156,8 +162,9 @@ function PrintResult() {
       });
 
       await Promise.all(resultPromises); // Wait for all result fetches
-
       setMarksheetList(temMarkSheetList);
+      //print markseet
+      printMarkSheet(temMarkSheetList);
       setLoading(false);
     } catch (err) {
       console.error("Error fetching results:", err);
@@ -165,9 +172,6 @@ function PrintResult() {
       setLoading(false);
     }
   };
-  useEffect(() => {
-    printMarkSheet(marksheetList);
-  }, [marksheetList]);
 
   //Generate Student Rank
   const generateStudentRank = async () => {

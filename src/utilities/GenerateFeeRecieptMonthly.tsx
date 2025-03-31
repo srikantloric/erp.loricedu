@@ -17,6 +17,7 @@ import {
 } from "./UtilitiesFunctions";
 import { getAppConfig } from "hooks/getAppConfig";
 import { SchoolConfigType } from "types/root";
+import { enqueueSnackbar } from "notistack";
 // import { db } from "../firebase";
 
 interface Props {
@@ -45,11 +46,20 @@ export const GenerateFeeRecieptMonthly = async ({
   currentDueAmount,
 }: Props) => {
 
-  const schoolConfig  = getAppConfig() as SchoolConfigType;
+  const schoolConfig = getAppConfig() as SchoolConfigType;
   if (!schoolConfig) {
     console.error("School configuration not found");
+    enqueueSnackbar("Failed to load school configurations,please contact software vendor!")
     return;
   }
+  const {
+    schoolName: SCHOOL_NAME,
+    schoolAddress: SCHOOL_ADDRESS,
+    schoolContact: SCHOOL_CONTACT,
+    schoolLogoBase64: SCHOOL_LOGO_BASE64,
+    schoolEmail: SCHOOL_EMAIL
+  } = schoolConfig;
+
 
   if (studentMasterData) {
     //Page Size
@@ -101,19 +111,17 @@ export const GenerateFeeRecieptMonthly = async ({
 
     //School logo
 
-    const logoImg = new Image();
-    logoImg.src = "/logotransparent.png";
-    doc.addImage(logoImg, "PNG", 12, 10, 25, 23);
-    doc.addImage(logoImg, "PNG", pBorderPaddOffsetX + 5, 10, 25, 23);
+    doc.addImage(SCHOOL_LOGO_BASE64, "PNG", 12, 10, 25, 23);
+    doc.addImage(SCHOOL_LOGO_BASE64, "PNG", pBorderPaddOffsetX + 5, 10, 25, 23);
 
     const schoolHeaderStartX = 40;
     const schoolHeaderStartY = 18;
     //school name
     doc.setFontSize(18);
     doc.setFont("Poppins", "bold");
-    doc.text(schoolConfig.schoolName, schoolHeaderStartX, schoolHeaderStartY);
+    doc.text(SCHOOL_NAME, schoolHeaderStartX, schoolHeaderStartY);
     doc.text(
-      schoolConfig.schoolName,
+      SCHOOL_NAME,
       pBorderPaddOffsetX + schoolHeaderStartX - 5,
       schoolHeaderStartY
     );
@@ -141,12 +149,12 @@ export const GenerateFeeRecieptMonthly = async ({
     doc.setFontSize(6);
     doc.setFont("Poppins", "normal");
     doc.text(
-      schoolConfig.schoolAddress,
+      SCHOOL_ADDRESS,
       schoolHeaderStartX + 4,
       schoolContactDetailStartY + 3
     );
     doc.text(
-      schoolConfig.schoolAddress,
+      SCHOOL_ADDRESS,
       pBorderPaddOffsetX + schoolContactDetailStartX + 4,
       schoolContactDetailStartY + 3
     );
@@ -167,12 +175,12 @@ export const GenerateFeeRecieptMonthly = async ({
       3
     );
     doc.text(
-      schoolConfig.schoolContact,
+      SCHOOL_CONTACT,
       schoolHeaderStartX + 4,
       schoolContactDetailStartY + 8
     );
     doc.text(
-      schoolConfig.schoolContact,
+      SCHOOL_CONTACT,
       pBorderPaddOffsetX + schoolContactDetailStartX + 4,
       schoolContactDetailStartY + 8
     );
@@ -193,12 +201,12 @@ export const GenerateFeeRecieptMonthly = async ({
       3
     );
     doc.text(
-      schoolConfig.schoolEmail,
+      SCHOOL_EMAIL,
       schoolHeaderStartX + 4,
       schoolContactDetailStartY + 12.5
     );
     doc.text(
-      schoolConfig.schoolEmail,
+      SCHOOL_EMAIL,
       pBorderPaddOffsetX + schoolContactDetailStartX + 4,
       schoolContactDetailStartY + 12.5
     );
