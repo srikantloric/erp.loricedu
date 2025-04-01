@@ -5,10 +5,7 @@ import Login from "./pages/Login/Login";
 import { routesConfig } from "./components/Utils/RoutesConfig";
 import { useState, lazy, useEffect } from "react";
 import SideBarContext from "./context/SidebarContext";
-import {
-  SearchDialogProvider,
-
-} from "context/SearchDialogContext";
+import { SearchDialogProvider } from "context/SearchDialogContext";
 
 // Layouts & Context
 import AuthenticationLayout from "./layouts/AuthenticationLayout";
@@ -25,6 +22,8 @@ import { onAuthStateChanged } from "firebase/auth";
 import FacultyAttendance from "pages/Attendance/FacultyAttendance/facultyAttendance";
 import PrintRankList from "pages/ResultsManagement/PrintRankList";
 import PdfLivePreview from "pages/PdfJsLiveEditor/PdfLivePreview";
+import StudentMigration from "pages/Users/StudentMigration";
+import PrintTopperList from "pages/ResultsManagement/PrintToperList";
 
 // Lazy Loaded Components
 const FeeReceipt = Loadable(lazy(() => import("pages/FeeManager/FeeReceipt")));
@@ -41,7 +40,6 @@ const ViewAttendance = Loadable(
 const AdmissionEnquiry = Loadable(
   lazy(() => import("pages/Admission/AdmissionEnquiry"))
 );
-
 
 const GenerateMonthlyChallan = Loadable(
   lazy(() => import("pages/FeeManager/GenerateChallan/GenerateMontlyChallan"))
@@ -116,7 +114,7 @@ function App() {
     return () => unsubscribe();
   }, []);
 
-  console.log("Version: 1.0.0");
+  console.log("Version: 1.2.0");
 
   return (
     <AuthProvider>
@@ -140,8 +138,12 @@ function App() {
                     path="students/view-students"
                     element={<ViewStudents />}
                   />
+                 
 
-                  <Route path="/view-faculties" element={<UnderConstruction />} />
+                  <Route
+                    path="/view-faculties"
+                    element={<UnderConstruction />}
+                  />
                   <Route path="/Faculties/:id" element={<FacultyDetail />} />
                   <Route path="/add-faculty" element={<UnderConstruction />} />
                   <Route
@@ -187,6 +189,12 @@ function App() {
                     path="/schoolResults/print-rank-list"
                     element={<PrintRankList />}
                   />
+
+                  <Route
+                    path="/schoolResults/print-toppers-list"
+                    element={<PrintTopperList />}
+                  />
+
                   <Route
                     path="/schoolResults/exam-planner"
                     element={<ExamPlanner />}
@@ -195,9 +203,15 @@ function App() {
                     path="/schoolResults/print-results"
                     element={<PrintResult />}
                   />
+                   <Route
+                    path="schoolResults/class-migration"
+                    element={<StudentMigration />}
+                  />
                   {/* Exam Management routes */}
-                  <Route path="/print-id-cards" element={<IdCardGeneration />} />
-
+                  <Route
+                    path="/print-id-cards"
+                    element={<IdCardGeneration />}
+                  />
 
                   {/* Reports Routes */}
                   <Route
@@ -223,10 +237,7 @@ function App() {
                   path="update-student-profile-picture"
                   element={<StudentProfilePictureUpdater />}
                 />
-                <Route
-                  path="livePdfEditor"
-                  element={<PdfLivePreview />}
-                />
+                <Route path="livePdfEditor" element={<PdfLivePreview />} />
                 <Route path="/login" element={<AuthenticationLayout />}>
                   <Route index element={<Login />} />
                 </Route>

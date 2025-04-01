@@ -1,13 +1,5 @@
 import { Print } from "@mui/icons-material";
-import {
-  Box,
-  Button,
-  Chip,
-  Option,
-  Select,
-  Stack,
-  Typography,
-} from "@mui/joy";
+import { Box, Button, Chip, Option, Select, Stack, Typography } from "@mui/joy";
 import { Paper } from "@mui/material";
 import { IconBrandTinder } from "@tabler/icons-react";
 import BreadCrumbsV2 from "components/Breadcrumbs/BreadCrumbsV2";
@@ -17,20 +9,24 @@ import PageContainer from "components/Utils/PageContainer";
 import { SCHOOL_CLASSES } from "config/schoolConfig";
 import { useEffect, useState } from "react";
 import { enqueueSnackbar } from "notistack";
-import {
-  rankType,
-  resultType,
-} from "types/results";
+import { rankType, resultType } from "types/results";
 import { StudentDetailsType } from "types/student";
-import { collection, doc, getDoc, getDocs, query, where } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  where,
+} from "firebase/firestore";
 import { useFirebase } from "context/firebaseContext";
-import { ExamRankListGenerator } from "components/Reports/GenerateRankList";
+import { TopperListGenerator } from "components/Reports/GenerateTopperList";
 import { getClassNameByValue } from "utilities/UtilitiesFunctions";
+import { STUDENT_IMAGE1 } from "utilities/Base64Url";
 
 type examType = {
   examId: string;
   examTitle: string;
-  marksheetDesign: string
 };
 
 type paperType = {
@@ -52,10 +48,7 @@ const fullMarks = {
   DRAWING: 0,
   ORAL: 100,
   HINDI: 100,
-  DRAWINGACTIVITY: 100,
-  SOCIALSCIENCE: 100,
 };
-
 
 type ExtendedRankType = rankType & {
   studentName: string;
@@ -65,7 +58,7 @@ type ExtendedRankType = rankType & {
   percentage: number;
 };
 
-function PrintRankList() {
+function PrintTopperList() {
   const [selectedClass, setSelectedClass] = useState<any | null>(null);
   const [examsList, setExamList] = useState<examType[]>([]);
   const [selectedExam, setSelectedExam] = useState<any | null>(null);
@@ -75,7 +68,6 @@ function PrintRankList() {
     ExtendedRankType[]
   >([]);
 
-  //Get Firebase DB instance
   const { db } = useFirebase();
 
   useEffect(() => {
@@ -99,32 +91,63 @@ function PrintRankList() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-
-  const printRankList = async (marksheetList: any) => {
+  const generateTopperList = async () => {
     if (!selectedClass) {
       enqueueSnackbar("Please select class!", { variant: "info" });
-      return
+      return;
     }
     if (!examsList) {
-      enqueueSnackbar("Unable to load exam config, please try after again!", { variant: "info" });
-      return
+      enqueueSnackbar("Unable to load exam config, please try again!", {
+        variant: "info",
+      });
+      return;
     }
-
     const selectedClassA = getClassNameByValue(selectedClass) || "N/A";
-    const selectedExamA = examsList.find((item) => item.examId === selectedExam)?.examTitle || "N/A";
+    const selectedExamA =
+      examsList.find((item) => item.examId === selectedExam)?.examTitle ||
+      "N/A";
 
-    const pdfUrl = await ExamRankListGenerator(marksheetList,
+    // if (studentRankDetails.length < 3) {
+    //   enqueueSnackbar("Not enough students to generate topper list!", {
+    //     variant: "warning",
+    //   });
+    //   return;
+    // }
+
+    const topperList = studentRankDetails.slice(0, 3).map((student) => {
+      // Calculating totalFullMarks dynamically based on the subjects
+      const totalFullMarks = student.subjectMarks.reduce((total, subject) => {
+        const fullMarkForSubject =
+          fullMarks[subject.subject as keyof typeof fullMarks] || 0;
+        return total + fullMarkForSubject;
+      }, 0);
+
+      return {
+        studentId: student.studentId,
+        studentName: student.studentName,
+        rankObtained: student.rankObtained,
+        marksObtained: student.marksObtained,
+        totalFullMarks,
+        percentageObtained: student.percentage,
+        imageUrl: STUDENT_IMAGE1, // Srikant replace with image of student
+      };
+    });
+
+    const pdfUrl = await TopperListGenerator(
+      topperList,
       selectedExamA,
       "2024-2025",
-      selectedClassA,
-      fullMarks
+      selectedClassA
     );
+
     setPdfUrl(pdfUrl);
+    enqueueSnackbar("Topper list generated successfully!", {
+      variant: "success",
+    });
   };
 
-
   //Generate Student Rank
-  const printStudentRank = async () => {
+  const printTopperStudents = async () => {
     if (!selectedClass) {
       enqueueSnackbar("Please select class!", { variant: "error" });
       return;
@@ -134,22 +157,20 @@ function PrintRankList() {
       return;
     }
     if (!examsList) {
-      enqueueSnackbar("Failed to load exam config, please try again", { variant: "info" });
-      return
-    }
-
-    const themeExam = examsList.find((item) => item.examId === selectedExam)?.marksheetDesign
-
-    if (!themeExam) {
-      enqueueSnackbar("Failed to load exam theme!", { variant: "info" });
-      return
+      enqueueSnackbar("Failed to load exam config, please try again", {
+        variant: "info",
+      });
+      return;
     }
 
     try {
       setIsGeneratingRank(true);
 
-      // Fetch all students in the selected class
-      const studentsQuery = query(collection(db, "STUDENTS"), where("class", "==", selectedClass));
+      // Fetch all students for the selected class
+      const studentsQuery = query(
+        collection(db, "STUDENTS"),
+        where("class", "==", selectedClass)
+      );
       const studentsSnap = await getDocs(studentsQuery);
 
       if (studentsSnap.empty) {
@@ -160,49 +181,48 @@ function PrintRankList() {
 
       let allStudentList: StudentDetailsType[] = [];
       studentsSnap.forEach((doc) => {
-        allStudentList.push({ id: doc.id, ...doc.data() } as StudentDetailsType);
+        allStudentList.push({
+          id: doc.id,
+          ...doc.data(),
+        } as StudentDetailsType);
       });
 
       let markSheetTempListExtended: ExtendedRankType[] = [];
 
-      // Fetch all student results in parallel
       const resultPromises = allStudentList.map(async (student) => {
-        const resultQuery = collection(db, "STUDENTS", student.id, "PUBLISHED_RESULTS");
+        const resultQuery = collection(
+          db,
+          "STUDENTS",
+          student.id,
+          "PUBLISHED_RESULTS"
+        );
         const resultSnap = await getDocs(resultQuery);
 
         resultSnap.forEach((resDoc) => {
           const res = resDoc.data() as resultType;
           if (res.examId === selectedExam) {
-
             if (!Array.isArray(res.result)) {
               console.error("Error: res.result is not an array!", res.result);
-              return; // Prevent further processing if the data is invalid
+              return;
             }
 
             //calculate total marks
             let totalMarks = res.result.reduce((total, item) => {
-              const fullMarkForSubject = fullMarks[item.paperId as keyof typeof fullMarks] || 0;
+              const fullMarkForSubject =
+                fullMarks[item.paperId as keyof typeof fullMarks] || 0;
               return total + fullMarkForSubject;
             }, 0);
 
-            //paper mark obtained
             let marksObtained = res.result.reduce((total, item) => {
+              const obtainedMarkCalculated =
+                item.paperId === "DRAWING"
+                  ? 0
+                  : Number(item.paperMarkTheory) +
+                    Number(item.paperMarkPractical);
 
-              let obtainedMarkCalculated;
-              if (themeExam === "total-pass-design") {
-                obtainedMarkCalculated = Number(item.paperMarkObtained);
-
-              } else {
-                obtainedMarkCalculated =
-                  item.paperId === "DRAWING"
-                    ? 0
-                    : Number(item.paperMarkTheory) + Number(item.paperMarkPractical);
-              }
-
-              return total + obtainedMarkCalculated!;
+              return total + obtainedMarkCalculated;
             }, 0);
 
-            console.log("Marks Obtained:", marksObtained)
             markSheetTempListExtended.push({
               studentId: student.admission_no,
               studentName: student.student_name,
@@ -213,36 +233,42 @@ function PrintRankList() {
               rollNumber: Number(student.class_roll),
               subjectMarks: res.result.map((item) => ({
                 subject: item.paperId,
-                marks: themeExam === "total-pass-design" ? Number(item.paperMarkObtained) : Number(item.paperMarkTheory) + Number(item.paperMarkPractical),
-              }),
-              ),
+                marks:
+                  Number(item.paperMarkTheory) +
+                  Number(item.paperMarkPractical),
+              })),
             });
           }
         });
       });
 
-      await Promise.all(resultPromises); // Wait for all result fetches
+      await Promise.all(resultPromises);
 
-      // Sort students by marks obtained in descending order
-      markSheetTempListExtended.sort((a, b) => b.marksObtained - a.marksObtained);
+      markSheetTempListExtended.sort(
+        (a, b) => b.marksObtained - a.marksObtained
+      );
 
-      console.log("MarksheetList after sorting", markSheetTempListExtended)
-      // Assign ranks, ensuring students with the same marks get the same rank
+      // Assign ranks
       let currentRank = 1;
       markSheetTempListExtended.forEach((student, index) => {
-        if (index > 0 && student.marksObtained === markSheetTempListExtended[index - 1].marksObtained) {
-          student.rankObtained = markSheetTempListExtended[index - 1].rankObtained;
+        if (
+          index > 0 &&
+          student.marksObtained ===
+            markSheetTempListExtended[index - 1].marksObtained
+        ) {
+          student.rankObtained =
+            markSheetTempListExtended[index - 1].rankObtained;
         } else {
           student.rankObtained = currentRank;
-          currentRank++;
         }
+        currentRank++;
       });
 
-      setStudentRankDetails(markSheetTempListExtended);
-      printRankList(markSheetTempListExtended);
-      setIsGeneratingRank(false);
-      enqueueSnackbar("Rank List Generated successfully!", { variant: "success" });
+      console.log("markSheetTempListExtended", markSheetTempListExtended);
 
+      setStudentRankDetails(markSheetTempListExtended);
+      generateTopperList();
+      setIsGeneratingRank(false);
     } catch (err) {
       console.error("Error generating student ranks:", err);
       setIsGeneratingRank(false);
@@ -256,7 +282,7 @@ function PrintRankList() {
       <LSPage>
         <BreadCrumbsV2
           Icon={IconBrandTinder}
-          Path="School Results/Print Rank List"
+          Path="School Results/Print Topper List"
         />
         <Paper sx={{ p: "10px", mt: "8px" }}>
           <Stack
@@ -265,7 +291,7 @@ function PrintRankList() {
             justifyContent="space-between"
           >
             <Box>
-              <Typography level="title-md">Print Rank List</Typography>
+              <Typography level="title-md">Print Toper List</Typography>
             </Box>
             <Stack direction="row" alignItems="center" gap={1.5}>
               <Select
@@ -292,17 +318,16 @@ function PrintRankList() {
                 sx={{ ml: "8px" }}
                 startDecorator={<Print />}
                 loading={isGeneratingRank}
-                onClick={printStudentRank}
+                onClick={printTopperStudents}
               >
-                Print Rank List
+                Print Topper List
               </Button>
             </Stack>
           </Stack>
         </Paper>
         <br />
 
-        {
-          pdfUrl &&
+        {pdfUrl && (
           <>
             <Chip sx={{ mt: "8px", mb: "8px" }}>
               Total student count :{studentRankDetails.length}
@@ -317,12 +342,10 @@ function PrintRankList() {
               />
             </Paper>
           </>
-
-        }
-
+        )}
       </LSPage>
     </PageContainer>
   );
 }
 
-export default PrintRankList;
+export default PrintTopperList;
