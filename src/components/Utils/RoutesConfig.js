@@ -28,6 +28,7 @@ import ExamPlanner from "pages/ResultsManagement/ExamPlanner";
 import Transport from "pages/transport/Transport";
 import PrintRankList from "pages/ResultsManagement/PrintRankList";
 import Expenses from "pages/expenses/Expenses";
+import StudentMigration from "pages/Users/StudentMigration";
 
 export const routesConfig = [
   {
@@ -226,6 +227,13 @@ export const routesConfig = [
         isCollapsable: false,
         isHeader: false,
         Component: <PrintRankList />,
+      },
+      {
+        title: "Class Migration",
+        to: "schoolResults/class-migration",
+        isCollapsable: false,
+        isHeader: false,
+        Component: <StudentMigration />,
       },
     ],
   },

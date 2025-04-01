@@ -25,6 +25,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import FacultyAttendance from "pages/Attendance/FacultyAttendance/facultyAttendance";
 import PrintRankList from "pages/ResultsManagement/PrintRankList";
 import PdfLivePreview from "pages/PdfJsLiveEditor/PdfLivePreview";
+import StudentMigration from "pages/Users/StudentMigration";
 
 // Lazy Loaded Components
 const FeeReceipt = Loadable(lazy(() => import("pages/FeeManager/FeeReceipt")));
@@ -116,7 +117,7 @@ function App() {
     return () => unsubscribe();
   }, []);
 
-  console.log("Version: 1.0.0");
+  console.log("Version: 1.2.0");
 
   return (
     <AuthProvider>
@@ -140,6 +141,7 @@ function App() {
                     path="students/view-students"
                     element={<ViewStudents />}
                   />
+                 
 
                   <Route path="/view-faculties" element={<UnderConstruction />} />
                   <Route path="/Faculties/:id" element={<FacultyDetail />} />
@@ -194,6 +196,10 @@ function App() {
                   <Route
                     path="/schoolResults/print-results"
                     element={<PrintResult />}
+                  />
+                   <Route
+                    path="schoolResults/class-migration"
+                    element={<StudentMigration />}
                   />
                   {/* Exam Management routes */}
                   <Route path="/print-id-cards" element={<IdCardGeneration />} />

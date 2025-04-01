@@ -184,6 +184,14 @@ function PrintResult() {
       return;
     }
 
+    if (!examsList) {
+      enqueueSnackbar("Failed to load exam config, try again!", { variant: "info" });
+      return
+    }
+
+
+    const currentTheme = examsList.find((item) => item.examId === selectedExam)?.marksheetDesign;
+
     try {
       setIsGeneratingRank(true);
 
@@ -218,12 +226,18 @@ function PrintResult() {
               console.error("Error: res.result is not an array!", res.result);
               return; // Prevent further processing if the data is invalid
             }
-            let marksObtained = res.result.reduce((total, item) => {
-              const obtainedMarkCalculated =
-                item.paperId === "DRAWING"
-                  ? 0
-                  : Number(item.paperMarkTheory) + Number(item.paperMarkPractical);
 
+
+            let marksObtained = res.result.reduce((total, item) => {
+              let obtainedMarkCalculated;
+              if (currentTheme === "total-pass-design") {
+                obtainedMarkCalculated = Number(item.paperMarkObtained)
+              } else {
+                obtainedMarkCalculated =
+                  item.paperId === "DRAWING"
+                    ? 0
+                    : Number(item.paperMarkTheory) + Number(item.paperMarkPractical);
+              }
               return total + obtainedMarkCalculated;
             }, 0);
 
@@ -251,9 +265,33 @@ function PrintResult() {
       markSheetTempList.sort((a, b) => b.marksObtained - a.marksObtained);
       markSheetTempListExtended.sort((a, b) => b.marksObtained - a.marksObtained);
 
-      // Assign ranks
-      markSheetTempList.forEach((student, index) => (student.rankObtained = index + 1));
-      markSheetTempListExtended.forEach((student, index) => (student.rankObtained = index + 1));
+
+      // Assign ranks, ensuring students with the same marks get the same rank
+      let currentRank = 1;
+      markSheetTempList.forEach((student, index) => {
+        if (index > 0 && student.marksObtained === markSheetTempList[index - 1].marksObtained) {
+          student.rankObtained = markSheetTempList[index - 1].rankObtained;
+        } else {
+          student.rankObtained = currentRank;
+        }
+        currentRank++;
+      });
+
+
+      currentRank = 1;
+      markSheetTempListExtended.forEach((student, index) => {
+        if (index > 0 && student.marksObtained === markSheetTempListExtended[index - 1].marksObtained) {
+          student.rankObtained = markSheetTempListExtended[index - 1].rankObtained;
+        } else {
+          student.rankObtained = currentRank;
+          currentRank++;
+        }
+      });
+
+
+
+      console.log("Marksheet Temp:", markSheetTempList)
+      console.log("Marksheet Temp Ex:", markSheetTempListExtended)
 
       // Upload rank to Firestore
       const rankData = {
@@ -261,6 +299,7 @@ function PrintResult() {
         lastUpdated: new Date(),
         studentRanks: markSheetTempList,
       };
+
       try {
         const docRef = doc(db, "RESULTS", "" + selectedClass);
         await setDoc(docRef, rankData);

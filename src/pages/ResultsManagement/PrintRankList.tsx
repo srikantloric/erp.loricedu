@@ -226,6 +226,7 @@ function PrintRankList() {
       // Sort students by marks obtained in descending order
       markSheetTempListExtended.sort((a, b) => b.marksObtained - a.marksObtained);
 
+      console.log("MarksheetList after sorting", markSheetTempListExtended)
       // Assign ranks, ensuring students with the same marks get the same rank
       let currentRank = 1;
       markSheetTempListExtended.forEach((student, index) => {
@@ -233,11 +234,9 @@ function PrintRankList() {
           student.rankObtained = markSheetTempListExtended[index - 1].rankObtained;
         } else {
           student.rankObtained = currentRank;
+          currentRank++;
         }
-        currentRank++;
       });
-
-      console.log("markSheetTempListExtended", markSheetTempListExtended);
 
       setStudentRankDetails(markSheetTempListExtended);
       printRankList(markSheetTempListExtended);
