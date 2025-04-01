@@ -107,15 +107,15 @@ function PrintTopperList() {
       examsList.find((item) => item.examId === selectedExam)?.examTitle ||
       "N/A";
 
-    if (studentRankDetails.length < 3) {
-      enqueueSnackbar("Not enough students to generate topper list!", {
-        variant: "warning",
-      });
-      return;
-    }
+    // if (studentRankDetails.length < 3) {
+    //   enqueueSnackbar("Not enough students to generate topper list!", {
+    //     variant: "warning",
+    //   });
+    //   return;
+    // }
 
     const topperList = studentRankDetails.slice(0, 3).map((student) => {
-      // Calculate totalFullMarks dynamically based on the subjects the student has taken
+      // Calculating totalFullMarks dynamically based on the subjects
       const totalFullMarks = student.subjectMarks.reduce((total, subject) => {
         const fullMarkForSubject =
           fullMarks[subject.subject as keyof typeof fullMarks] || 0;
@@ -269,9 +269,6 @@ function PrintTopperList() {
       setStudentRankDetails(markSheetTempListExtended);
       generateTopperList();
       setIsGeneratingRank(false);
-      enqueueSnackbar("Rank List Generated successfully!", {
-        variant: "success",
-      });
     } catch (err) {
       console.error("Error generating student ranks:", err);
       setIsGeneratingRank(false);

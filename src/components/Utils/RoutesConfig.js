@@ -27,8 +27,8 @@ import AddStudentNew from "pages/Users/AddStudentNew";
 import ExamPlanner from "pages/ResultsManagement/ExamPlanner";
 import Transport from "pages/transport/Transport";
 import PrintRankList from "pages/ResultsManagement/PrintRankList";
-import Expenses from "pages/expenses/Expenses";
 import PrintTopperList from "pages/ResultsManagement/PrintToperList";
+import Expenses from "pages/expenses/Expenses";
 
 export const routesConfig = [
   {

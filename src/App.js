@@ -187,10 +187,12 @@ function App() {
                     path="/schoolResults/print-rank-list"
                     element={<PrintRankList />}
                   />
+
                   <Route
                     path="/schoolResults/print-toppers-list"
                     element={<PrintTopperList />}
                   />
+
                   <Route
                     path="/schoolResults/exam-planner"
                     element={<ExamPlanner />}

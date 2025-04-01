@@ -175,9 +175,9 @@ export const TopperListGenerator = async (
     doc.setFontSize(14);
     doc.setTextColor(255, 255, 255);
     doc.text(
-      examName.toUpperCase() + " - " + "( " + session.toUpperCase() + " )",
-      pageMargin + effectiveWidth / 2 - 30,
-      pageMargin + 36
+      examName.toUpperCase() + " - " + "(" + session.toUpperCase() + ")",
+      pageMargin + effectiveWidth / 2 - 50,
+      pageMargin + 38
     );
 
     //Toper List
@@ -186,9 +186,9 @@ export const TopperListGenerator = async (
     const cardHeight = 70;
     const xStart = pageMargin;
     const yStart = Math.min(
-      effectiveHeight - pageMargin - 90, // Ensure space above the footer
+      effectiveHeight - pageMargin - 90,
       Math.max(
-        pageMargin + 120, // Adjusted to move the topper list slightly up
+        pageMargin + 120,
         (effectiveHeight -
           Math.ceil(topperList.length / membersPerRow) * (cardHeight + 10)) /
           2 +
@@ -201,11 +201,9 @@ export const TopperListGenerator = async (
       const yOffset =
         yStart + Math.floor(index / membersPerRow) * (cardHeight + 10);
 
-      // Get the image URL from topper object
       const topperImage = topper.imageUrl;
 
-      // Draw circular background
-      const circleRadius = 25; // Radius of the circular background
+      const circleRadius = 25;
       const circleCenterX = xOffset + cardWidth / 2;
       const circleCenterY = yOffset + circleRadius;
 
@@ -214,9 +212,9 @@ export const TopperListGenerator = async (
 
       // Add topper image on top of the circular background
       if (topperImage) {
-        const imageWidth = 40; // Width of the image
-        const imageHeight = 40; // Height of the image
-        const imageYOffset = yOffset + 5; // Adjusted position
+        const imageWidth = 40;
+        const imageHeight = 40;
+        const imageYOffset = yOffset + 5;
         doc.addImage(
           topperImage,
           "JPEG",
@@ -236,7 +234,7 @@ export const TopperListGenerator = async (
       doc.setFillColor("#093d91"); // Blue color
       doc.rect(rectX + 5, rectY, rectWidth, rectHeight, "F");
 
-      // Add topper details inside the rectangle
+      // Topper details inside the rectangle
       doc.setFontSize(10);
       doc.setFont("Poppins", "bold");
       doc.setTextColor(255, 255, 255); // White text color
