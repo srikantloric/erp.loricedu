@@ -37,8 +37,18 @@ export type StudentDetailsType = {
   generatedChallans: string[];
   fee_discount?: number | null;
   updated_at?: FieldValue | null;
-  student_pass?:string
+  student_pass?: string,
+  promotionHistory?: PromotionRecord[],
+  status?: "Pending"|"Promoted",
+  lastPromotedAt?: FieldValue | Timestamp
 };
+
+type PromotionRecord = {
+  from: string
+  to: string
+  date: FieldValue | Timestamp
+}
+
 
 export interface StudentFeeDetailsType {
   credit_by: string;

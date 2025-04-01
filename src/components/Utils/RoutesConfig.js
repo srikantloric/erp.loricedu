@@ -235,6 +235,9 @@ export const routesConfig = [
         isCollapsable: false,
         isHeader: false,
         Component: <StudentMigration />,
+      },
+      {
+
         title: "Print Toppers List",
         to: "schoolResults/print-toppers-list",
         isCollapsable: false,
