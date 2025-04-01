@@ -225,7 +225,7 @@ function StudentMigration() {
                                         </Select>
                                         <FormHelperText>Total Count: {students.length}</FormHelperText>
                                     </FormControl>
-                                    <img src={ArrowMigration} height={40} />
+                                    <img src={ArrowMigration} height={40} alt="promoted students"/>
                                     <FormControl>
                                         <FormLabel>After Promotion Class</FormLabel>
                                         <Select
