@@ -27,6 +27,7 @@ import AddStudentNew from "pages/Users/AddStudentNew";
 import ExamPlanner from "pages/ResultsManagement/ExamPlanner";
 import Transport from "pages/transport/Transport";
 import PrintRankList from "pages/ResultsManagement/PrintRankList";
+import PrintTopperList from "pages/ResultsManagement/PrintToperList";
 import Expenses from "pages/expenses/Expenses";
 import StudentMigration from "pages/Users/StudentMigration";
 
@@ -234,6 +235,11 @@ export const routesConfig = [
         isCollapsable: false,
         isHeader: false,
         Component: <StudentMigration />,
+        title: "Print Toppers List",
+        to: "schoolResults/print-toppers-list",
+        isCollapsable: false,
+        isHeader: false,
+        Component: <PrintTopperList />,
       },
     ],
   },
