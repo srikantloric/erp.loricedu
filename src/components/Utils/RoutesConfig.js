@@ -28,6 +28,7 @@ import ExamPlanner from "pages/ResultsManagement/ExamPlanner";
 import Transport from "pages/transport/Transport";
 import PrintRankList from "pages/ResultsManagement/PrintRankList";
 import Expenses from "pages/expenses/Expenses";
+import PrintTopperList from "pages/ResultsManagement/PrintToperList";
 
 export const routesConfig = [
   {
@@ -226,6 +227,13 @@ export const routesConfig = [
         isCollapsable: false,
         isHeader: false,
         Component: <PrintRankList />,
+      },
+      {
+        title: "Print Toppers List",
+        to: "schoolResults/print-toppers-list",
+        isCollapsable: false,
+        isHeader: false,
+        Component: <PrintTopperList />,
       },
     ],
   },
