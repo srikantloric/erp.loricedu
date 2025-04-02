@@ -38,6 +38,9 @@ function StudentMigration() {
             return
         }
 
+        setStudents([])
+        setSelectedData([])
+
         const sessionId = "SESSION_2024_25";
         //fetch already promoted students id from session
         const promotionRef = doc(db, "STUDENTS_PROMOTIONS", sessionId)
@@ -75,6 +78,8 @@ function StudentMigration() {
             } else {
                 setAfterMigrationClass(selectedClass + 1)
             }
+            setStudents([])
+            setSelectedData([])
         }
     }, [selectedClass])
 
@@ -225,7 +230,7 @@ function StudentMigration() {
                                         </Select>
                                         <FormHelperText>Total Count: {students.length}</FormHelperText>
                                     </FormControl>
-                                    <img src={ArrowMigration} height={40} alt="promoted students"/>
+                                    <img src={ArrowMigration} height={40} alt="promoted students" />
                                     <FormControl>
                                         <FormLabel>After Promotion Class</FormLabel>
                                         <Select
