@@ -18,6 +18,8 @@ import { Visibility, VisibilityOff } from "@mui/icons-material";
 
 import IllustrationImg from "../../assets/illustration.png";
 import LoricEduLogo from "../../assets/loric-edu/loric-edu-color.png";
+import OpsLogo from "../../assets/school-logos/ops-logo.png";
+import ApxLogo from "../../assets/school-logos/apx-school.png";
 
 import { useAuth } from "../../context/AuthContext";
 
@@ -26,6 +28,24 @@ import { collection, query, where, getDocs } from "firebase/firestore";
 import { Typography } from "@mui/joy";
 import { useSchoolId } from "hooks/useSchoolId";
 import { dbMaster } from "../../firebase";
+
+
+
+const SchoolLogo = () => {
+
+  const schoolDomain = window.location.hostname;
+
+  if (schoolDomain === "apxschool.org") {
+    return <img src={ApxLogo} alt="school-logo" height={100} style={{ borderRadius: "50%", border: "2px solid orange",padding:"6px" }} />
+  }
+  else if (schoolDomain === "orientpublicschool.org") {
+    return <img src={OpsLogo} alt="school-logo" height={100} style={{ borderRadius: "50%", border: "2px solid orange",padding:"6px" }} />
+  }
+  else {
+    return <img src={LoricEduLogo} alt="school-logo" height={80} />
+  }
+}
+
 
 function Login() {
   const [username, setUsername] = useState("");
@@ -36,11 +56,7 @@ function Login() {
 
   const navigate = useNavigate();
   const { updateSchoolId } = useSchoolId();
-
-
-
   const { login, currentUser } = useAuth();
-
 
   const handleOnSubmit = async (e: any) => {
     e.preventDefault();
@@ -85,7 +101,8 @@ function Login() {
       </div>
       <div className="right-section">
         <div className="login-card" style={{ flex: 1 }}>
-          <img src={LoricEduLogo} alt="school-logo" height={80} />
+          {/* <img src={LoricEduLogo} alt="school-logo" height={80} /> */}
+          <SchoolLogo />
           <p>Login To School Admin Pannel</p>
           <form className="form-control" onSubmit={handleOnSubmit}>
             <FormControl sx={{ width: "100%", mb: 2 }} variant="outlined">
@@ -103,13 +120,11 @@ function Login() {
                 label="Username"
               />
             </FormControl>
-
             <FormControl sx={{ width: "100%", mb: 2 }} variant="outlined">
               <InputLabel>Password</InputLabel>
               <OutlinedInput
                 type={visibility ? "text" : "password"}
                 value={password}
-
                 onChange={(e) => setPassword(e.target.value)}
                 endAdornment={
                   <InputAdornment position="end">
@@ -121,7 +136,6 @@ function Login() {
                 label="Password"
               />
             </FormControl>
-
             <div className="auth-recovery">
               <FormGroup sx={{ ml: 1 }}>
                 <FormControlLabel control={<Checkbox />} label="Remember me" />
