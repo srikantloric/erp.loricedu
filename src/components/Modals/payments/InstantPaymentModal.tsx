@@ -16,7 +16,7 @@ import {
   Stack,
   Typography,
 } from "@mui/joy";
-import { FEE_HEADERS } from "../../constants/index";
+import { FEE_HEADERS } from "../../../constants/index";
 import { Additem } from "iconsax-react";
 import { useEffect, useState } from "react";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
@@ -60,8 +60,8 @@ const InstantPaymentModal: React.FC<Props> = ({
   studentMasterData,
 }) => {
 
-    //Get Firebase DB instance
-    const {db} = useFirebase();
+  //Get Firebase DB instance
+  const { db } = useFirebase();
 
   const [showMoreHeader, setShowMoreHeaders] = useState<boolean>(false);
 
@@ -125,35 +125,35 @@ const InstantPaymentModal: React.FC<Props> = ({
 
 
   const generateFeeChallan = async () => {
-    
+
     if (!studentMasterData) {
       enqueueSnackbar("Failed to fetch student data!", { variant: "error" });
       return;
     }
-  
+
     const studentDocRef = doc(db, "STUDENTS", studentMasterData.id);
     const studentSnap = await getDoc(studentDocRef);
-  
+
     if (!studentSnap.exists()) {
       enqueueSnackbar("Unable to fetch student details!", { variant: "error" });
       return;
     }
-  
+
     const studentMasterDataUpdated = studentSnap.data() as StudentDetailsType;
     const challanDocId = generateChallanDocId(selectedMonth, selectedYear);
-  
+
     const isAlreadyGenerated = studentMasterDataUpdated.generatedChallans?.includes(challanDocId) || false;
-  
+
     if (isAlreadyGenerated) {
       enqueueSnackbar("Fee Challan Already Exists for this Month & Year.", { variant: "error" });
       return;
     }
-  
-    const { totalFeeAmount, feeHeaderList } = generateFeeHeadersForChallanWithMarkedAsPaid(
+
+    const { totalFeeAmount: baseTotalFeeAmount, feeHeaderList } = generateFeeHeadersForChallanWithMarkedAsPaid(
       studentMasterDataUpdated,
       isMarkedAsPaid
     );
-  
+
     const additionalFeeHeaders: IChallanHeaderType[] = [
       { headerTitle: "admissionFee", amount: feeDetail.admissionFee },
       { headerTitle: "annualFee", amount: feeDetail.annualFee },
@@ -168,7 +168,7 @@ const InstantPaymentModal: React.FC<Props> = ({
         amountPaidTotal: isMarkedAsPaid ? fee.amount : 0,
         amountPaid: isMarkedAsPaid ? fee.amount : 0,
       }));
-  
+
     if (feeDetail.lateFine) {
       additionalFeeHeaders.push({
         amount: feeDetail.lateFine,
@@ -178,10 +178,14 @@ const InstantPaymentModal: React.FC<Props> = ({
         amountPaid: isMarkedAsPaid ? feeDetail.lateFine : 0,
       });
     }
-  
+
+    // Calculate the total amount including additional fee headers
+    const additionalFeeTotal = additionalFeeHeaders.reduce((sum, header) => sum + header.amount, 0);
+    const totalFeeAmount = baseTotalFeeAmount + additionalFeeTotal;
+
     const finalFeeHeader = [...feeHeaderList, ...additionalFeeHeaders];
     const challanTitle = getChallanTitle(selectedMonth!, selectedYear!);
-  
+
     const challan: IChallanNL = {
       challanTitle,
       studentId: studentMasterDataUpdated.id,
@@ -196,18 +200,18 @@ const InstantPaymentModal: React.FC<Props> = ({
       feeDiscount: studentMasterDataUpdated.fee_discount || 0,
       feeConsession: feeDetail.feeConsession,
     };
-  
+
     const batch = writeBatch(db);
     const challanDocRef = doc(collection(studentDocRef, "CHALLANS"), challanDocId);
-  
+
     // Updating generatedChallans array
     batch.update(studentDocRef, {
       generatedChallans: [...(studentMasterDataUpdated.generatedChallans || []), challanDocId],
     });
-  
+
     // Adding challan to Firestore
     batch.set(challanDocRef, challan);
-  
+
     // Adding fee concession log if applicable
     if (feeDetail.feeConsession) {
       const feeConsessionLogRef = doc(collection(studentDocRef, "CONSESSION_LOG"));
@@ -221,7 +225,7 @@ const InstantPaymentModal: React.FC<Props> = ({
         consessionAuthPerson: "Instant Pay",
       });
     }
-  
+
     // If marked as paid, add to payments
     if (isMarkedAsPaid) {
       const paymentData: IPaymentNL = {
@@ -237,14 +241,14 @@ const InstantPaymentModal: React.FC<Props> = ({
         status: "PAID",
         feeConsession: feeDetail.feeConsession,
       };
-  
+
       const paymentCollRef = doc(collection(studentDocRef, "PAYMENTS"));
       const paymentCollRefGlobal = doc(collection(db, "MY_PAYMENTS"));
-  
+
       batch.set(paymentCollRef, paymentData);
       batch.set(paymentCollRefGlobal, paymentData);
     }
-  
+
     try {
       await batch.commit();
       setOpen(false);

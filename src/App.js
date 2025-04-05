@@ -26,7 +26,7 @@ import StudentMigration from "pages/Users/StudentMigration";
 import PrintTopperList from "pages/ResultsManagement/PrintToperList";
 
 // Lazy Loaded Components
-const FeeReceipt = Loadable(lazy(() => import("pages/FeeManager/FeeReceipt")));
+
 
 const GenerateQrSticker = Loadable(
   lazy(() => import("pages/Attendance/GenerateQrSticker"))
@@ -41,9 +41,7 @@ const AdmissionEnquiry = Loadable(
   lazy(() => import("pages/Admission/AdmissionEnquiry"))
 );
 
-const GenerateMonthlyChallan = Loadable(
-  lazy(() => import("pages/FeeManager/GenerateChallan/GenerateMontlyChallan"))
-);
+
 const ViewStudentProfile = Loadable(
   lazy(() => import("pages/Users/StudentProfile/ViewStudentProfile"))
 );
@@ -149,15 +147,7 @@ function App() {
                   <Route
                     path="/FeeManagement/FeeDetails/:id"
                     element={<StudentFeeDetails />}
-                  />
-                  <Route
-                    path="accountings/generate-monthly-fee"
-                    element={<GenerateMonthlyChallan />}
-                  />
-                  <Route
-                    path="accountings/generate-custom-fee"
-                    element={<GenerateMonthlyChallan />}
-                  />
+                  />            
                   <Route
                     path="attendance/show-student-attendance"
                     element={<ViewAttendance />}
@@ -178,8 +168,7 @@ function App() {
                     path="/students/profile/:id"
                     element={<ViewStudentProfile />}
                   />
-                  <Route path="feeReciept" element={<FeeReceipt />} />
-
+               
                   {/* Exam Management routes */}
                   <Route
                     path="/schoolResults/update-results"

@@ -92,44 +92,6 @@ export function distributePaidAmountForChallan(
 
   return updatedFeeHeaders;
 }
-// export function distributePaidAmount(
-//   challan: IChallanNL,
-//   receivedAmount: number,
-//   isPartialPayment: boolean
-// ): IChallanHeaderType[] {
-//   const updatedFeeHeaders: IChallanHeaderType[] = challan.feeHeaders.map(
-//     (header) => ({
-//       ...header,
-//     })
-//   );
-
-//   if (isPartialPayment) {
-//     let remainingAmount = receivedAmount;
-
-//     // Sort headers by priority: let's assume priority is based on the order they appear
-//     for (let header of updatedFeeHeaders) {
-//       const amountDue = header.amount - header.amountPaid;
-//       if (amountDue > 0) {
-//         // Only consider headers with remaining due
-//         if (remainingAmount >= amountDue) {
-//           header.amountPaid += amountDue;
-//           remainingAmount -= amountDue;
-//         } else {
-//           header.amountPaid += remainingAmount;
-//           remainingAmount = 0;
-//           break; // No more amount to distribute
-//         }
-//       }
-//     }
-//   } else {
-//     // Full payment scenario
-//     updatedFeeHeaders.forEach((header) => {
-//       header.amountPaid = header.amount; // Set amountPaid to the full amount
-//     });
-//   }
-
-//   return updatedFeeHeaders;
-// }
 
 ///generate Monthly Fee Challan
 interface StudentData {
@@ -393,3 +355,5 @@ export const extractChallanIdsAndHeaders = (
 export const generateRandomSixDigitNumber = (): number => {
   return Math.floor(100000 + Math.random() * 900000); // Generates a number between 100000 and 999999
 };
+
+

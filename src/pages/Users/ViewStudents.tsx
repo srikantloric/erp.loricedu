@@ -13,7 +13,6 @@ import {
   Typography,
 } from "@mui/material";
 
-import Styles from "./ViewStudents.module.scss";
 import { Link, useNavigate } from "react-router-dom";
 import GrainIcon from "@mui/icons-material/Grain";
 import SearchIcon from "@mui/icons-material/Search";
@@ -79,7 +78,7 @@ function ViewStudents() {
   const [filterChip, setFilterChip] = useState(false);
   const [filterChipLabel, setFilterChipLabel] = useState<string>("");
 
-  const session ="2025/26"
+  const session = "2025/26"
   const [selectedClass, setSelectedClass] = useState<any>(-1);
   const [selectedSection, setSelectedSection] = useState<any>(-1);
 
@@ -124,7 +123,7 @@ function ViewStudents() {
 
   const handleFilterButton = () => {
     if (selectedClass !== -1 && selectedSection !== -1) {
-  
+
       let dataNew = data.filter((data) => {
         return data.class === selectedClass && data.section === selectedSection;
       });
@@ -251,8 +250,8 @@ function ViewStudents() {
           deleteLoading={deleteLoading}
         />
         <Paper
-          sx={{ padding: "5px 10px", width: "100%" }}
-          className={Styles.viewStudentHeader}
+          sx={{ padding: "5px 10px", width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between" }}
+
         >
           <Breadcrumbs aria-label="breadcrumb">
             <a
@@ -492,7 +491,7 @@ function ViewStudents() {
             Suspend User
           </MenuItem> */}
         </Menu>
-       
+
       </LSPage>
     </PageContainer>
   );

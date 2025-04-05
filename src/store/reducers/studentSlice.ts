@@ -44,17 +44,26 @@ export const addstudent = createAsyncThunk<StudentDetailsType, { studentData: St
       const formattedCountValue = String(prevAdmissionNumber + 1).padStart(5, "0");
 
       // Extract password from DOB and generate email
-      const userPass = studentData.dob.split("-").reverse().join(""); // Assuming dob format is YYYY-MM-DD
+      const userPass = studentData.dob.split("-").reverse().join("");
+
+
+      //fetch school id from local storage
+      const schoolId = localStorage.getItem("schoolId")?.split("_")[1].substring(0, 3).concat(new Date().getFullYear().toString()).toUpperCase();
+
+      if (!schoolId) {
+        throw new Error("Unable to construct email. School ID not found.");
+      }
       const userEmail = `apx2025${formattedCountValue}@gmail.com`;
 
       const docId = generateFirebaseUID();
+      const admissionNo = `${schoolId}${formattedCountValue}`;
 
       studentData = {
         ...studentData,
         student_id: userEmail,
         student_pass: userPass,
         id: docId,
-        admission_no: `APX2025${formattedCountValue}`,
+        admission_no: admissionNo,
         created_at: serverTimestamp(),
       };
 

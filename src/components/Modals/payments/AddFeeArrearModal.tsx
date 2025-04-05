@@ -10,7 +10,7 @@ import {
   Stack,
   Typography,
 } from "@mui/joy";
-import { FEE_HEADERS } from "../../constants/index";
+import { FEE_HEADERS } from "../../../constants/index";
 import { Additem } from "iconsax-react";
 import { useEffect, useState } from "react";
 import { enqueueSnackbar } from "notistack";
