@@ -7,53 +7,48 @@ import {
   POPPINS_REGULAR,
   POPPINS_SEMIBOLD,
   SCISSOR_ICON,
-} from "./Base64Url";
+} from "../../../utilities/Base64Url";
 
 import { StudentDetailsType } from "types/student";
 import { IChallanHeaderType } from "types/payment";
 import {
   generateQRCodeBase64,
   getClassNameByValue,
-} from "./UtilitiesFunctions";
+} from "../../../utilities/UtilitiesFunctions";
 import { getAppConfig } from "hooks/getAppConfig";
-import { enqueueSnackbar } from "notistack";
 import { SchoolConfigType } from "types/root";
+import { enqueueSnackbar } from "notistack";
 // import { db } from "../firebase";
 
 interface Props {
   studentMasterData: StudentDetailsType;
   feeHeaders: IChallanHeaderType[];
   challanMonths: string[];
-  totalAmount: number;
-  totalPaidAmount: number;
   paidAmount: number;
   discountAmount: number;
   recieptId: string;
   recieptDate: string;
   accountantName: string;
-  totalDueAmount: number;
   recieptGeneratorServerUrl: string;
   currentDueAmount: number;
 }
 
-export const GenerateFeeReciept = async ({
+export const GenerateFeeRecieptMonthly = async ({
   studentMasterData,
   feeHeaders,
   challanMonths,
-  totalAmount,
-  totalPaidAmount,
   paidAmount,
   discountAmount,
   recieptDate,
   recieptId,
   accountantName,
-  totalDueAmount,
   recieptGeneratorServerUrl,
   currentDueAmount,
 }: Props) => {
-  const config = getAppConfig() as SchoolConfigType;
-  if (!config) {
-    console.error("Error: App config not found.");
+
+  const schoolConfig = getAppConfig() as SchoolConfigType;
+  if (!schoolConfig) {
+    console.error("School configuration not found");
     enqueueSnackbar("Failed to load school configurations,please contact software vendor!")
     return;
   }
@@ -61,9 +56,10 @@ export const GenerateFeeReciept = async ({
     schoolName: SCHOOL_NAME,
     schoolAddress: SCHOOL_ADDRESS,
     schoolContact: SCHOOL_CONTACT,
-    schoolEmail: SCHOOL_EMAIL,
-    schoolLogoBase64:SCHOOL_LOGO_BASE64
-  } = config;
+    schoolLogoBase64: SCHOOL_LOGO_BASE64,
+    schoolEmail: SCHOOL_EMAIL
+  } = schoolConfig;
+
 
   if (studentMasterData) {
     //Page Size
@@ -114,6 +110,7 @@ export const GenerateFeeReciept = async ({
     ); // x, y, width, height
 
     //School logo
+
     doc.addImage(SCHOOL_LOGO_BASE64, "PNG", 12, 10, 25, 23);
     doc.addImage(SCHOOL_LOGO_BASE64, "PNG", pBorderPaddOffsetX + 5, 10, 25, 23);
 
@@ -226,11 +223,11 @@ export const GenerateFeeReciept = async ({
     doc.text("Fee Reciept", pBorderPadd + 3, 43);
     doc.text("Fee Reciept", pBorderPaddOffsetX + 3, 43);
 
-    doc.text("Session : 2024_25", pWidth - pBorderPadd - 2, 43, {
+    doc.text("Session : 2025/26", pWidth - pBorderPadd - 2, 43, {
       align: "right",
     });
     doc.text(
-      "Session : 2024_25",
+      "Session : 2025/26",
       pBorderPaddOffsetX + pWidth - pBorderPadd * 2,
       43,
       {
@@ -362,6 +359,7 @@ export const GenerateFeeReciept = async ({
       pBorderPaddOffsetX + 3,
       studentDetailsStartY + 12.5
     );
+
     const maxWidthh = 100; // Set your max width
     const addressLines = doc.splitTextToSize(studentMasterData.address, maxWidthh);
 
@@ -389,8 +387,9 @@ export const GenerateFeeReciept = async ({
       studentDetailsStartY + 16.5
     );
 
+
     //line before fee month details
-    const feeSectionStartPointY = 85;
+    const feeSectionStartPointY = 89;
 
     doc.setDrawColor("#949494");
     doc.setFont("Poppins", "normal");
@@ -408,7 +407,9 @@ export const GenerateFeeReciept = async ({
       feeSectionStartPointY - 6
     );
 
-    const feeMonthsString = challanMonths.filter((item, index) => challanMonths.indexOf(item) === index).join(", ");
+    const feeMonthsString = challanMonths
+      .filter((item, index) => challanMonths.indexOf(item) === index)
+      .join(", ");
 
     doc.text(
       "Fee Months : " + feeMonthsString,
@@ -515,6 +516,9 @@ export const GenerateFeeReciept = async ({
     // const rowCount = Math.max(2, feeHeaders.length);
 
     let counter = 0;
+    let lvTotalAmount = 0;
+    let lvTotalDue = 0;
+    let lvTotalPaidAmount = 0;
     for (let i = 0; i < feeHeaders.length; i++) {
       const item = feeHeaders[i] || {
         headerTitle: "",
@@ -522,10 +526,14 @@ export const GenerateFeeReciept = async ({
         amount: 0,
       };
 
-      if ((item.amountPaid === 0) && (item.amountDue === 0)) continue;
+      if (item.amountPaid === 0 && item.amountDue === 0) continue;
 
       feeTypeLayoutHeight = feeSectionStartPointY + (counter + 2) * 6;
       counter++;
+
+      lvTotalAmount += item.amount;
+      lvTotalDue += item.amountDue;
+      lvTotalPaidAmount += item.amountPaid;
 
       // Draw fee header title and amounts for each row
       doc.text(item.headerTitle, pBorderPadd + 3, feeTypeLayoutHeight);
@@ -664,11 +672,11 @@ export const GenerateFeeReciept = async ({
     );
 
     // total Amount
-    doc.text("Rs." + totalAmount, col1StartX + 3, feeTypeLayoutHeight + 7, {
+    doc.text("Rs." + lvTotalAmount, col1StartX + 3, feeTypeLayoutHeight + 7, {
       align: "left",
     });
     doc.text(
-      "Rs." + totalAmount,
+      "Rs." + lvTotalAmount,
       pBorderPaddOffsetX + col1StartX - 3,
       feeTypeLayoutHeight + 7,
       {
@@ -676,11 +684,11 @@ export const GenerateFeeReciept = async ({
       }
     );
     // total Due
-    doc.text("Rs." + totalDueAmount, col2StartX + 3, feeTypeLayoutHeight + 7, {
+    doc.text("Rs." + lvTotalDue, col2StartX + 3, feeTypeLayoutHeight + 7, {
       align: "left",
     });
     doc.text(
-      "Rs." + totalDueAmount,
+      "Rs." + lvTotalDue,
       pBorderPaddOffsetX + col2StartXCopy + 3,
       feeTypeLayoutHeight + 7,
       {
@@ -690,7 +698,7 @@ export const GenerateFeeReciept = async ({
 
     //totoal paid amount
     doc.text(
-      "Rs." + paidAmount,
+      "Rs." + lvTotalPaidAmount,
       pWidth - pBorderPadd - 3,
       feeTypeLayoutHeight + 7,
       {
@@ -698,7 +706,7 @@ export const GenerateFeeReciept = async ({
       }
     );
     doc.text(
-      "Rs." + paidAmount,
+      "Rs." + lvTotalPaidAmount,
       pBorderPaddOffsetX + pWidth - pBorderPadd * 2,
       feeTypeLayoutHeight + 7,
       {
@@ -735,13 +743,13 @@ export const GenerateFeeReciept = async ({
     /////Total paid amount
     doc.setFont("Poppins", "semibold");
     doc.text(
-      "Total Paid Amount: Rs." + totalPaidAmount,
+      "Total Paid Amount: Rs." + lvTotalPaidAmount,
       pWidth - pBorderPadd - 3,
       feeTypeLayoutHeight + 21,
       { align: "right" }
     );
     doc.text(
-      "Total Paid Amount: Rs." + totalPaidAmount,
+      "Total Paid Amount: Rs." + lvTotalPaidAmount,
       pBorderPaddOffsetX + pWidth - (pBorderPadd * 2 + 1),
       feeTypeLayoutHeight + 21,
       { align: "right" }
@@ -919,11 +927,11 @@ export const GenerateFeeReciept = async ({
     // const feeReciept = {
     //   challanMonths,
     //   feeHeaders,
-    //   totalAmount,
-    //   totalPaidAmount,
+    //   lvTotalAmount,
+    //   lvTotalPaidAmount,
     //   discountAmount,
     //   paidAmount,
-    //   totalDueAmount,
+    //   lvTotalDue,
     //   studentId: studentMasterData.id,
     //   accountantName,
     // };

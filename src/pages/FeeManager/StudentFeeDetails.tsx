@@ -6,34 +6,24 @@ import PrintIcon from "@mui/icons-material/Print";
 
 import {
   Divider,
-  FormControl,
   LinearProgress,
   ListItemIcon,
   Menu,
   MenuItem,
 } from "@mui/material";
 import ControlPointIcon from "@mui/icons-material/ControlPoint";
-import { CurrencyRupee, Delete, MoreVert, Print } from "@mui/icons-material";
+import { Delete, Print } from "@mui/icons-material";
 import PaymentIcon from "@mui/icons-material/Payment";
 import { useLocation, useNavigate } from "react-router-dom";
 import { enqueueSnackbar } from "notistack";
 import {
   Box,
-  Button,
-  Chip,
-  FormLabel,
-  IconButton,
-  Input,
-  Option,
-  Select,
-  Table,
-  Tooltip,
-  Typography,
+  Button
 } from "@mui/joy";
 import BreadCrumbsV3 from "components/Breadcrumbs/BreadCrumbsV3";
 import Navbar from "components/Navbar/Navbar";
-import AddFeeArrearModal from "components/Modals/AddFeeArrearModal";
-import { FEE_HEADERS, paymentStatus } from "../../constants/index";
+import AddFeeArrearModal from "components/Modals/payments/AddFeeArrearModal";
+
 import IndividualFeeDetailsHeader from "components/Headers/IndividualFeeDetailsHeader";
 import {
   IChallanHeaderTypeForChallan,
@@ -42,8 +32,7 @@ import {
   IPaymentNLForChallan,
   IPaymentStatus,
 } from "types/payment";
-import AddFeeConsessionModal from "components/Modals/AddFeeConsessionModal";
-import { MoneyRecive } from "iconsax-react";
+import AddFeeConsessionModal from "components/Modals/payments/AddFeeConsessionModal";
 import {
   formatedDate,
   generateAlphanumericUUID,
@@ -51,24 +40,25 @@ import {
 } from "utilities/UtilitiesFunctions";
 
 import SettingsIcon from "@mui/icons-material/Settings";
-import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
-import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
-import { AnimatePresence, motion } from "framer-motion";
-import InstantPaymentModal from "components/Modals/InstantPaymentModal";
+import InstantPaymentModal from "components/Modals/payments/InstantPaymentModal";
 import DiscountIcon from "@mui/icons-material/Discount";
-import DeleteChallanConfirmationDialog from "components/Modals/DeleteChallanConfirmationDialog";
+import DeleteChallanConfirmationDialog from "components/Dialog/DeleteChallanConfirmationDialog";
 import {
   distributePaidAmountForChallan,
   distributePaidAmountForTransaction,
   extractChallanIdsAndHeaders,
   generateRandomSixDigitNumber,
 } from "utilities/PaymentUtilityFunctions";
-import { GenerateFeeReciept } from "utilities/GenerateFeeReciept";
+import { GenerateFeeReciept } from "components/FeeManager/FeeReciepts/GenerateFeeReciept";
 import { StudentDetailsType } from "types/student";
 import ModalLoader from "components/Loader/ModalLoader";
-import { GenerateFeeRecieptMonthly } from "utilities/GenerateFeeRecieptMonthly";
+import { GenerateFeeRecieptMonthly } from "components/FeeManager/FeeReciepts/GenerateFeeRecieptMonthly";
 import { collection, doc, getDoc, getDocs, onSnapshot, orderBy, query, Timestamp, where, writeBatch } from "firebase/firestore";
 import { useFirebase } from "context/firebaseContext";
+import FeeChallanTable from "components/FeeManager/FeeChallanTable";
+import PartPaymentForm from "components/FeeManager/PartPaymentForm";
+import PaymentForm from "components/FeeManager/PaymentForm";
+
 const SearchAnotherButton = () => {
   const historyRef = useNavigate();
   return (
@@ -150,26 +140,20 @@ function StudentFeeDetails() {
 
   const [isGeneratingFeeReciept, setIsGeneratingFeeReciept] = useState(false);
 
-  ///////////////
   const [challanList, setChallanList] = useState<IChallanNL[]>([]);
 
   // Calculate total feeConsession and totalPaidAmount
   const calculateTotals = () => {
-    let totalConsession = 0;
-    let totalPaid = 0;
-    let totalDueAmount = 0;
+    const totals = challanList.reduce(
+      (acc, row) => ({
+        totalFeeConsession: acc.totalFeeConsession + (row.feeConsession || 0),
+        totalPaidAmount: acc.totalPaidAmount + (row.amountPaid || 0),
+        totalDueAmount: acc.totalDueAmount + (row.totalDue || 0),
+      }),
+      { totalFeeConsession: 0, totalPaidAmount: 0, totalDueAmount: 0 }
+    );
 
-    challanList.forEach((row) => {
-      totalConsession += row.feeConsession || 0;
-      totalPaid += row.amountPaid || 0;
-      totalDueAmount += row.totalDue || 0;
-    });
-
-    setTotalFeeHeaderData({
-      totalFeeConsession: totalConsession,
-      totalPaidAmount: totalPaid,
-      totalDueAmount: totalDueAmount,
-    });
+    setTotalFeeHeaderData(totals);
   };
 
   useEffect(() => {
@@ -232,15 +216,7 @@ function StudentFeeDetails() {
     }
   }, [selectedChallan, challanList]);
 
-  const dueDateCheck = (dueDate: Timestamp) => {
-    const dueDateModified = dueDate.toDate().getDate();
-    const currentDate = new Date().getDate();
-    let isPassed: boolean = false;
-    if (currentDate >= dueDateModified) {
-      isPassed = true;
-    }
-    return isPassed;
-  };
+
 
   const calculateTotalDueAmount = (challan: IChallanNL): number => {
     var totalDue: number = 0;
@@ -275,15 +251,7 @@ function StudentFeeDetails() {
 
     const fetchChallans = async () => {
       try {
-        let isLateFineApplicable = false;
 
-        // Fetch late fine config
-        const lateFineDocRef = doc(db, "CONFIG", "PAYMENT_CONFIG");
-        const lateFineSnap = await getDoc(lateFineDocRef);
-
-        if (lateFineSnap.exists()) {
-          isLateFineApplicable = lateFineSnap.data()?.applyLateFine || false;
-        }
 
         // Fetch student Fee details
         const studentId = location.state[0].id;
@@ -294,14 +262,6 @@ function StudentFeeDetails() {
           if (!snapshot.empty) {
             const challans: IChallanNL[] = snapshot.docs.map((doc) => {
               const challan = doc.data() as IChallanNL;
-
-              // Remove late fee if not applicable
-              if (!isLateFineApplicable && dueDateCheck(challan.dueDate)) {
-                challan.feeHeaders = challan.feeHeaders.filter(
-                  (header) => header.headerTitle !== "lateFee"
-                );
-              }
-
               challan.totalDue = calculateTotalDueAmount(challan);
               return challan;
             });
@@ -486,7 +446,7 @@ function StudentFeeDetails() {
   const handlePartPaymentSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (recievedAmountPartPayment) {
-      if (recievedAmountPartPayment! > selectedChallanDetails?.totalDue!) {
+      if (recievedAmountPartPayment > selectedChallanDetails?.totalDue!) {
         enqueueSnackbar("Amount is greater than due amount!", {
           variant: "error",
         });
@@ -526,7 +486,6 @@ function StudentFeeDetails() {
       }
 
       const paymentsData: IPaymentNL[] = snapshot.docs.map(doc => ({ ...(doc.data() as IPaymentNL) }));
-      console.log("Payment Data:", paymentsData);
 
       const recieptSnap = await getDoc(recieptConfigRef);
       const accountantName = recieptSnap.exists() ? recieptSnap.data()?.accountantName || "" : "";
@@ -563,7 +522,7 @@ function StudentFeeDetails() {
         iframe.onload = () => iframe.contentWindow?.print();
         document.body.appendChild(iframe);
       } else {
-        alert("Error generating receipt");
+        enqueueSnackbar("Error generating receipt",{variant:"error"});
       }
     } catch (error) {
       console.error("Error fetching payments:", error);
@@ -593,7 +552,6 @@ function StudentFeeDetails() {
         <Box sx={{ display: "flex", justifyContent: "end", mb: "0px" }}>
           <Box
             sx={{
-              // background: "var(--bs-gray-300)",
               borderTop: "1px solid var(--bs-gray-300)",
               borderLeft: "1px solid var(--bs-gray-300)",
               borderRight: "1px solid var(--bs-gray-300)",
@@ -622,543 +580,39 @@ function StudentFeeDetails() {
         </Box>
 
         <Box sx={{ border: "1px solid var(--bs-gray-300)", padding: "8px" }}>
-          <Box
-            component="form"
-            sx={{
-              display: "flex",
-              alignItems: "bottom",
-              gap: "10px",
-              alignContent: "baseline",
-            }}
-            m="10px"
-            onSubmit={(e) => handlePaymentRecieveButton(e, false)}
-          >
-            <FormControl required>
-              <FormLabel sx={{ color: "var(--bs-light-text)", m: "4px" }}>
-                Fee Collection Date
-              </FormLabel>
-              <Input
-                type="date"
-                slotProps={{
-                  input: {
-                    min: "2020-01-01",
-                    max: "2050-01-01",
-                  },
-                }}
-                value={feeCollectionDate!}
-                disabled={false}
-                onChange={(e) => setFeeCollectionDate(e.target.value)}
-              />
-            </FormControl>
-            <FormControl required>
-              <FormLabel sx={{ color: "var(--bs-light-text)", m: "4px" }}>
-                Select Fee Challan
-              </FormLabel>
-              <Select
-                placeholder="Select fee challans.."
-                required
-                sx={{ width: "280px" }}
-                value={selectedChallan}
-                onChange={(e, val) => setSelectedChallan(val)}
-              >
-                {feeChallans.length > 0 ? (
-                  feeChallans.map((item) => {
-                    return (
-                      <Option value={item.challanId}>
-                        Fee Challan ({item.challanTitle})
-                      </Option>
-                    );
-                  })
-                ) : (
-                  <Option value="none" disabled>
-                    None
-                  </Option>
-                )}
-              </Select>
-            </FormControl>
-            <FormControl required>
-              <FormLabel sx={{ color: "var(--bs-light-text)", m: "4px" }}>
-                Payment Method
-              </FormLabel>
-              <Select
-                placeholder="select payment medthod.."
-                required
-                value={selectedPaymentMethod}
-                onChange={(e, val) => setSelectedPaymentMethod(val)}
-                defaultValue="CASH"
-              >
-                <Option value="CASH">Cash</Option>
-                <Option value="ONLINE">Online</Option>
-              </Select>
-            </FormControl>
-
-            {!showPartPaymentOption ? (
-              <>
-                <FormControl required>
-                  <FormLabel sx={{ color: "var(--bs-light-text)", m: "4px" }}>
-                    Recieved Amount
-                  </FormLabel>
-                  <Input
-                    type="number"
-                    sx={{ width: "150px" }}
-                    disabled={true}
-                    placeholder="enter recieved amount"
-                    value={recievedAmount!}
-                    startDecorator={<CurrencyRupee fontSize="small" />}
-                  ></Input>
-                </FormControl>
-                <FormControl
-                  sx={{ display: "flex", justifyContent: "flex-end" }}
-                >
-                  <Button
-                    type="submit"
-                    startDecorator={<MoneyRecive />}
-                    loading={isPaymentLoading}
-                  >
-                    Recieve
-                  </Button>
-                </FormControl>
-              </>
-            ) : null}
-            <FormControl sx={{ display: "flex", justifyContent: "flex-end" }}>
-              <Tooltip title="Show part payment option">
-                <IconButton
-                  variant="solid"
-                  color="primary"
-                  onClick={() =>
-                    setShowPartPaymentOption(!showPartPaymentOption)
-                  }
-                >
-                  {showPartPaymentOption ? (
-                    <ArrowDropUpIcon />
-                  ) : (
-                    <ArrowDropDownIcon />
-                  )}
-                </IconButton>
-              </Tooltip>
-            </FormControl>
-          </Box>
+          <PaymentForm
+            feeCollectionDate={feeCollectionDate}
+            setFeeCollectionDate={setFeeCollectionDate}
+            feeChallans={feeChallans}
+            selectedChallan={selectedChallan}
+            setSelectedChallan={setSelectedChallan}
+            selectedPaymentMethod={selectedPaymentMethod}
+            setSelectedPaymentMethod={setSelectedPaymentMethod}
+            recievedAmount={recievedAmount}
+            isPaymentLoading={isPaymentLoading}
+            showPartPaymentOption={showPartPaymentOption}
+            setShowPartPaymentOption={setShowPartPaymentOption}
+            handlePaymentRecieveButton={handlePaymentRecieveButton}
+          />
           <br />
-          <AnimatePresence>
-            {showPartPaymentOption && selectedChallanDetails ? (
-              <motion.div
-                initial={{ opacity: 0, y: -50 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -50 }}
-                transition={{ duration: 0.2 }}
-              >
-                <Chip sx={{ p: "5px", ml: "5px", pl: "10px", pr: "10px" }}>
-                  You have select{" "}
-                  <span style={{ color: "var(--bs-danger2)", margin: "5px" }}>
-                    Challan ID: {selectedChallanDetails?.challanId}
-                  </span>
-                  for month of
-                  <span style={{ color: "var(--bs-danger2)", margin: "5px" }}>
-                    {selectedChallanDetails?.challanTitle}
-                  </span>
-                  , student total due is
-                  <span style={{ color: "var(--bs-danger2)", margin: "5px" }}>
-                    ₹{selectedChallanDetails?.totalDue}
-                  </span>
-                  . Please enter the desired amount below and click pay.
-                </Chip>
-                <Box
-                  component="form"
-                  onSubmit={handlePartPaymentSubmit}
-                  sx={{ m: "10px", display: "flex", gap: "8px" }}
-                >
-                  <FormControl>
-                    <FormLabel
-                      required
-                      sx={{ color: "var(--bs-light-text)", m: "4px" }}
-                    >
-                      Enter recieved amount.
-                    </FormLabel>
-                    <Input
-                      variant="outlined"
-                      color="primary"
-                      type="text"
-                      required
-                      placeholder="enter amount"
-                      value={recievedAmountPartPayment}
-                      onChange={(e) =>
-                        setRecievedAmountPartPayment(
-                          parseInt(e.target.value) || 0
-                        )
-                      }
-                    ></Input>
-                  </FormControl>
-                  <FormControl>
-                    <FormLabel
-                      required
-                      sx={{ color: "var(--bs-light-text)", m: "4px" }}
-                    >
-                      Comment for part payment
-                    </FormLabel>
-                    <Input
-                      required
-                      type="text"
-                      color="primary"
-                      sx={{ width: "350px" }}
-                      placeholder=""
-                      value={partPaymentComment}
-                      onChange={(e) => setPartPaymentComment(e.target.value)}
-                    ></Input>
-                  </FormControl>
-                  <FormControl
-                    sx={{
-                      display: "flex",
-                      flexDirection: "column",
-                      justifyContent: "end",
-                    }}
-                  >
-                    <Button
-                      type="submit"
-                      startDecorator={<MoneyRecive />}
-                      loading={isPaymentLoading}
-                    >
-                      Recieve
-                    </Button>
-                  </FormControl>
-                </Box>
-              </motion.div>
-            ) : null}
-          </AnimatePresence>
-
+          <PartPaymentForm
+            selectedChallanDetails={selectedChallanDetails}
+            recievedAmountPartPayment={recievedAmountPartPayment}
+            setRecievedAmountPartPayment={setRecievedAmountPartPayment}
+            partPaymentComment={partPaymentComment}
+            setPartPaymentComment={setPartPaymentComment}
+            isPaymentLoading={isPaymentLoading}
+            handlePartPaymentSubmit={handlePartPaymentSubmit}
+          />
           <Divider sx={{ mt: "16px", mb: "10px" }} />
-          <Typography level="title-lg" mt="8px" ml="8px" color="primary">
-            Fee Challans
-          </Typography>
-          <Typography level="body-sm" ml="8px" mb="8px">
-            Student fee records starting from admission.
-          </Typography>
-
-          <Table
-            variant="outlined"
-            sx={{
-              "& tr > *:last-child": {
-                position: "sticky",
-                right: 0,
-                boxShadow: "1px 0 var(--TableCell-borderColor)",
-                bgcolor: "background.surface",
-              },
-              "& th > *:last-child": {
-                position: "sticky",
-                right: 0,
-                boxShadow: "1px 0 var(--TableCell-borderColor)",
-                bgcolor: "background.surface",
-              },
-            }}
-            borderAxis="both"
-          >
-            <thead>
-              <tr>
-                {/* <th style={{ width: "10%",backgroundColor:"var(--bs-primary-text)",color:"#fff" }}>RECIEPT ID</th> */}
-                <th
-                  style={{
-                    width: "12%",
-                    backgroundColor: "var(--bs-primary-text)",
-                    color: "#fff",
-                  }}
-                >
-                  TITLE
-                </th>
-                <th
-                  style={{
-                    backgroundColor: "var(--bs-primary-text)",
-                    color: "#fff",
-                  }}
-                >
-                  FEE
-                </th>
-                <th
-                  style={{
-                    backgroundColor: "var(--bs-primary-text)",
-                    color: "#fff",
-                  }}
-                >
-                  FINE
-                </th>
-                <th
-                  style={{
-                    backgroundColor: "var(--bs-primary-text)",
-                    color: "#fff",
-                  }}
-                >
-                  TRFEE
-                </th>
-                <th
-                  style={{
-                    backgroundColor: "var(--bs-primary-text)",
-                    color: "#fff",
-                  }}
-                >
-                  COMFEE
-                </th>
-                {FEE_HEADERS.map((item) => {
-                  return (
-                    <th
-                      style={{
-                        backgroundColor: "var(--bs-primary-text)",
-                        color: "#fff",
-                      }}
-                    >
-                      {item.titleShort}
-                    </th>
-                  );
-                })}
-
-                <th
-                  style={{
-                    backgroundColor: "var(--bs-primary-text)",
-                    color: "#fff",
-                  }}
-                >
-                  PAID
-                </th>
-                <th
-                  style={{
-                    backgroundColor: "var(--bs-primary-text)",
-                    color: "#fff",
-                  }}
-                >
-                  CONC.
-                </th>
-                <th
-                  style={{
-                    backgroundColor: "var(--bs-primary-text)",
-                    color: "#fff",
-                  }}
-                >
-                  DUE
-                </th>
-                <th
-                  style={{
-                    backgroundColor: "var(--bs-primary-text)",
-                    color: "#fff",
-                  }}
-                >
-                  STATUS
-                </th>
-                <th
-                  style={{
-                    backgroundColor: "var(--bs-primary-text)",
-                    color: "#fff",
-                  }}
-                >
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {challanList.length !== 0 ? (
-                challanList.map((item) => {
-                  const monthlyFeeHeader = item.feeHeaders.find(
-                    (header) => header.headerTitle === "monthlyFee"
-                  );
-                  const computerFeeHeader = item.feeHeaders.find(
-                    (header) => header.headerTitle === "computerFee"
-                  );
-                  const transportationFeeHeader = item.feeHeaders.find(
-                    (header) => header.headerTitle === "transportationFee"
-                  );
-                  const examFeeHeader = item.feeHeaders.find(
-                    (header) => header.headerTitle === "examFee"
-                  );
-                  const annualFeeHeader = item.feeHeaders.find(
-                    (header) => header.headerTitle === "annualFee"
-                  );
-                  const admissionFeeHeader = item.feeHeaders.find(
-                    (header) => header.headerTitle === "admissionFee"
-                  );
-                  const otherFeeHeader = item.feeHeaders.find(
-                    (header) => header.headerTitle === "otherFee"
-                  );
-                  const lateFeeHeader = item.feeHeaders.find(
-                    (header) => header.headerTitle === "lateFee"
-                  );
-
-                  return (
-                    <>
-                      <tr>
-                        {/* <td>{item.paymentId}</td> */}
-                        <td>{item.challanTitle}</td>
-                        <td>
-                          {monthlyFeeHeader ? monthlyFeeHeader.amount : 0}
-                        </td>
-                        <td>{lateFeeHeader ? lateFeeHeader.amount : 0}</td>
-                        <td>
-                          {transportationFeeHeader
-                            ? transportationFeeHeader.amount
-                            : 0}
-                        </td>
-                        <td>
-                          {computerFeeHeader ? computerFeeHeader.amount : 0}
-                        </td>
-                        <td>{examFeeHeader ? examFeeHeader.amount : 0}</td>
-                        <td>{annualFeeHeader ? annualFeeHeader.amount : 0}</td>
-                        <td>
-                          {admissionFeeHeader ? admissionFeeHeader.amount : 0}
-                        </td>
-                        <td>{otherFeeHeader ? otherFeeHeader.amount : 0}</td>
-                        <td>{item.amountPaid}</td>
-                        <td>{item.feeConsession}</td>
-                        <td>{item.totalDue}</td>
-                        <td>
-                          <Box
-                            sx={{
-                              background:
-                                item.status === paymentStatus.PAID
-                                  ? "var(--bs-success)"
-                                  : "var(--bs-danger)",
-                              color: "#fff",
-                              textAlign: "center",
-                            }}
-                          >
-                            {item.status}
-                          </Box>
-                        </td>
-                        <td>
-                          <Tooltip title="More options">
-                            <Button
-                              variant="plain"
-                              onClick={(e) => handleMenuClick(e, item)}
-                            >
-                              <MoreVert />
-                            </Button>
-                          </Tooltip>
-                        </td>
-                      </tr>
-                    </>
-                  );
-                })
-              ) : (
-                <tr>
-                  <th colSpan={14}>
-                    <Typography
-                      level="title-md"
-                      sx={{ textAlign: "center", margin: "10px" }}
-                    >
-                      No Challan Found for this user
-                    </Typography>
-                  </th>
-                </tr>
-              )}
-            </tbody>
-            <tfoot>
-              <tr className="studentFeeDetailsTableFooter">
-                <th
-                  style={{
-                    backgroundColor: "var(--bs-primary-text)",
-                    color: "#fff",
-                  }}
-                >
-                  Grand Total
-                </th>
-                <th
-                  style={{
-                    backgroundColor: "var(--bs-primary-text)",
-                    color: "#fff",
-                  }}
-                >
-                  {sumAmountByHeaderTitle("monthlyFee").toFixed(0)}
-                </th>
-                <th
-                  style={{
-                    backgroundColor: "var(--bs-primary-text)",
-                    color: "#fff",
-                  }}
-                >
-                  {sumAmountByHeaderTitle("lateFine").toFixed(0)}
-                </th>
-                <th
-                  style={{
-                    backgroundColor: "var(--bs-primary-text)",
-                    color: "#fff",
-                  }}
-                >
-                  {sumAmountByHeaderTitle("transportationFee").toFixed(0)}
-                </th>
-                <th
-                  style={{
-                    backgroundColor: "var(--bs-primary-text)",
-                    color: "#fff",
-                  }}
-                >
-                  {sumAmountByHeaderTitle("computerFee").toFixed(0)}
-                </th>
-                <th
-                  style={{
-                    backgroundColor: "var(--bs-primary-text)",
-                    color: "#fff",
-                  }}
-                >
-                  {sumAmountByHeaderTitle("examFee").toFixed(0)}
-                </th>
-                <th
-                  style={{
-                    backgroundColor: "var(--bs-primary-text)",
-                    color: "#fff",
-                  }}
-                >
-                  {sumAmountByHeaderTitle("annualFee").toFixed(0)}
-                </th>
-                <th
-                  style={{
-                    backgroundColor: "var(--bs-primary-text)",
-                    color: "#fff",
-                  }}
-                >
-                  {sumAmountByHeaderTitle("admissionFee").toFixed(0)}
-                </th>
-                <th
-                  style={{
-                    backgroundColor: "var(--bs-primary-text)",
-                    color: "#fff",
-                  }}
-                >
-                  {sumAmountByHeaderTitle("otherFee").toFixed(0)}
-                </th>
-                <th
-                  style={{
-                    backgroundColor: "var(--bs-primary-text)",
-                    color: "#fff",
-                  }}
-                >
-                  {sum("amountPaid").toFixed(0)}
-                </th>
-                <th
-                  style={{
-                    backgroundColor: "var(--bs-primary-text)",
-                    color: "#fff",
-                  }}
-                >
-                  {sum("feeConsession").toFixed(0)}
-                </th>
-                <th
-                  style={{
-                    backgroundColor: "var(--bs-primary-text)",
-                    color: "#fff",
-                  }}
-                >
-                  {sum("totalDue").toFixed(0)}
-                </th>
-                <th
-                  style={{
-                    backgroundColor: "var(--bs-primary-text)",
-                    color: "#fff",
-                  }}
-                ></th>
-                <th
-                  style={{
-                    backgroundColor: "var(--bs-primary-text)",
-                    color: "#fff",
-                  }}
-                ></th>
-              </tr>
-            </tfoot>
-          </Table>
+          <FeeChallanTable
+            challanList={challanList}
+            sum={sum}
+            sumAmountByHeaderTitle={sumAmountByHeaderTitle}
+            handleMenuClick={handleMenuClick}
+          />
         </Box>
+
         <Menu
           anchorEl={anchorEll}
           id="account-menu"
