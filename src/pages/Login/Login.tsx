@@ -35,10 +35,10 @@ const SchoolLogo = () => {
 
   const schoolDomain = window.location.hostname.split(".")[1];
 
-  if (schoolDomain === "apxschool.org") {
+  if (schoolDomain === "apxschool") {
     return <img src={ApxLogo} alt="school-logo" height={100} style={{ borderRadius: "50%", border: "2px solid orange",padding:"6px" }} />
   }
-  else if (schoolDomain === "orientpublicschool.org") {
+  else if (schoolDomain === "orientpublicschool") {
     return <img src={OpsLogo} alt="school-logo" height={100} style={{ borderRadius: "50%", border: "2px solid orange",padding:"6px" }} />
   }
   else {
