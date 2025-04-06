@@ -223,11 +223,11 @@ export const GenerateFeeRecieptMonthly = async ({
     doc.text("Fee Reciept", pBorderPadd + 3, 43);
     doc.text("Fee Reciept", pBorderPaddOffsetX + 3, 43);
 
-    doc.text("Session : 2025/26", pWidth - pBorderPadd - 2, 43, {
+    doc.text("Session : 2025-26", pWidth - pBorderPadd - 2, 43, {
       align: "right",
     });
     doc.text(
-      "Session : 2025/26",
+      "Session : 2025-26",
       pBorderPaddOffsetX + pWidth - pBorderPadd * 2,
       43,
       {

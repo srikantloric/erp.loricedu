@@ -25,6 +25,7 @@ import { enqueueSnackbar } from "notistack";
 import BreadCrumbsV2 from "components/Breadcrumbs/BreadCrumbsV2";
 import { fetchstudent } from "store/reducers/studentSlice";
 import { RootState, AppDispatch } from "store";
+import { getClassNameByValue } from "utilities/UtilitiesFunctions";
 
 // -----------------------------
 // Interfaces / Types
@@ -43,6 +44,7 @@ interface StudentOption {
   profile: string;
   sId: string;
   dob: string;
+  class: string;
 }
 
 // -----------------------------
@@ -100,6 +102,7 @@ const FeeManager: React.FC = () => {
       profile: item.profil_url,
       sId: item.student_id,
       dob: item.dob,
+      class: getClassNameByValue(item.class)?.toString() || "N/A",
     }));
     setSearchList(filtered);
   };
@@ -177,8 +180,8 @@ const FeeManager: React.FC = () => {
                     <ListItemDecorator>
                       <img loading="lazy" width="20" src={option.profile} alt="" />
                     </ListItemDecorator>
-                    <ListItemContent sx={{ fontSize: "sm" }}>
-                      <b>{option.name}</b>
+                    <ListItemContent sx={{ fontSize: "sm", display: "flex", flexDirection: "column" }}>
+                      <b>{option.name} | {option.class}</b>
                       <Typography level="body-xs" fontSize={"14px"}>
                         {option.admission} | {option.fatherName} | {option.dob}
                       </Typography>

@@ -33,7 +33,7 @@ import { useEffect, useState } from "react";
 import { fetchTotalStudents } from "store/reducers/dashboardSlice";
 import { RootState, useDispatch, useSelector } from "store";
 import MaleFemaleBarGraph from "components/Graph/MaleFemaleBarGraph";
-import { getAppConfig } from "hooks/getAppConfig";
+
 
 
 Chart.register(CategoryScale);
@@ -55,8 +55,6 @@ function Dashboard() {
   const { totalStudents, totalFeeCollection, totalFemaleStudent, totalMaleStudent } = useSelector((state: RootState) => state.dashboard.dashboardAnalytics);
   const [smsBalance, setSmsBalance] = useState<number>(0);
 
-  const config = getAppConfig();
-  console.log("App Config",config);
 
   const dispatch = useDispatch();
 
@@ -78,7 +76,12 @@ function Dashboard() {
         <Navbar />
         <LSPage>
           <BreadCrumbsV2 Path="Dashboard/Analytics" Icon={Dash} />
-          <Stack direction="row" mt="0.8rem">
+          <Stack
+            direction={{ xs: "column", md: "row" }}
+            mt="0.8rem"
+
+            spacing={1}
+          >
             <Grid
               container
               justifyContent="space-between"
@@ -138,9 +141,8 @@ function Dashboard() {
             <Stack justifyContent="space-between">
               <Stack
                 sx={{
-                  width: "260px",
+                  width: "100%",
                   p: "1rem",
-                  ml: "1rem",
                   borderRadius: "0.5rem",
                   bgcolor: "#1D2630",
                   position: "relative",
@@ -204,7 +206,8 @@ function Dashboard() {
                   pt: "0.5rem",
                   pb: "0.5rem",
                   borderRadius: "0.5rem",
-                  ml: "1rem",
+                  width: "100%",
+
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
