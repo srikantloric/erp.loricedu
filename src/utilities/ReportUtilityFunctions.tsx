@@ -4,6 +4,7 @@ import { IChallanNL } from "types/payment";
 import { StudentDetailsType } from "types/student";
 import { getClassNameByValue } from "./UtilitiesFunctions";
 import { DemandSlipType } from "types/reports";
+import { enqueueSnackbar } from "notistack";
 
 
 export const getDemandSlips = async (selectedClass: number): Promise<DemandSlipType[]> => {
@@ -13,8 +14,9 @@ export const getDemandSlips = async (selectedClass: number): Promise<DemandSlipT
     const studentQuery = query(studentCollection, where("class", "==", selectedClass));
     const studentSnap = await getDocs(studentQuery);
 
+
     if (studentSnap.empty) {
-        console.log("No students found for the selected class.");
+        enqueueSnackbar("No student found in the selected class", { variant: "error" })
         return [];
     }
 
@@ -43,10 +45,8 @@ export const getDemandSlips = async (selectedClass: number): Promise<DemandSlipT
                 challanData.feeHeaders.forEach(header => {
                     consolidatedFeeHeaders[header.headerTitle] =
                         (consolidatedFeeHeaders[header.headerTitle] || 0) + header.amount - header.amountPaidTotal;
-                    consolidatedDueMonths.push(challanData.challanTitle)
                 });
-
-
+                consolidatedDueMonths.push(challanData.challanTitle)
             });
             if (Object.keys(consolidatedFeeHeaders).length > 0) {
                 // Add consolidated demand slip to the array
