@@ -250,7 +250,7 @@ function ViewStudents() {
           deleteLoading={deleteLoading}
         />
         <Paper
-          sx={{ padding: "5px 10px", width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between" }}
+          sx={{ padding: "5px 10px", width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",overflow: "hidden" }}
 
         >
           <Breadcrumbs aria-label="breadcrumb">
@@ -382,7 +382,7 @@ function ViewStudents() {
         </Box>
         <br></br>
         <MaterialTable
-          style={{ display: "grid" }}
+          style={{ display: "grid",overflow: "hidden" }}
           columns={columnMat}
           data={filteredData}
           title="Students Data"

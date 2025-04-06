@@ -33,7 +33,8 @@ import { dbMaster } from "../../firebase";
 
 const SchoolLogo = () => {
 
-  const schoolDomain = window.location.hostname.split(".")[1];
+  const schoolDomain = window.location.hostname.split(".")[1]||"localhost";
+  console.log("schoolDomain", schoolDomain);
 
   if (schoolDomain === "apxschool") {
     return <img src={ApxLogo} alt="school-logo" height={100} style={{ borderRadius: "50%", border: "2px solid orange",padding:"6px" }} />

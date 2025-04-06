@@ -36,11 +36,12 @@ const reports: Report[] = [
   //   title: "Attendance Register",
   //   description: "Print attendance register for each class",
   // },
-  // {
-  //   id: "demand-slip",
-  //   title: "Demand Slip",
-  //   description: "Print demand slip for students due payments.",
-  // },
+  {
+    id: "demand-slip",
+    title: "Demand Slip",
+    description: "Print demand slip for students due payments.",
+  },
+  
   {
     id: "admit-card",
     title: "Admit Card",

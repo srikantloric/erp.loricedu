@@ -29,7 +29,7 @@ function Navbar() {
   const environment = process.env.REACT_APP_MODE || process.env.NODE_ENV;
 
   const open = Boolean(anchorEl);
-  const handleClick = (event) => {
+  const handleClick = (event: any) => {
     setAnchorEl(event.currentTarget);
   };
   const handleClose = () => {
@@ -37,9 +37,9 @@ function Navbar() {
   };
   /////
 
-  const {  openDialog } = useSearchDialog();
+  const { openDialog } = useSearchDialog();
 
-  const notificationsLabel = (count) => {
+  const notificationsLabel = (count: number) => {
     if (count === 0) {
       return "no notifications";
     }
@@ -80,7 +80,7 @@ function Navbar() {
     return () => {
       window.removeEventListener("resize", updateDimension);
     };
-  }, [screenSize,status]);
+  }, [screenSize, status]);
 
 
   return (
@@ -92,40 +92,54 @@ function Navbar() {
               <MenuIcon />
             </IconButton>
           </Tooltip>
-
-          <div className="search-box" onClick={() => openDialog()}>
-            <IconSearch className="search-iconn" size={28} />
-            <span>Search..</span>
-            <div>Ctrl+K</div>
-          </div>
+          {screenSize.width > 768 && (
+            <div className="search-box" onClick={() => openDialog()}>
+              <IconSearch className="search-iconn" size={28} />
+              <span>Search..</span>
+              <div>Ctrl+K</div>
+            </div>
+          )}
         </div>
         <div className="navbar-rightsection">
-          <Chip color="primary"  sx={{ mr: 2,pl:"10px",pr:"10px"}}  startDecorator={<Circle sx={{fontSize:"12px"}} color="success" />}>{environment}</Chip>
-          <div className="rounded-bg">
-            <Tooltip title="Night Mode">
-              <IconButton>
-                <IconMoon size={22} />
-              </IconButton>
-            </Tooltip>
-          </div>
-          <div className="rounded-bg">
-            <Tooltip title="Message">
-              <IconButton aria-label={notificationsLabel(100)}>
-                <Badge badgeContent={1} color="success">
-                  <IconBell size={22} />
-                </Badge>
-              </IconButton>
-            </Tooltip>
-          </div>
-          <div className="rounded-bg">
-            <Tooltip title="Message">
-              <IconButton aria-label={notificationsLabel(100)}>
-                <Badge badgeContent={0} color="primary">
-                  <IconMessage2 size={22} />
-                </Badge>
-              </IconButton>
-            </Tooltip>
-          </div>
+          {screenSize.width > 768 && (
+            <Chip
+              color="primary"
+              sx={{ mr: 2, pl: "10px", pr: "10px" }}
+              startDecorator={<Circle sx={{ fontSize: "12px" }} color="success" />}
+            >
+              {environment}
+            </Chip>
+          )}
+
+          {screenSize.width > 768 && (
+            <>
+              <div className="rounded-bg">
+                <Tooltip title="Night Mode">
+                  <IconButton>
+                    <IconMoon size={22} />
+                  </IconButton>
+                </Tooltip>
+              </div>
+              <div className="rounded-bg">
+                <Tooltip title="Message">
+                  <IconButton aria-label={notificationsLabel(100)}>
+                    <Badge badgeContent={1} color="success">
+                      <IconBell size={22} />
+                    </Badge>
+                  </IconButton>
+                </Tooltip>
+              </div>
+              <div className="rounded-bg">
+                <Tooltip title="Message">
+                  <IconButton aria-label={notificationsLabel(100)}>
+                    <Badge badgeContent={0} color="primary">
+                      <IconMessage2 size={22} />
+                    </Badge>
+                  </IconButton>
+                </Tooltip>
+              </div>
+            </>
+          )}
           <Tooltip title="Account settings">
             <IconButton
               onClick={handleClick}
