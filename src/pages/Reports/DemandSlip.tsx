@@ -28,10 +28,16 @@ const DemandSlip = () => {
       enqueueSnackbar("Please select class!", { variant: "warning" });
       return;
     }
+    setPdfUrl("");
     setLoading(true);
     try {
       const demandSlips = await getDemandSlips(selectedClass);
       setDemandSlips(demandSlips)
+      if (demandSlips.length === 0) {
+        setLoading(false);
+        enqueueSnackbar("No Due Challan found for select options",{variant:"info"})
+        return
+      }
       const pdfUrl = await GenerateDemandSlip(demandSlips);
       setPdfUrl(pdfUrl);
       setLoading(false);
