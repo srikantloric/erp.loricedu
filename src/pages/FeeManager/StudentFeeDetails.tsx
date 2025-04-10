@@ -522,7 +522,7 @@ function StudentFeeDetails() {
         iframe.onload = () => iframe.contentWindow?.print();
         document.body.appendChild(iframe);
       } else {
-        enqueueSnackbar("Error generating receipt",{variant:"error"});
+        enqueueSnackbar("Error generating receipt", { variant: "error" });
       }
     } catch (error) {
       console.error("Error fetching payments:", error);
@@ -531,6 +531,7 @@ function StudentFeeDetails() {
       setIsGeneratingFeeReciept(false);
     }
   };
+
 
   return (
     <PageContainer>
@@ -595,15 +596,18 @@ function StudentFeeDetails() {
             handlePaymentRecieveButton={handlePaymentRecieveButton}
           />
           <br />
-          <PartPaymentForm
-            selectedChallanDetails={selectedChallanDetails}
-            recievedAmountPartPayment={recievedAmountPartPayment}
-            setRecievedAmountPartPayment={setRecievedAmountPartPayment}
-            partPaymentComment={partPaymentComment}
-            setPartPaymentComment={setPartPaymentComment}
-            isPaymentLoading={isPaymentLoading}
-            handlePartPaymentSubmit={handlePartPaymentSubmit}
-          />
+          {
+            showPartPaymentOption &&
+            <PartPaymentForm
+              selectedChallanDetails={selectedChallanDetails}
+              recievedAmountPartPayment={recievedAmountPartPayment}
+              setRecievedAmountPartPayment={setRecievedAmountPartPayment}
+              partPaymentComment={partPaymentComment}
+              setPartPaymentComment={setPartPaymentComment}
+              isPaymentLoading={isPaymentLoading}
+              handlePartPaymentSubmit={handlePartPaymentSubmit}
+            />
+          }
           <Divider sx={{ mt: "16px", mb: "10px" }} />
           <FeeChallanTable
             challanList={challanList}

@@ -35,6 +35,8 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
   setShowPartPaymentOption,
   handlePaymentRecieveButton,
 }) => {
+
+  
   return (
     <Box
       component="form"
