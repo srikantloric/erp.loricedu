@@ -24,6 +24,7 @@ import PrintRankList from "pages/ResultsManagement/PrintRankList";
 import PdfLivePreview from "pages/PdfJsLiveEditor/PdfLivePreview";
 import StudentMigration from "pages/Users/StudentMigration";
 import PrintTopperList from "pages/ResultsManagement/PrintToperList";
+import RollNoUpdator from "pages/StudentManagement/RollNoUpdator";
 
 // Lazy Loaded Components
 
@@ -135,6 +136,11 @@ function App() {
                   <Route
                     path="students/view-students"
                     element={<ViewStudents />}
+                  />
+
+                  <Route
+                    path="students/update-students-roll"
+                    element={<RollNoUpdator />}
                   />
                  
 

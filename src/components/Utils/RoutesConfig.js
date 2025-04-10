@@ -30,6 +30,7 @@ import PrintRankList from "pages/ResultsManagement/PrintRankList";
 import PrintTopperList from "pages/ResultsManagement/PrintToperList";
 import Expenses from "pages/expenses/Expenses";
 import StudentMigration from "pages/Users/StudentMigration";
+import RollNoUpdator from "pages/StudentManagement/RollNoUpdator";
 
 export const routesConfig = [
   {
@@ -73,7 +74,13 @@ export const routesConfig = [
         isCollapsable: false,
         isHeader: false,
         Component: <AddStudentNew />,
-      },
+      }, {
+        title: "Update Student Roll",
+        to: "students/update-students-roll",
+        isCollapsable: false,
+        isHeader: false,
+        Component: <RollNoUpdator />,
+      }
     ],
   },
   {
