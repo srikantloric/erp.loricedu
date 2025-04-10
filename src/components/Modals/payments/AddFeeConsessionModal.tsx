@@ -158,10 +158,6 @@ const AddFeeConsessionModal: React.FC<Props> = ({
               <td>Due Amount</td>
               <td>Rs.{challanData && challanData.totalDue}/-</td>
             </tr>
-            <tr>
-              <td>Payment Due Date</td>
-              <td>{challanData && challanData.dueDate.toDate().toString()}</td>
-            </tr>
           </thead>
         </Table>
 
