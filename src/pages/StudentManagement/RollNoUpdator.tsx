@@ -78,6 +78,8 @@ function RollNoUpdator() {
             })
         );
 
+        studentList.sort((a, b) => b.latestResultMark - a.latestResultMark);
+
         studentList.forEach((student, index) => {
             student.newClassRoll = index + 1;
         });
