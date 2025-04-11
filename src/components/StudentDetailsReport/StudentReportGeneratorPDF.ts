@@ -26,17 +26,11 @@ const AttendanceHeader = [
   "Address",
 ];
 
-const studentData = [  // Replace with your actual student data
-  ["123", "John Doe", "John Daddy", "Nursary", "A", "17", "987563269", "Ratu Ranchi"],
-  ["123", "Harry Potter", "Harry Daddy", "Nursary", "B", "02", "983455559", "Lalpur Ranchi"],
-  ["456", "Jane Smith", "Jane Daddy", "Nursary", "B", "32", "987563269", "Kadru Ranchi"],
-];
-
-
-
 export const StudReportPDF = async (students: StudentDetailsType[]) => {
 
   return new Promise((resolve, reject) => {
+
+    students.sort((a, b) => Number(a.class_roll) - Number(b.class_roll))
 
     const config = getAppConfig();
     if (!config) {
@@ -49,7 +43,7 @@ export const StudReportPDF = async (students: StudentDetailsType[]) => {
       schoolContact: SCHOOL_CONTACT,
       schoolEmail: SCHOOL_EMAIL,
     } = config;
-    
+
     try {
       const doc = new jsPDF({
         orientation: "l",
@@ -204,18 +198,16 @@ export const StudReportPDF = async (students: StudentDetailsType[]) => {
         },
       });
 
-      studentData.forEach((data, index) => {
+      students.forEach((data, index) => {
         // Draw border around content
         doc.setDrawColor("#949494");
         doc.rect(x, y, cardWidth, cardHeight);
 
-        if (index === studentData.length - 1) {
+        if (index === students.length - 1) {
           // Save PDF and update state with URL
-
           // Convert PDF to Blob
           const blob = doc.output("blob");
           const url = URL.createObjectURL(blob);
-
           resolve(url);
         }
       });
