@@ -12,6 +12,7 @@ import {
   IconBus,
   IconDatabaseCog,
   IconMoneybag,
+  IconPhoneIncoming
 } from "@tabler/icons-react";
 import UnderConstruction from "../../pages/Extras/UnderConstruction";
 import FeeManager from "../../pages/FeeManager/FeeManager";
@@ -31,6 +32,7 @@ import PrintTopperList from "pages/ResultsManagement/PrintToperList";
 import Expenses from "pages/expenses/Expenses";
 import StudentMigration from "pages/Users/StudentMigration";
 import RollNoUpdator from "pages/StudentManagement/RollNoUpdator";
+import AdmissionEnquiry from "pages/Admission/AdmissionEnquiry";
 
 export const routesConfig = [
   {
@@ -68,13 +70,7 @@ export const routesConfig = [
         isHeader: false,
         Component: <AddStudentNew />,
       },
-      {
-        title: "Admission Enquire",
-        to: "students/Admission-students",
-        isCollapsable: false,
-        isHeader: false,
-        Component: <AddStudentNew />,
-      }, {
+      , {
         title: "Update Student Roll",
         to: "students/update-students-roll",
         isCollapsable: false,
@@ -90,6 +86,14 @@ export const routesConfig = [
     isCollapsable: false,
     isHeader: false,
     Component: FeaturesConfig.FACULTY_FEATURE ? Faculties : UnderConstruction,
+  },
+  {
+    title: "Inquiry",
+    to: "/Inquiry",
+    icon: IconPhoneIncoming,
+    isCollapsable: false,
+    isHeader: false,
+    Component: AdmissionEnquiry,
   },
   {
     title: "Management",

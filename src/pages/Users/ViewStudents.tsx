@@ -23,7 +23,6 @@ import {
   FormControl,
   InputLabel,
   MenuItem,
-  Paper,
   Select,
 } from "@mui/material";
 
@@ -249,10 +248,7 @@ function ViewStudents() {
           handleStudentDelete={handleStudentDelete}
           deleteLoading={deleteLoading}
         />
-        <Paper
-          sx={{ padding: "5px 10px", width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",overflow: "hidden" }}
-
-        >
+        <Box sx={{ padding: "10px 10px", mt: "8px", border: "1px solid oklch(.905 .013 255.508)", borderRadius: "10px", display: "flex", alignItems: "center", justifyContent: "space-between", overflow: "hidden" }}>
           <Breadcrumbs aria-label="breadcrumb">
             <a
               style={{
@@ -357,7 +353,8 @@ function ViewStudents() {
               <SearchIcon />
             </IconButton>
           </div>
-        </Paper>
+          {/* </Paper> */}
+        </Box>
         <br />
         <div
           style={{
@@ -382,7 +379,7 @@ function ViewStudents() {
         </Box>
         <br></br>
         <MaterialTable
-          style={{ display: "grid",overflow: "hidden" }}
+          style={{ display: "grid", overflow: "hidden", border: "1px solid oklch(.905 .013 255.508)", borderRadius: "10px", boxShadow: "none" }}
           columns={columnMat}
           data={filteredData}
           title="Students Data"

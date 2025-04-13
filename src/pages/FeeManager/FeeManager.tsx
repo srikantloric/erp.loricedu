@@ -10,7 +10,7 @@ import {
   createFilterOptions,
 } from "@mui/material";
 import PageContainer from "../../components/Utils/PageContainer";
-import Footer from "../../components/Footer/Footer";
+
 import { useNavigate } from "react-router-dom";
 import {
   Autocomplete,
@@ -26,6 +26,7 @@ import BreadCrumbsV2 from "components/Breadcrumbs/BreadCrumbsV2";
 import { fetchstudent } from "store/reducers/studentSlice";
 import { RootState, AppDispatch } from "store";
 import { getClassNameByValue } from "utilities/UtilitiesFunctions";
+import Footer from "components/Footer/Footer";
 
 // -----------------------------
 // Interfaces / Types

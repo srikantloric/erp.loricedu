@@ -18,7 +18,7 @@ import {
 } from "@mui/joy";
 import { useEffect, useRef, useState } from "react";
 import { enqueueSnackbar } from "notistack";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import { useFirebase } from "context/firebaseContext";
 
 function RecieptConfigurations() {
@@ -99,9 +99,9 @@ function RecieptConfigurations() {
       setUpdatingAccountantName(true);
       const receiptConfigRef = doc(db, "CONFIG", "RECIEPT_CONFIG");
   
-      await updateDoc(receiptConfigRef, {
+      await setDoc(receiptConfigRef, {
         accountantName,
-      });
+      },{merge:true});
   
       enqueueSnackbar("Updated Successfully!", { variant: "success" });
     } catch (error) {

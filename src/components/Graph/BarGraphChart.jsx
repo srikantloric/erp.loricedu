@@ -1,4 +1,5 @@
 
+import { memo } from 'react';
 import { BarChart, Bar, Rectangle, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 function BarGraphChart() {
@@ -105,4 +106,4 @@ function BarGraphChart() {
   )
 }
 
-export default BarGraphChart
+export default  memo(BarGraphChart)
