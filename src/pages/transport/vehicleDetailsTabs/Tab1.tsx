@@ -1,19 +1,20 @@
 import MaterialTable from "@material-table/core";
 import { Add, Edit } from "@mui/icons-material";
-import { Button, Sheet } from "@mui/joy";
+import { Box, Button, Chip, LinearProgress, Sheet } from "@mui/joy";
 import AddVehicleModal from "components/Modals/transport/AddVehicleModal";
 import { useCallback, useEffect, useState } from "react";
 import EditVehicleDetail from "components/Modals/transport/EditVehicleDetail";
 import { TransportVehicleType } from "types/transport";
-import { doc, getDoc } from "firebase/firestore";
+import { collection, doc, getCountFromServer, getDoc, query, where } from "firebase/firestore";
 import { useFirebase } from "context/firebaseContext";
+import { enqueueSnackbar } from "notistack";
 
 
 function Tab1() {
   const [isAddVehicleModalOpen, setIsAddVehicleModalOpen] = useState(false);
   const [transportVehicles, setTransportVehicles] = useState<TransportVehicleType[]>([]);
   const [selectedVechile, setSelectedVehicle] = useState<TransportVehicleType | null>(null)
-
+  const [loading, setLoading] = useState<boolean>(false);
   //Get Firebase DB instance
   const { db } = useFirebase();
 
@@ -22,27 +23,65 @@ function Tab1() {
   };
 
   const columnMat = [
+    { title: "ID", field: "vehicleId", },
     { title: "Name", field: "vehicleName" },
     { title: "Vehicle Number", field: "registrationNumber" },
     { title: "Vehicle Contact", field: "vehicleContact" },
     { title: "Driver", field: "driverName" },
     { title: "Conductor", field: "conductorName" },
     { title: "Total Seat", field: "totalSeat" },
-    { title: "Student Allocated", field: "monthlyCharge" },
-    { title: "Available Seat", field: "monthlyCharge" },
+    {
+      title: "Student Allocated", field: "studentsAllocated", render: (rowData: TransportVehicleType) => {
+        return (
+          <Chip variant="soft" color="primary" sx={{ pr: 2, pl: 2, }}><b>{rowData.studentsAllocated}</b></Chip>
+        )
+      }
+    },
+    {
+      title: "Available Seat", field: "seatsAvailable", render: (rowData: TransportVehicleType) => {
+        return (
+          <Chip variant="soft" color="success" sx={{ pr: 2, pl: 2, }}><b>{rowData.seatsAvailable}</b></Chip>
+        )
+      }
+    },
   ];
 
   const fetchVehicleData = useCallback(async () => {
     try {
+      setLoading(true);
       setTransportVehicles([]);
       const transportRef = doc(db, "TRANSPORT", "transportLocations");
       const transportSnap = await getDoc(transportRef);
-
+      
       if (transportSnap.exists()) {
         const data = transportSnap.data();
-        setTransportVehicles(data?.vehicles || []);
+        if (!data.vehicles) {
+          enqueueSnackbar("No vehicles found!", { variant: "info" })
+          setLoading(false);
+          return
+        }
+
+        const transportVehicles = data.vehicles as TransportVehicleType[]
+
+        const updatedVehicles = await Promise.all(
+          transportVehicles.map(async (vehicle) => {
+            const q = query(collection(db, "STUDENTS"), where("vehicleId", "==", vehicle.vehicleId));
+            const snapshot = await getCountFromServer(q);
+            const count = snapshot.data().count;
+
+            return {
+              ...vehicle,
+              studentsAllocated: count,
+              seatsAvailable: vehicle.totalSeat - count,
+            };
+          })
+        );
+
+        setTransportVehicles(updatedVehicles || []);
+        setLoading(false)
       } else {
         setTransportVehicles([]);
+        setLoading(false)
         console.log("No such document!");
       }
     } catch (error) {
@@ -68,16 +107,19 @@ function Tab1() {
         </Button>
       </Sheet>
 
-      <Sheet variant="outlined" sx={{ mt: 1 }}>
+      {loading &&
+        <LinearProgress sx={{mt:2}}/>
+      }
+      <Box sx={{ border: "1px solid oklch(.900 .013 255.508)", borderRadius: "10px", padding: "2px",mt:1}}>
         <MaterialTable
           style={{
-            display: "grid",
+            display: "grid", overflow: "hidden", boxShadow: "none"
           }}
           columns={columnMat}
           data={transportVehicles}
-          title="Vehicle List"
+          title={`Vehicle List (${transportVehicles.length})`}
           options={{
-            // grouping: true,
+            padding: 'dense',
             headerStyle: {
               backgroundColor: "#5d87ff",
               color: "#FFF",
@@ -98,7 +140,7 @@ function Tab1() {
             },
           ]}
         />
-      </Sheet>
+      </Box>
       <AddVehicleModal
         open={isAddVehicleModalOpen}
         onClose={handleAddVehicleModalClose}

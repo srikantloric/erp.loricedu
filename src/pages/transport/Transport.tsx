@@ -1,6 +1,6 @@
 import MaterialTable from "@material-table/core"
 import { Add, Edit } from "@mui/icons-material"
-import { Button, Sheet, Stack } from "@mui/joy"
+import { Box, Button, Chip, LinearProgress, Stack, Typography } from "@mui/joy"
 import { IconBus } from "@tabler/icons-react"
 import BreadCrumbsV2 from "components/Breadcrumbs/BreadCrumbsV2"
 import Navbar from "components/Navbar/Navbar"
@@ -29,6 +29,7 @@ function Transport() {
     const [transportData, setTransportData] = useState<TransportData[]>([])
     const [open, setOpen] = useState(false)
     const [selectedLocation, setSelectedLocation] = useState<TransportData | null>(null)
+    const [loading, setLoading] = useState<boolean>(false)
 
     //Get Firebase DB instance
     const { db } = useFirebase();
@@ -40,6 +41,7 @@ function Transport() {
 
     const fetchTransportData = useCallback(async () => {
         try {
+            setLoading(true)
             const transportRef = doc(db, "TRANSPORT", "transportLocations");
             const transportSnap = await getDoc(transportRef);
 
@@ -54,12 +56,15 @@ function Transport() {
                     );
 
                     setTransportData(locationsWithSerialNo);
+                    setLoading(false)
                 } else {
                     setTransportData([]);
+                    setLoading(false)
                     console.log("No locations found!");
                 }
             } else {
                 setTransportData([]);
+                setLoading(false)
                 console.log("No such document!");
             }
         } catch (error) {
@@ -72,14 +77,14 @@ function Transport() {
         fetchTransportData();
     }, [fetchTransportData])
 
-    
+
     const columnMat = [
         { title: "S.No", field: "serialNo" },
         { title: "Pickup Point Name", field: "pickupPointName" },
         { title: "Distance", field: "distance" },
         {
             title: "Monthly Charge", field: "monthlyCharge", render: (rowData: TransportData) => {
-                return <p>Rs.{rowData.monthlyCharge}/pm</p>;
+                return <Chip sx={{ pl: 2, pr: 2, }} variant="soft" color="success" ><Typography level="title-lg">₹{rowData.monthlyCharge}/pm</Typography></Chip>;
             },
         }
     ]
@@ -104,14 +109,17 @@ function Transport() {
                     </Button>
                 </Stack>
                 <br />
-                <Sheet variant="outlined">
+                {loading &&
+                    <LinearProgress sx={{ mb: 1, mt: 1 }} />
+                }
+                <Box sx={{ border: "1px solid oklch(.900 .013 255.508)", borderRadius: "10px", padding: "2px", }}>
                     <MaterialTable
-                        style={{ display: "grid" }}
+                        style={{ display: "grid", overflow: "hidden", border: "none", boxShadow: "none", }}
                         columns={columnMat}
                         data={transportData}
-                        title="Transport Pickup Points List"
+                        title={`Transport Pickup Points List (${transportData.length})`}
                         options={{
-                            // grouping: true,
+                            padding: 'dense',
                             headerStyle: {
                                 backgroundColor: "#5d87ff",
                                 color: "#FFF",
@@ -132,7 +140,7 @@ function Transport() {
                             },
                         ]}
                     />
-                </Sheet>
+                </Box>
             </LSPage>
             <AddPickupPointModal
                 open={open}

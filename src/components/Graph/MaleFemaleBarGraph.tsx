@@ -1,3 +1,4 @@
+import React from 'react';
 import { ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 
 interface DataItem {
@@ -62,4 +63,12 @@ const MaleFemaleBarGraph: React.FC<MaleFemaleBarGraphProps> = ({ maleCount, fema
     );
 };
 
-export default MaleFemaleBarGraph;
+// Custom comparison function for memoization
+const areEqual = (prevProps: MaleFemaleBarGraphProps, nextProps: MaleFemaleBarGraphProps) => {
+    return (
+        prevProps.maleCount === nextProps.maleCount &&
+        prevProps.femaleCount === nextProps.femaleCount
+    );
+};
+
+export default React.memo(MaleFemaleBarGraph, areEqual);

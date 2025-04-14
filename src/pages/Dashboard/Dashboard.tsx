@@ -4,7 +4,6 @@ import CardDashboard from "../../components/Card/CardDashboard";
 import Chart from "chart.js/auto";
 import { CategoryScale } from "chart.js";
 import PageContainer from "../../components/Utils/PageContainer";
-import Footer from "../../components/Footer/Footer";
 import BarGraphChart from "../../components/Graph/BarGraphChart";
 
 import {
@@ -33,6 +32,7 @@ import { useEffect, useState } from "react";
 import { fetchTotalStudents } from "store/reducers/dashboardSlice";
 import { RootState, useDispatch, useSelector } from "store";
 import MaleFemaleBarGraph from "components/Graph/MaleFemaleBarGraph";
+import Footer from "components/Footer/Footer";
 
 
 

@@ -1,4 +1,4 @@
-import { Breadcrumbs, FormHelperText, FormLabel, Grid, MenuItem, Paper, styled, Typography } from "@mui/material";
+import { Breadcrumbs, FormHelperText, FormLabel, Grid, MenuItem, styled, Typography } from "@mui/material";
 import Navbar from "components/Navbar/Navbar";
 import LSPage from "components/Utils/LSPage";
 import PageContainer from "components/Utils/PageContainer";
@@ -29,6 +29,7 @@ import { enqueueSnackbar } from "notistack";
 import LoadingButtonWrapper from "components/FormsUi/LoadingButton";
 import { doc, getDoc } from "firebase/firestore";
 import { useFirebase } from "context/firebaseContext";
+import { Box } from "@mui/joy";
 
 
 
@@ -108,7 +109,7 @@ function AddStudentNew() {
     const [defaultFee, setDefaultFee] = useState(null);
 
     //Get Firebase DB instance
-   const {db} = useFirebase();
+    const { db } = useFirebase();
 
     const dispatch = useDispatch();
 
@@ -150,41 +151,41 @@ function AddStudentNew() {
 
     useEffect(() => {
         const fetchTransportData = async () => {
-          try {
-            const transportRef = doc(db, "TRANSPORT", "transportLocations");
-            const transportSnap = await getDoc(transportRef);
-      
-            if (transportSnap.exists()) {
-              const data = transportSnap.data();
-              if (data) {
-                setTransportLocations(data.locations as TransportLocationType[]);
-                setTransportVehicle(data.vehicles as TransportVehicleType[]);
-              } else {
-                console.log("No such document!");
-              }
+            try {
+                const transportRef = doc(db, "TRANSPORT", "transportLocations");
+                const transportSnap = await getDoc(transportRef);
+
+                if (transportSnap.exists()) {
+                    const data = transportSnap.data();
+                    if (data) {
+                        setTransportLocations(data.locations as TransportLocationType[]);
+                        setTransportVehicle(data.vehicles as TransportVehicleType[]);
+                    } else {
+                        console.log("No such document!");
+                    }
+                }
+            } catch (error) {
+                console.error("Error fetching transport data:", error);
             }
-          } catch (error) {
-            console.error("Error fetching transport data:", error);
-          }
         };
-      
+
         const fetchDefaultFees = async () => {
-          try {
-            const paymentRef = doc(db, "CONFIG", "PAYMENT_CONFIG");
-            const paymentSnap = await getDoc(paymentRef);
-      
-            if (paymentSnap.exists()) {
-              setDefaultFee(paymentSnap.data()?.defaultMonthlyFee);
+            try {
+                const paymentRef = doc(db, "CONFIG", "PAYMENT_CONFIG");
+                const paymentSnap = await getDoc(paymentRef);
+
+                if (paymentSnap.exists()) {
+                    setDefaultFee(paymentSnap.data()?.defaultMonthlyFee);
+                }
+            } catch (error) {
+                console.error("Error fetching default fees:", error);
             }
-          } catch (error) {
-            console.error("Error fetching default fees:", error);
-          }
         };
-      
+
         fetchTransportData();
         fetchDefaultFees();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-      }, []);
+    }, []);
 
 
 
@@ -225,9 +226,9 @@ function AddStudentNew() {
                     </Breadcrumbs>
                 </div>
                 <br />
-                <Paper
-                    sx={{ padding: "10px 30px", margin: "0px 10px " }}
-                    elevation={3}
+                <Box
+                    sx={{ padding: "10px 30px", margin: "0px 10px ", border: "1px solid oklch(.900 .013 255.508)", borderRadius: "10px" }}
+
                 >
                     <div style={{ marginTop: "4px" }}>
                         <h3>Add Student Form</h3>
@@ -582,7 +583,7 @@ function AddStudentNew() {
                             </Form>
                         )}
                     </Formik>
-                </Paper>
+                </Box>
             </LSPage>
         </PageContainer>
     )

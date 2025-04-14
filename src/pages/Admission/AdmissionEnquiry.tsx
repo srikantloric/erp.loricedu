@@ -5,7 +5,6 @@ import {
   Grid,
   InputLabel,
   MenuItem,
-  Paper,
   Select,
   TextField,
   Typography,
@@ -140,9 +139,8 @@ const AdmissionEnquiry = () => {
         <BreadCrumbsV2 Path="Students/Admission Enquiry" Icon={PersonAddIcon} />
         <br />
         {isNewEnquiryFromVisible ? (
-          <Paper
-            sx={{ padding: "10px 30px", margin: "0px 10px " }}
-            elevation={3}
+          <Box
+            sx={{ padding: "10px 30px", margin: "0px 10px ",border: "1px solid oklch(.900 .013 255.508)", borderRadius: "10px" }}
           >
             <Box
               sx={{ display: "flex", justifyContent: "space-between", mt: 1 }}
@@ -298,7 +296,7 @@ const AdmissionEnquiry = () => {
               </Grid>
               <br></br>
             </form>
-          </Paper>
+          </Box>
         ) : null}
         <Stack
           direction="row"

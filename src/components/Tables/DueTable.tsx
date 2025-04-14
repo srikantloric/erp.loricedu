@@ -77,29 +77,12 @@ const headCells: readonly HeadCell[] = [
         disablePadding: true,
         label: '#',
     },
-    {
-        id: 'dueMonth',
-        numeric: false,
-        disablePadding: false,
-        label: 'Due Month',
-    },
+  
     {
         id: "studentName",
         numeric: false,
         disablePadding: false,
         label: 'Student',
-    },
-    {
-        id: 'studentId',
-        numeric: false,
-        disablePadding: false,
-        label: 'Student Id',
-    },
-    {
-        id: 'class',
-        numeric: false,
-        disablePadding: false,
-        label: 'Class',
     },
     {
         id: "fatherName",
@@ -112,6 +95,12 @@ const headCells: readonly HeadCell[] = [
         numeric: false,
         disablePadding: false,
         label: 'Contact',
+    },
+    {
+        id: 'dueMonth',
+        numeric: false,
+        disablePadding: false,
+        label: 'Due Month',
     },
     {
         id: "dueAmount",
@@ -363,6 +352,7 @@ export const DueTable: React.FC<DueTablePropsType> = ({ dueData, dueMonth, dueYe
                         width: '40px',
                     },
                     '& tr > *:nth-child(n+3)': { textAlign: 'center' },
+                    overflowX:"auto"
                 }}
             >
                 <EnhancedTableHead

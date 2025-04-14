@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { memo, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Login.scss";
 import {
@@ -23,30 +23,58 @@ import ApxLogo from "../../assets/school-logos/apx-school.png";
 
 import { useAuth } from "../../context/AuthContext";
 
-// 🔹 Import Firebase Modular SDK
+// 🔹 Firebase Modular SDK
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { Typography } from "@mui/joy";
 import { useSchoolId } from "hooks/useSchoolId";
 import { dbMaster } from "../../firebase";
 
-
-
-const SchoolLogo = () => {
-
-  const schoolDomain = window.location.hostname.split(".")[1]||"localhost";
-  console.log("schoolDomain", schoolDomain);
+// ✅ Memoized SchoolLogo
+const SchoolLogo = memo(() => {
+  const schoolDomain = useMemo(() => {
+    return window.location.hostname.split(".")[1] || "localhost";
+  }, []);
 
   if (schoolDomain === "apxschool") {
-    return <img src={ApxLogo} alt="school-logo" height={100} style={{ borderRadius: "50%", border: "2px solid orange",padding:"6px" }} />
+    return (
+      <img
+        src={ApxLogo}
+        alt="school-logo"
+        height={100}
+        style={{
+          borderRadius: "50%",
+          border: "2px solid orange",
+          padding: "6px",
+        }}
+      />
+    );
+  } else if (schoolDomain === "orientpublicschool") {
+    return (
+      <img
+        src={OpsLogo}
+        alt="school-logo"
+        height={100}
+        style={{
+          borderRadius: "50%",
+          border: "2px solid orange",
+          padding: "6px",
+        }}
+      />
+    );
+  } else {
+    return <img src={LoricEduLogo} alt="school-logo" height={80} />;
   }
-  else if (schoolDomain === "orientpublicschool") {
-    return <img src={OpsLogo} alt="school-logo" height={100} style={{ borderRadius: "50%", border: "2px solid orange",padding:"6px" }} />
-  }
-  else {
-    return <img src={LoricEduLogo} alt="school-logo" height={80} />
-  }
-}
+});
 
+const FooterContent = memo(() => {
+  return (
+    <Box>
+      <Typography level="body-sm" sx={{ mb: 2 }}>
+        <span style={{ color: "#4A6CCD" }}>Loric Softwares</span> | Copyright 2017-2025. All Rights Reserved.
+      </Typography>
+    </Box>
+  )
+})
 
 function Login() {
   const [username, setUsername] = useState("");
@@ -59,7 +87,7 @@ function Login() {
   const { updateSchoolId } = useSchoolId();
   const { login, currentUser } = useAuth();
 
-  const handleOnSubmit = async (e: any) => {
+  const handleOnSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
@@ -67,6 +95,7 @@ function Login() {
       setError("All fields are required!");
       return;
     }
+
     const schoolId = username.split("@")[1].split(".")[0];
     setLoading(true);
     try {
@@ -102,9 +131,8 @@ function Login() {
       </div>
       <div className="right-section">
         <div className="login-card" style={{ flex: 1 }}>
-          {/* <img src={LoricEduLogo} alt="school-logo" height={80} /> */}
           <SchoolLogo />
-          <p>Login To School Admin Pannel</p>
+          <p>Login To School Admin Panel</p>
           <form className="form-control" onSubmit={handleOnSubmit}>
             <FormControl sx={{ width: "100%", mb: 2 }} variant="outlined">
               <InputLabel>Username</InputLabel>
@@ -144,14 +172,16 @@ function Login() {
             </div>
 
             {error && <Box><p style={{ color: "red" }}>{error}</p></Box>}
-            {loading && <Box sx={{ display: "flex", justifyContent: "center" }}><CircularProgress size={30} /></Box>}
+            {loading && (
+              <Box sx={{ display: "flex", justifyContent: "center" }}>
+                <CircularProgress size={30} />
+              </Box>
+            )}
 
             <button disabled={loading}>Login</button>
           </form>
         </div>
-        <Box>
-          <Typography level="body-sm" sx={{ mb: 2 }}><span style={{ color: "#4A6CCD" }}>Loric Softwares </span>| Copyright 2017-2025. All Rights Reserved.</Typography>
-        </Box>
+        <FooterContent />
       </div>
     </div>
   );

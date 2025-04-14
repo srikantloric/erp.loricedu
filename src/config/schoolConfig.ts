@@ -31,18 +31,6 @@ export const SCHOOL_SECTIONS = [
 
 export const SCHOOL_FEE_MONTHS = [
   {
-    title: "January",
-    value: 1
-  },
-  {
-    title: "Feburary",
-    value: 2
-  },
-  {
-    title: "March",
-    value: 3
-  },
-  {
     title: "April",
     value: 4
   },
@@ -78,6 +66,19 @@ export const SCHOOL_FEE_MONTHS = [
     title: "December",
     value: 12
   },
+  {
+    title: "January",
+    value: 1
+  },
+  {
+    title: "Feburary",
+    value: 2
+  },
+  {
+    title: "March",
+    value: 3
+  },
+ 
 ];
 
 export const SCHOOL_FEE_YEAR = [
@@ -163,9 +164,6 @@ export const CASTES = [
 
 
 export const SCHOOL_SESSIONS = [
-  { title: "2021", value: "2022" },
-  { title: "2023", value: "2024" },
-  { title: "2024", value: "2025" },
-  { title: "2025", value: "2026" },
-  { title: "2026", value: "2027" },
+  { title: "2025-26", value: "2025-2026" },
+  { title: "2024-25", value: "2024-25" },
 ]
