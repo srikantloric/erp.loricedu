@@ -3,19 +3,17 @@ import { Box, Button, Checkbox, Divider, Option, Select, Stack, Typography } fro
 import { IconReport } from "@tabler/icons-react";
 import BreadCrumbsV2 from "components/Breadcrumbs/BreadCrumbsV2";
 import Navbar from "components/Navbar/Navbar";
-import { DueTable } from 'components/Tables/DueTable';
 import LSPage from "components/Utils/LSPage";
 import PageContainer from "components/Utils/PageContainer";
 import { SCHOOL_CLASSES, SCHOOL_FEE_MONTHS, SCHOOL_SESSIONS } from "config/schoolConfig";
 import { enqueueSnackbar } from 'notistack';
-import { useContext, useEffect, useState } from 'react';
+import {  useState } from 'react';
 import { DueReportType } from 'types/reports';
 import { getClassNameByValue, getMonthTitleByValue, makeDoubleDigit } from 'utilities/UtilitiesFunctions';
 import { StudentDetailsType } from 'types/student';
 import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
 import { useFirebase } from 'context/firebaseContext';
-import SideBarContext from 'context/SidebarContext';
-
+import DueReportTable from 'components/Tables/DueReportTable';
 
 
 function DueReport() {
@@ -27,12 +25,6 @@ function DueReport() {
 
     //Get Firebase DB instance
     const { db } = useFirebase();
-
-    const { toggle } = useContext(SideBarContext);
-
-    useEffect(() => {
-        toggle();
-    }, [])
 
     async function getDueListByClass(className: number) {
         const dueList: DueReportType[] = [];
@@ -134,7 +126,6 @@ function DueReport() {
                     Icon={IconReport}
                     Path="Fee Reports/Due Report"
                 />
-
                 <br />
                 <Box sx={{ p: "10px", mt: "8px", border: "1px solid oklch(.929 .013 255.508)", borderRadius: "10px" }}>
                     <Stack
@@ -189,7 +180,7 @@ function DueReport() {
                 </Box>
                 <br />
                 {dueStudentList.length > 0 &&
-                    <DueTable dueData={dueStudentList} dueMonth={getMonthTitleByValue(selectedMonth!)!} dueYear={selectedYear!} />
+                 <DueReportTable/>
                 }
             </LSPage>
         </PageContainer>

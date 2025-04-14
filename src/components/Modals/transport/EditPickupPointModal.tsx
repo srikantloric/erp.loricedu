@@ -102,7 +102,8 @@ function EditPickupPointModal(props: EditPickupPointDialogProps) {
     return (
         <Modal open={open} onClose={onClose}>
             <ModalDialog minWidth="sm">
-                <DialogTitle>Create New Pickup Point</DialogTitle>
+                <DialogTitle>Edit Pickup Point</DialogTitle>
+                <Divider/>
                 <form
                     onSubmit={handleFormSubmit}
                 >

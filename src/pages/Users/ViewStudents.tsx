@@ -368,6 +368,7 @@ function ViewStudents() {
             <Chip
               label={filterChipLabel}
               variant="filled"
+              sx={{ mb: 1 }}
               // onClick={handleClick}
               onDelete={handleDelete}
             />
@@ -377,7 +378,7 @@ function ViewStudents() {
           {/* <LinearProgress /> */}
           {isDataLoading ? <LinearProgress /> : null}
         </Box>
-        <br></br>
+
         <MaterialTable
           style={{ display: "grid", overflow: "hidden", border: "1px solid oklch(.905 .013 255.508)", borderRadius: "10px", boxShadow: "none" }}
           columns={columnMat}

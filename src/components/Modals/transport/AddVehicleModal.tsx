@@ -4,17 +4,19 @@ import { TransportVehicleType } from "types/transport";
 
 // Form imports
 import * as Yup from "yup";
-import { Formik, Form, Field } from "formik";
+import { Formik, Form } from "formik";
 
 // Custom UI Components
-import Textfield from "components/FormsUi/Textfield";
-import DateTimePicker from "components/FormsUi/DateTimePicker";
+
+// import DateTimePicker from "components/FormsUi/DateTimePicker";
 import LoadingButton from "components/FormsUi/LoadingButton";
 
 import { Divider } from "@mui/material";
 import { useState } from "react";
 import { arrayUnion, doc, updateDoc } from "firebase/firestore";
 import { useFirebase } from "context/firebaseContext";
+import TextField from "../../FormsUi/Textfield";
+import DateTimePicker from "components/FormsUi/DateTimePicker";
 
 // Validation Schema
 const FormValidationSchema = Yup.object().shape({
@@ -26,7 +28,7 @@ const FormValidationSchema = Yup.object().shape({
   driverName: Yup.string().required("Driver name is required"),
   conductorName: Yup.string().optional(),
   registrationNumber: Yup.string().required("Registration number required"),
-  totalSeat: Yup.string().required("Total number of seats is required"),
+  totalSeat: Yup.number().required("Total number of seats is required"),
   licenseDate: Yup.string().optional(),
   rcDate: Yup.string().optional(),
   insuranceDate: Yup.string().optional(),
@@ -42,9 +44,8 @@ type AddVehicleModalProps = {
 
 function AddVehicleModal({ open, onClose, fetchVehicleData }: AddVehicleModalProps) {
 
-    //Get Firebase DB instance
-    const {db} = useFirebase();
-
+  //Get Firebase DB instance
+  const { db } = useFirebase();
 
   const [loading, setLoading] = useState(false);
 
@@ -54,7 +55,7 @@ function AddVehicleModal({ open, onClose, fetchVehicleData }: AddVehicleModalPro
     vehicleContact: "",
     conductorName: "",
     registrationNumber: "",
-    totalSeat: "",
+    totalSeat: 0,
     licenseDate: "",
     rcDate: "",
     insuranceDate: "",
@@ -98,24 +99,27 @@ function AddVehicleModal({ open, onClose, fetchVehicleData }: AddVehicleModalPro
             <Form>
               <Stack spacing={2}>
                 <Stack direction="row" spacing={2}>
-                  <Field component={Textfield} label="Bus/Vehicle Name" name="vehicleName" required />
-                  <Field component={Textfield} label="Vehicle Registration Number" name="registrationNumber" />
+                  <TextField label="Bus/Vehicle Name" name="vehicleName" required />
+                  <TextField
+                    label="Vehicle Registration Number"
+                    name="registrationNumber"
+                  />
                 </Stack>
                 <Stack direction="row" spacing={2}>
-                  <Field component={Textfield} label="Driver Name" name="driverName" required />
-                  <Field component={Textfield} label="Vehicle Contact" name="vehicleContact" required />
+                  <TextField label="Driver Name" name="driverName" required />
+                  <TextField label="Vehicle Contact" name="vehicleContact" required />
                 </Stack>
                 <Stack direction="row" spacing={2}>
-                  <Field component={Textfield} label="Conductor Name" name="conductorName" />
-                  <Field component={Textfield} label="Total Seat" name="totalSeat" required />
+                  <TextField label="Conductor Name" name="conductorName" />
+                  <TextField label="Total Seat" name="totalSeat" required />
                 </Stack>
                 <Stack direction="row" gap={2}>
-                  <Field component={DateTimePicker} label="License Date" name="licenseDate" />
-                  <Field component={DateTimePicker} label="RC Date" name="rcDate" />
+                  <DateTimePicker label="License Date" name="licenseDate" />
+                  <DateTimePicker label="RC Date" name="rcDate" />
                 </Stack>
                 <Stack direction="row" gap={2}>
-                  <Field component={DateTimePicker} label="Insurance Date" name="insuranceDate" />
-                  <Field component={DateTimePicker} label="Pollution Date" name="pollutionDate" />
+                  <DateTimePicker label="Insurance Date" name="insuranceDate" />
+                  <DateTimePicker label="Pollution Date" name="pollutionDate" />
                 </Stack>
                 <Divider sx={{ mt: 1 }} />
                 <LoadingButton loading={isSubmitting || loading} type="submit">

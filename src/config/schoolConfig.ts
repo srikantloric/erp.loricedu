@@ -31,18 +31,6 @@ export const SCHOOL_SECTIONS = [
 
 export const SCHOOL_FEE_MONTHS = [
   {
-    title: "January",
-    value: 1
-  },
-  {
-    title: "Feburary",
-    value: 2
-  },
-  {
-    title: "March",
-    value: 3
-  },
-  {
     title: "April",
     value: 4
   },
@@ -78,6 +66,19 @@ export const SCHOOL_FEE_MONTHS = [
     title: "December",
     value: 12
   },
+  {
+    title: "January",
+    value: 1
+  },
+  {
+    title: "Feburary",
+    value: 2
+  },
+  {
+    title: "March",
+    value: 3
+  },
+ 
 ];
 
 export const SCHOOL_FEE_YEAR = [
