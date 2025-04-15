@@ -6,15 +6,15 @@ function PageContainer({ children }) {
   const status = useContext(SideBarContext);
   const Sidebar_Animation = {
     open: {
-      marginLeft: "0px",
-      width:"100%",
+      marginLeft: "80px",
+      width: "100%",
       transition: {
         damping: 50,
       },
     },
     closed: {
       marginLeft: "260px",
-      width:"100%",
+      width: "100%",
       transition: {
         damping: 50,
       },
