@@ -1,11 +1,20 @@
 import { IconChevronDown, IconPoint } from "@tabler/icons-react";
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { motion } from "framer-motion";
 import "./Sidebar.scss";
+import SideBarContext from "context/SidebarContext";
 
 function SIdebarMenuItem({ menus }) {
   const [open, setOpen] = useState(false);
+  const status = useContext(SideBarContext);
+
+  const handleClick = () => {
+    setOpen(!open);
+    if (menus.childrens && !status.isActive) {
+      status.toggle();
+    }
+  };
 
   return (
     <>
@@ -14,11 +23,11 @@ function SIdebarMenuItem({ menus }) {
         className={
           open ? "menu-items open-mainmenu" : "menu-items close-mainmenu"
         }
-        onClick={()=>setOpen(!open)}
+        onClick={handleClick}
       >
-        <div className="icon-plus-title" >
+        <div className="icon-plus-title">
           <menus.icon fontSize="small" />
-          <p>{menus.title}</p>
+          {status.isActive ? <p>{menus.title}</p> : <p> </p>}
         </div>
         <div className="dropdown">
           {menus.childrens ? (
