@@ -45,7 +45,7 @@ function Sidebar() {
                       ? {}
                       : {
                           fontSize: "8px",
-                          paddingLeft: "8px",
+                          paddingLeft: "5px",
                         }
                   }
                   key={index}
