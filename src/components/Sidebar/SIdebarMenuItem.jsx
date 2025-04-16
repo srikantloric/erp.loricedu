@@ -1,5 +1,5 @@
 import { IconChevronDown, IconPoint } from "@tabler/icons-react";
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { motion } from "framer-motion";
 import "./Sidebar.scss";
@@ -8,6 +8,13 @@ import SideBarContext from "context/SidebarContext";
 function SIdebarMenuItem({ menus }) {
   const [open, setOpen] = useState(false);
   const status = useContext(SideBarContext);
+
+  useEffect(() => {
+    // Close dropdown when sidebar is collapsed
+    if (!status.isActive) {
+      setOpen(false);
+    }
+  }, [status.isActive]);
 
   const handleClick = () => {
     setOpen(!open);
