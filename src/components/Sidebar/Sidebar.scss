@@ -1,5 +1,5 @@
 .sidebar-container {
-  height: 100vh;
+  height: 102vh;
   border-right: 1px solid var(--bs-gray-300);
   box-sizing: border-box;
   position: fixed;
@@ -19,6 +19,10 @@
   text-decoration: none;
   color: #5a6a85;
   margin-top: 6px;
+}
+
+.sidebar-a a{
+  padding: 0px 15px;
 }
 
 .sidebar-menu {

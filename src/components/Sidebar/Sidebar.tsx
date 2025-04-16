@@ -31,11 +31,30 @@ function Sidebar() {
       animate={status.isActive ? "open" : "closed"}
       className="sidebar-container"
     >
-      <div className="sidebar">
+      <div
+        className={status.isActive ? "sidebar" : "sidebar sidebar-a"}
+        style={
+          status.isActive
+            ? {}
+            : {
+                paddingLeft: 1,
+                paddingRight: 1,
+              }
+        }
+      >
         <div className="sidebar-logo">
           <img src={appConfig.schoolSidebarLogo} alt="school logo" />
         </div>
-        <div className="sidebar-menu">
+        <div
+          className="sidebar-menu"
+          style={
+            status.isActive
+              ? {}
+              : {
+                  padding: "10px",
+                }
+          }
+        >
           {routesConfig.map((menus, index) => {
             if (menus.isHeader) {
               return (
@@ -45,7 +64,7 @@ function Sidebar() {
                       ? {}
                       : {
                           fontSize: "8px",
-                          paddingLeft: "5px",
+                          paddingLeft: "0px",
                         }
                   }
                   key={index}
