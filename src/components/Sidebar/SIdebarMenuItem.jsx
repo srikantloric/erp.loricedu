@@ -4,6 +4,7 @@ import { Link, NavLink } from "react-router-dom";
 import { motion } from "framer-motion";
 import "./Sidebar.scss";
 import SideBarContext from "context/SidebarContext";
+import { Tooltip } from "@mui/material";
 
 function SIdebarMenuItem({ menus }) {
   const [open, setOpen] = useState(false);
@@ -25,29 +26,31 @@ function SIdebarMenuItem({ menus }) {
 
   return (
     <>
-      <NavLink
-        to={menus.to}
-        className={
-          open ? "menu-items open-mainmenu" : "menu-items close-mainmenu"
-        }
-        onClick={handleClick}
-      >
-        <div className="icon-plus-title">
-          <menus.icon fontSize="small" />
-          {status.isActive ? <p>{menus.title}</p> : <p> </p>}
-        </div>
-        <div className="dropdown">
-          {menus.childrens ? (
-            <IconChevronDown
-              className="toggle-btn"
-              onClick={() => setOpen(!open)}
-              size={20}
-            />
-          ) : (
-            ""
-          )}
-        </div>
-      </NavLink>
+      <Tooltip title={menus.title} placement="right" arrow>
+        <NavLink
+          to={menus.to}
+          className={
+            open ? "menu-items open-mainmenu" : "menu-items close-mainmenu"
+          }
+          onClick={handleClick}
+        >
+          <div className="icon-plus-title">
+            <menus.icon fontSize="small" />
+            {status.isActive ? <p>{menus.title}</p> : <p> </p>}
+          </div>
+          <div className="dropdown">
+            {menus.childrens ? (
+              <IconChevronDown
+                className="toggle-btn"
+                onClick={() => setOpen(!open)}
+                size={20}
+              />
+            ) : (
+              ""
+            )}
+          </div>
+        </NavLink>
+      </Tooltip>
       <motion.div
         className={open ? "sub-menu open-submenu" : "sub-menu close-submenu"}
       >
