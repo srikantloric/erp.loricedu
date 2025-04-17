@@ -7,6 +7,12 @@
   z-index: 1;
 }
 
+@media (max-width: 600px) {
+  .sidebar-container-hide {
+    display: none;
+  }
+}
+
 .sidebar {
   padding: 16px 10px;
 }

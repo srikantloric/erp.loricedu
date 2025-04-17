@@ -29,7 +29,11 @@ function Sidebar() {
     <motion.div
       variants={Sidebar_Animation}
       animate={status.isActive ? "open" : "closed"}
-      className="sidebar-container"
+      className={
+        status.isActive
+          ? "sidebar-container"
+          : "sidebar-container sidebar-container-hide"
+      }
     >
       <div
         className={status.isActive ? "sidebar" : "sidebar sidebar-a"}
