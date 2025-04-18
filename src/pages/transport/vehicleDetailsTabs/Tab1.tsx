@@ -52,16 +52,17 @@ function Tab1() {
       setTransportVehicles([]);
       const transportRef = doc(db, "TRANSPORT", "transportLocations");
       const transportSnap = await getDoc(transportRef);
-      
+
       if (transportSnap.exists()) {
         const data = transportSnap.data();
         if (!data.vehicles) {
-          enqueueSnackbar("No vehicles found!", { variant: "info" })
+          console.log("No vehicle found!")
           setLoading(false);
           return
         }
 
-        const transportVehicles = data.vehicles as TransportVehicleType[]
+        const transportVehicles = data.vehicles as any[]
+        console.log(transportVehicles)
 
         const updatedVehicles = await Promise.all(
           transportVehicles.map(async (vehicle) => {
@@ -86,6 +87,8 @@ function Tab1() {
       }
     } catch (error) {
       console.error("Error fetching vehicle data:", error);
+      enqueueSnackbar("Error while fetching vehicle data!", { variant: "error" })
+      setLoading(false)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -108,9 +111,9 @@ function Tab1() {
       </Sheet>
 
       {loading &&
-        <LinearProgress sx={{mt:2}}/>
+        <LinearProgress sx={{ mt: 2 }} />
       }
-      <Box sx={{ border: "1px solid oklch(.900 .013 255.508)", borderRadius: "10px", padding: "2px",mt:1}}>
+      <Box sx={{ border: "1px solid oklch(.900 .013 255.508)", borderRadius: "10px", padding: "2px", mt: 1 }}>
         <MaterialTable
           style={{
             display: "grid", overflow: "hidden", boxShadow: "none"

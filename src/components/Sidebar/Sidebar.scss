@@ -1,5 +1,5 @@
 .sidebar-container {
-  height: 100vh;
+  height: 200vh;
   border-right: 1px solid var(--bs-gray-300);
   box-sizing: border-box;
   position: fixed;
@@ -7,8 +7,14 @@
   z-index: 1;
 }
 
+@media (max-width: 600px) {
+  .sidebar-container-hide {
+    display: none;
+  }
+}
+
 .sidebar {
-  padding: 16px;
+  padding: 16px 10px;
 }
 
 .hidden {
@@ -21,6 +27,10 @@
   margin-top: 6px;
 }
 
+.sidebar-a a{
+  padding: 0px 15px;
+}
+
 .sidebar-menu {
   padding: 6px;
 }
@@ -28,7 +38,7 @@
   color: #11142d;
   font-size: 12px;
   padding-top: 12px;
-  padding-left: 10px;
+  padding-left: 12px;
   font-family: "Plus Jakarta Sans", sans-serif;
   font-weight: 700;
   text-transform: uppercase;
@@ -56,7 +66,7 @@
 
   & p {
     font-size: 14px;
-    margin-left: 8px;
+    margin-left: 20px;
     font-family: "Plus Jakarta Sans", sans-serif;
     font-weight: 400;
   }
@@ -104,6 +114,11 @@
 .icon-plus-title {
   display: flex;
   align-items: center;
+  min-height: 38px;
+}
+
+.dropdown{
+  margin-left: 3px;
 }
 
 /*
