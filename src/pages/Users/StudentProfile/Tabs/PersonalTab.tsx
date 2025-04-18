@@ -22,6 +22,7 @@ import {
   Typography,
   styled,
 } from "@mui/joy";
+import EditIcon from '@mui/icons-material/Edit';
 import { SCHOOL_CLASSES, SCHOOL_SECTIONS } from "config/schoolConfig";
 import { Edit, Warning2 } from "iconsax-react";
 import { StudentDetailsType } from "types/student";
@@ -33,6 +34,7 @@ import { useState } from "react";
 import LockIcon from "@mui/icons-material/Lock";
 import { doc, serverTimestamp, Timestamp, updateDoc } from "firebase/firestore";
 import { useFirebase } from "context/firebaseContext";
+import StudentRollUpdaterModal from "pages/StudentManagement/StudentRollUpdatorModal";
 
 const VisuallyHiddenInput = styled("input")`
   clip: rect(0 0 0 0);
@@ -134,8 +136,12 @@ const PersonalTab: React.FC<StudentProfileProps> = ({ studentData }) => {
   const [changeKeyInput, setChangeKeyInput] = useState<string>("");
   const [changeKeyAccessError, setChangeKeyAccessError] = useState<string>("");
 
+  //Roll update modal state
+  const [updatedRollNumber, setUpdatedRollNumber] = useState<string>(studentData.class_roll)
+  const [rollUpdateModalShowing, setRollUpdateModalShowing] = useState<boolean>(false)
+
   //Get Firebase DB instance
-  const {db} = useFirebase();
+  const { db } = useFirebase();
 
   const {
     register,
@@ -182,17 +188,17 @@ const PersonalTab: React.FC<StudentProfileProps> = ({ studentData }) => {
     if (studentData) {
       try {
         setIsUpdating(true);
-  
+
         if (!updatedData.profil_url) {
           updatedData["profil_url"] =
             "https://firebasestorage.googleapis.com/v0/b/apx-international-dev.firebasestorage.app/o/images%2F360_F_542361185_VFRJWpR2FH5OiAEVveWO7oZnfSccZfD3.jpg?alt=media&token=db86876d-97cc-4bd9-9694-75a6fe70107f";
         }
-  
+
         updatedData["updated_at"] = serverTimestamp();
-  
+
         const studentRef = doc(db, "STUDENTS", studentData.id);
         await updateDoc(studentRef, updatedData);
-  
+
         console.log("Update successful!");
         enqueueSnackbar("Profile updated successfully!", { variant: "success" });
         setPaymentDetailsChangeBlocked(true);
@@ -716,18 +722,21 @@ const PersonalTab: React.FC<StudentProfileProps> = ({ studentData }) => {
                 <Grid md={3} xs={12}>
                   <FormControl>
                     <FormLabel>Roll Number</FormLabel>
-                    <Input
-                      type="text"
-                      {...register("class_roll")}
-                      error={errors.class_roll ? true : false}
-                      disabled={admissionDetailsChangeBlocked}
-                    />
+                    <Stack direction={"row"} alignItems={"center"} justifyContent={"center"} spacing={1}>
+                      <Input
+                        type="text"
+                        value={updatedRollNumber}
+                        disabled
+                      />
+                      <Button size="sm" startDecorator={<EditIcon />} sx={{ mt: 1 }} variant="outlined" onClick={() => setRollUpdateModalShowing(true)} />
+                    </Stack>
                     <FormHelperText>
                       {errors.class_roll && errors.class_roll.message}
                     </FormHelperText>
                   </FormControl>
                 </Grid>
               </Grid>
+
             </Box>
           </Box>
           <Box
@@ -912,6 +921,9 @@ const PersonalTab: React.FC<StudentProfileProps> = ({ studentData }) => {
           </DialogActions>
         </ModalDialog>
       </Modal>
+      {rollUpdateModalShowing &&
+        <StudentRollUpdaterModal open={rollUpdateModalShowing} onClose={() => setRollUpdateModalShowing(false)} selectedStudent={studentData} setUpdatedRollNumber={setUpdatedRollNumber}/>
+      }
     </Box>
   );
 };
