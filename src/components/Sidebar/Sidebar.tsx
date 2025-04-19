@@ -76,6 +76,7 @@ function Sidebar() {
                       : {
                           fontSize: "8px",
                           paddingLeft: "0px",
+                          textAlign: "center",
                         }
                   }
                   key={index}
