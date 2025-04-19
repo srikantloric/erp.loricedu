@@ -12,7 +12,8 @@ import {
   IconBus,
   IconDatabaseCog,
   IconMoneybag,
-  IconPhoneIncoming
+  IconPhoneIncoming,
+  IconFingerprint
 } from "@tabler/icons-react";
 import UnderConstruction from "../../pages/Extras/UnderConstruction";
 import FeeManager from "../../pages/FeeManager/FeeManager";
@@ -33,6 +34,8 @@ import Expenses from "pages/expenses/Expenses";
 import StudentMigration from "pages/Users/StudentMigration";
 import RollNoUpdator from "pages/StudentManagement/RollNoUpdator";
 import AdmissionEnquiry from "pages/Admission/AdmissionEnquiry";
+import Attendance from "pages/Attendance/Attendance";
+import AttendanceConfiguration from "pages/Attendance/AttendanceConfiguration";
 
 export const routesConfig = [
   {
@@ -139,46 +142,54 @@ export const routesConfig = [
   //     },
   //   ],
   // },
-  // {
-  //   title: "Attendance ",
-  //   to: "/Attendance",
-  //   icon: IconFingerprint,
-  //   isCollapsable: false,
-  //   isHeader: false,
-  //   Component: FeaturesConfig.ATTENDANCE_FEATURE
-  //     ? Attendance
-  //     : UnderConstruction,
-  //   childrens: [
-  //     {
-  //       title: "Show Attendance",
-  //       to: "attendance/show-student-attendance",
-  //       isCollapsable: false,
-  //       isHeader: false,
-  //       Component: <Attendance />,
-  //     },
-  //     {
-  //       title: "Manual Attendance",
-  //       to: "attendance/mark-manual-attendance",
-  //       isCollapsable: false,
-  //       isHeader: false,
-  //       Component: <Attendance />,
-  //     },
-  //     {
-  //       title: "Generate QR Sticker",
-  //       to: "attendance/generate-attendance-qr",
-  //       isCollapsable: false,
-  //       isHeader: false,
-  //       Component: <Attendance />,
-  //     },
-  //     {
-  //       title: "Facuities Attendance",
-  //       to: "attendance/Facuities",
-  //       isCollapsable: false,
-  //       isHeader: false,
-  //       Component: <Attendance />,
-  //     },
-  //   ],
-  // },
+  {
+    title: "Attendance ",
+    to: "/Attendance",
+    icon: IconFingerprint,
+    isCollapsable: false,
+    isHeader: false,
+    Component: FeaturesConfig.ATTENDANCE_FEATURE
+      ? Attendance
+      : UnderConstruction,
+    childrens: [
+      {
+        title: "Show Attendance",
+        to: "attendance/show-student-attendance",
+        isCollapsable: false,
+        isHeader: false,
+        Component: <Attendance />,
+      },
+      {
+        title: "Manual Attendance",
+        to: "attendance/mark-manual-attendance",
+        isCollapsable: false,
+        isHeader: false,
+        Component: <Attendance />,
+      },
+      // {
+      //   title: "Generate QR Sticker",
+      //   to: "attendance/generate-attendance-qr",
+      //   isCollapsable: false,
+      //   isHeader: false,
+      //   Component: <Attendance />,
+      // },
+      {
+        title: "Facuities Attendance",
+        to: "attendance/Facuities",
+        isCollapsable: false,
+        isHeader: false,
+        Component: <Attendance />,
+      },
+      {
+        title: "Configurations",
+        to: "attendance/config",
+        isCollapsable: false,
+        isHeader: false,
+        Component: <AttendanceConfiguration />,
+      },
+
+    ],
+  },
 
   {
     title: "Transport",
