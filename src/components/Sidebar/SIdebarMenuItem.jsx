@@ -38,7 +38,10 @@ function SIdebarMenuItem({ menus }) {
             <menus.icon fontSize="small" />
             {status.isActive ? <p>{menus.title}</p> : <p> </p>}
           </div>
-          <div className="dropdown">
+          <div
+            className="dropdown"
+            style={status.isActive ? {} : { display: "none" }}
+          >
             {menus.childrens ? (
               <IconChevronDown
                 className="toggle-btn"
