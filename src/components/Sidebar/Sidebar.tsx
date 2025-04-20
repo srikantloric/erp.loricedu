@@ -47,7 +47,14 @@ function Sidebar() {
         }
       >
         <div className="sidebar-logo">
-          <img src={appConfig.schoolSidebarLogo} alt="school logo" />
+          <img
+            src={
+              status.isActive
+                ? appConfig.schoolSidebarLogo
+                : appConfig.schoolLogo
+            }
+            alt="school logo"
+          />
         </div>
         <div
           className="sidebar-menu"
@@ -69,6 +76,7 @@ function Sidebar() {
                       : {
                           fontSize: "8px",
                           paddingLeft: "0px",
+                          textAlign: "center",
                         }
                   }
                   key={index}

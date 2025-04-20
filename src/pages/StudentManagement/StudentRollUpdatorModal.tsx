@@ -22,7 +22,10 @@ import {
     Modal,
     ModalDialog,
     Button,
-    Stack
+    Stack,
+    Box,
+    DialogContent,
+    DialogActions
 } from "@mui/joy";
 import { collection, query, where, getDocs, doc, writeBatch } from "firebase/firestore";
 import { useFirebase } from "context/firebaseContext";
@@ -199,51 +202,58 @@ const StudentRollUpdaterModal: React.FC<StudentRollUpdaterModalProps> = ({
 
     return (
         <Modal open={open} onClose={onClose}>
-            <ModalDialog minWidth="sm" sx={{ overflow: "scroll", maxHeight: "90vh" }}>
+            <ModalDialog minWidth="sm" >
                 <DialogTitle>🎓 Student Roll Number Updater</DialogTitle>
                 <Divider />
-                {loading ? (
-                    <CircularProgress />
-                ) : (
-                    <>
-                        <DndContext
-                            sensors={sensors}
-                            collisionDetection={closestCenter}
-                            onDragEnd={handleDragEnd}
-                        >
-                            <SortableContext
-                                items={students.map((s) => s.id)}
-                                strategy={verticalListSortingStrategy}
+                <DialogContent>
+
+                    {loading ? (
+                        <CircularProgress />
+                    ) : (
+                        <Box sx={{ overflow: "scrollY", maxHeight: "90vh" }}>
+                            <DndContext
+                                sensors={sensors}
+                                collisionDetection={closestCenter}
+                                onDragEnd={handleDragEnd}
                             >
-                                {students.map((student) => {
-                                    const originalIndex = originalOrderRef.current.findIndex(
-                                        (s) => s.id === student.id
-                                    );
-                                    const isSelected = student.id === selectedStudent?.id;
+                                <SortableContext
+                                    items={students.map((s) => s.id)}
+                                    strategy={verticalListSortingStrategy}
+                                >
+                                    {students.map((student) => {
+                                        const originalIndex = originalOrderRef.current.findIndex(
+                                            (s) => s.id === student.id
+                                        );
+                                        const isSelected = student.id === selectedStudent?.id;
 
-                                    return (
-                                        <SortableStudentItem
-                                            key={student.id}
-                                            student={student}
-                                            originalIndex={originalIndex}
-                                            isSelected={isSelected}
-                                            forwardedRef={isSelected ? scrollRef : undefined}
-                                        />
-                                    );
-                                })}
-                            </SortableContext>
-                        </DndContext>
+                                        return (
+                                            <SortableStudentItem
+                                                key={student.id}
+                                                student={student}
+                                                originalIndex={originalIndex}
+                                                isSelected={isSelected}
+                                                forwardedRef={isSelected ? scrollRef : undefined}
+                                            />
+                                        );
+                                    })}
+                                </SortableContext>
+                            </DndContext>
 
-                        <Stack direction="row" justifyContent="flex-end" spacing={2} mt={2}>
-                            <Button variant="plain" onClick={onClose}>
-                                Cancel
-                            </Button>
-                            <Button variant="solid" onClick={handleUpdate}>
-                                Update
-                            </Button>
-                        </Stack>
-                    </>
-                )}
+                        </Box>
+                    )}
+                </DialogContent>
+                <DialogActions>
+
+                    <Stack direction="row" justifyContent="flex-end" spacing={2} mt={2}>
+                        <Button variant="plain" onClick={onClose}>
+                            Cancel
+                        </Button>
+                        <Button variant="solid" onClick={handleUpdate}>
+                            Update
+                        </Button>
+                    </Stack>
+                </DialogActions>
+
             </ModalDialog>
         </Modal>
     );

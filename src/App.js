@@ -25,6 +25,7 @@ import PdfLivePreview from "pages/PdfJsLiveEditor/PdfLivePreview";
 import StudentMigration from "pages/Users/StudentMigration";
 import PrintTopperList from "pages/ResultsManagement/PrintToperList";
 import RollNoUpdator from "pages/StudentManagement/RollNoUpdator";
+import AttendanceConfiguration from "pages/Attendance/AttendanceConfiguration";
 
 // Lazy Loaded Components
 
@@ -169,6 +170,10 @@ function App() {
                   <Route
                     path="attendance/Facuities"
                     element={<FacultyAttendance />}
+                  />
+                  <Route
+                    path="attendance/config"
+                    element={<AttendanceConfiguration />}
                   />
                   <Route
                     path="/students/profile/:id"
