@@ -40,7 +40,8 @@ export type StudentDetailsType = {
   student_pass?: string,
   promotionHistory?: PromotionRecord[],
   status?: "Pending"|"Promoted",
-  lastPromotedAt?: FieldValue | Timestamp
+  lastPromotedAt?: FieldValue | Timestamp,
+  rfidCode?:string
 };
 
 type PromotionRecord = {
