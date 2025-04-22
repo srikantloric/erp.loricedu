@@ -191,6 +191,7 @@ export const GenerateDemandSlip = async (
         doc.text("Class:", slipX + cardWidth / 2 + 2, slipY);
         doc.text("Roll:", slipX + cardWidth / 2 + 2, slipY + 4);
         doc.text("Phone No:", slipX + cardWidth / 2 + 2, slipY + 8);
+        doc.text("DOB:", slipX + cardWidth / 2 + 2, slipY + 12);
 
         doc.setFont("Poppins", "normal");
         doc.text(data.studentDetails.studentName, slipX + 16, slipY);
@@ -211,7 +212,9 @@ export const GenerateDemandSlip = async (
           slipX + cardWidth / 2 + 20,
           slipY + 8
         );
+
         doc.text(currentDate, slipX + 16, slipY + 12);
+        doc.text(data.studentDetails.dob,slipX + cardWidth / 2 + 20, slipY + 12);
 
         doc.setLineWidth(0.5);
         doc.line(slipX, slipY + 15, slipX + cardWidth - 10, slipY + 15); // horizontal line
@@ -277,7 +280,12 @@ export const GenerateDemandSlip = async (
         const tableEndY = (doc as any).lastAutoTable.finalY + 5;
         doc.setFontSize(8);
         doc.setFont("Poppins", "semibold");
-        doc.text(`Total Fee: ${totalFeeInWords} Only`, slipX, tableEndY);
+        doc.setTextColor("#ff0000");
+        doc.setFontSize(12);
+        doc.text(`Total Fee Due: ₹${totalFee}`, slipX, tableEndY+2);
+        doc.setTextColor("#000");
+        doc.setFontSize(8);
+        doc.text(`${totalFeeInWords} Only`, slipX, tableEndY+7);
 
         // Message at the bottom
         const boxY = y + cardHeight - 15;

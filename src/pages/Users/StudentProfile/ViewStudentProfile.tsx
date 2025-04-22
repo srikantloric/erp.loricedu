@@ -8,7 +8,7 @@ import Navbar from "components/Navbar/Navbar";
 import LSPage from "components/Utils/LSPage";
 import BreadCrumbsV2 from "components/Breadcrumbs/BreadCrumbsV2";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
-import { Book, Moneys, Profile, Setting4, UserEdit } from "iconsax-react";
+import { Book, Bus,  Profile, Setting4, UserEdit } from "iconsax-react";
 import { Box, TabPanel, Typography } from "@mui/joy";
 import ProfileTab from "./Tabs/ProfileTab";
 import PersonalTab from "./Tabs/PersonalTab";
@@ -19,6 +19,7 @@ import { useEffect, useState } from "react";
 import { enqueueSnackbar } from "notistack";
 import { doc, getDoc } from "firebase/firestore";
 import { useFirebase } from "context/firebaseContext";
+import TransportTab from "./Tabs/TransportTab";
 
 interface IStudentReduxStore {
   studentarray: [];
@@ -76,7 +77,7 @@ function ViewStudentProfile() {
     fetchStudentData();
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [studentDocId, studentStateData,db]);
+  }, [studentDocId, studentStateData, db]);
 
   return (
     <PageContainer>
@@ -118,9 +119,9 @@ function ViewStudentProfile() {
               </Tab>
               <Tab>
                 <ListItemDecorator>
-                  <Moneys size="18" />
+                  <Bus size="18" />
                 </ListItemDecorator>
-                Payments
+                Transport
               </Tab>
               <Tab>
                 <ListItemDecorator>
@@ -142,7 +143,7 @@ function ViewStudentProfile() {
               {studentData ? <PersonalTab studentData={studentData!} /> : null}
             </TabPanel>
             <TabPanel value={2}>
-              In Progress
+              {studentData ? <TransportTab studentData={studentData!} /> : null}
             </TabPanel>
             <TabPanel value={3}>
               In Progress
