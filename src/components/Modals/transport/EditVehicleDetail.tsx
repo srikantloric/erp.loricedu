@@ -51,6 +51,7 @@ function AddVehicleModal(props: AddPickupPointDialogProps) {
   const [loading, setLoading] = useState(false);
 
   const FormInitialState: TransportVehicleType = {
+    vehicleId: selectedVehicle.vehicleId,
     vehicleName: selectedVehicle.vehicleName,
     driverName: selectedVehicle.driverName,
     vehicleContact: selectedVehicle.vehicleContact,
