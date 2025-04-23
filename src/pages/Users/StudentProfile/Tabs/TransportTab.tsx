@@ -9,6 +9,7 @@ import { TransportLocationType, TransportVehicleType } from 'types/transport';
 import { useFirebase } from 'context/firebaseContext';
 import { enqueueSnackbar } from 'notistack';
 import { updateDoc, } from 'firebase/firestore';
+import { LinearProgress } from '@mui/material';
 interface StudentProfileProps {
     studentData: StudentDetailsType;
 }
@@ -25,23 +26,30 @@ const TransportTab: React.FC<StudentProfileProps> = ({ studentData }) => {
     const [studentTransportDetails, setStudentTransportDetails] = useState<TransportLocationType & TransportVehicleType | null>(null);
     //Get Firebase DB instance
     const { db } = useFirebase();
+    const [loading, setLoading] = useState(false);
 
 
-    const fetchStudentTransportDetails = async () => {
+    const fetchStudentTransportDetails = async (trasportLocationId: string, transportVehicleId: string) => {
         try {
+            console.log("Fetching student transport details...");
+            setLoading(true);
             const transportLocationDoc = await getDoc(doc(db, "TRANSPORT", "transportLocations"));
             if (transportLocationDoc.exists()) {
                 const { locations, vehicles } = transportLocationDoc.data() || {};
-                const location = locations?.find((loc: TransportLocationType) => loc.locationId === transportLocationId);
+                const location = locations?.find((loc: TransportLocationType) => loc.locationId === trasportLocationId);
                 const vehicle = vehicles?.find((veh: TransportVehicleType) => veh.vehicleId === transportVehicleId);
 
                 if (location && vehicle) {
                     setStudentTransportDetails({ ...location, ...vehicle });
                 }
+                setLoading(false);
+
             } else {
+                setLoading(false);
                 console.log("No transport details found!");
             }
         } catch (error) {
+            setLoading(false);
             console.error("Error fetching student transport details:", error);
         }
     };
@@ -52,6 +60,7 @@ const TransportTab: React.FC<StudentProfileProps> = ({ studentData }) => {
             enqueueSnackbar("Unable to load student data!", { variant: "error" });
             return;
         }
+        console.log("Student Data", studentData);
 
         //fetch transport data from firestore
         const transportLocationId = studentData.transport_location || "";
@@ -60,7 +69,7 @@ const TransportTab: React.FC<StudentProfileProps> = ({ studentData }) => {
         setTransportVehicleId(transportVehicleId);
 
 
-        fetchStudentTransportDetails();
+        fetchStudentTransportDetails(transportLocationId, transportVehicleId);
 
         setChecked(studentData.transportation_fee !== 0 ? true : false);
 
@@ -68,20 +77,24 @@ const TransportTab: React.FC<StudentProfileProps> = ({ studentData }) => {
 
         const fetchTransportData = async () => {
             try {
+                setLoading(true);
                 const transportSnap = await getDoc(doc(db, "TRANSPORT", "transportLocations"));
                 if (transportSnap.exists()) {
                     const { locations, vehicles } = transportSnap.data() || {};
                     setTransportLocations(locations || []);
                     setTransportVehicle(vehicles || []);
+                    setLoading(false);
                 } else {
+                    setLoading(false);
                     console.log("No such document!");
                 }
             } catch (error) {
+                setLoading(false);
                 console.error("Error fetching transport data:", error);
             }
         };
         fetchTransportData();
-    }, [db]);
+    }, [db, studentData]);
 
     const handleSave = async () => {
         // Handle save logic here
@@ -103,7 +116,7 @@ const TransportTab: React.FC<StudentProfileProps> = ({ studentData }) => {
             });
 
             console.log("Student transport details updated successfully!");
-            fetchStudentTransportDetails();
+            fetchStudentTransportDetails(transportLocationId, transportVehicleId);
             enqueueSnackbar("Transport details saved successfully!", { variant: "success" });
 
         } catch (error) {
@@ -167,6 +180,7 @@ const TransportTab: React.FC<StudentProfileProps> = ({ studentData }) => {
                     </FormControl>
                 </Stack>
                 <Divider />
+                {loading && <LinearProgress />}
                 <Stack direction={"row"} p={1} gap={2} alignItems={"center"} justifyContent={"space-between"}>
                     <Stack direction={"row"} p={1} gap={2} alignItems={"center"}>
                         <img src={BusIcon} alt='bus-icon' height="150px" />
