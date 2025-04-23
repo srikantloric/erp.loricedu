@@ -42,6 +42,8 @@ export type StudentDetailsType = {
   status?: "Pending"|"Promoted",
   lastPromotedAt?: FieldValue | Timestamp,
   rfidCode?:string
+  transport_location?: string | null;
+  transport_vehicle?: string | null;
 };
 
 type PromotionRecord = {

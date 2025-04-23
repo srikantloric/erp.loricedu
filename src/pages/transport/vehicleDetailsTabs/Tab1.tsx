@@ -1,6 +1,6 @@
 import MaterialTable from "@material-table/core";
 import { Add, Edit } from "@mui/icons-material";
-import { Box, Button, Chip, LinearProgress, Sheet } from "@mui/joy";
+import { Box, Button, Chip, IconButton, LinearProgress, Sheet, Stack, Typography } from "@mui/joy";
 import AddVehicleModal from "components/Modals/transport/AddVehicleModal";
 import { useCallback, useEffect, useState } from "react";
 import EditVehicleDetail from "components/Modals/transport/EditVehicleDetail";
@@ -8,7 +8,8 @@ import { TransportVehicleType } from "types/transport";
 import { collection, doc, getCountFromServer, getDoc, query, where } from "firebase/firestore";
 import { useFirebase } from "context/firebaseContext";
 import { enqueueSnackbar } from "notistack";
-
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import { useNavigate } from "react-router-dom";
 
 function Tab1() {
   const [isAddVehicleModalOpen, setIsAddVehicleModalOpen] = useState(false);
@@ -17,6 +18,7 @@ function Tab1() {
   const [loading, setLoading] = useState<boolean>(false);
   //Get Firebase DB instance
   const { db } = useFirebase();
+  const navigate = useNavigate();
 
   const handleAddVehicleModalClose = () => {
     setIsAddVehicleModalOpen(false);
@@ -33,12 +35,26 @@ function Tab1() {
     {
       title: "Student Allocated", field: "studentsAllocated", render: (rowData: TransportVehicleType) => {
         return (
-          <Chip variant="soft" color="primary" sx={{ pr: 2, pl: 2, }}><b>{rowData.studentsAllocated}</b></Chip>
-        )
-      }
+
+          <Chip variant="soft" color="primary" sx={{ pr: 2, pl: 2 }}>
+            <Stack direction={"row"} spacing={0.5} sx={{ alignItems: "center",justifyContent:"center" }}>
+              <Typography level="title-lg">
+                {rowData.studentsAllocated}
+              </Typography>
+              {rowData.studentsAllocated! > 0 &&
+                <IconButton onClick={() => navigate(`allocated-students/${rowData.vehicleId}`)}>
+                  <VisibilityIcon />
+                </IconButton>
+              }
+            </Stack>
+          </Chip>
+        );
+      },
     },
     {
-      title: "Available Seat", field: "seatsAvailable", render: (rowData: TransportVehicleType) => {
+      title: "Available Seat",
+      field: "seatsAvailable",
+      render: (rowData: TransportVehicleType) => {
         return (
           <Chip variant="soft" color="success" sx={{ pr: 2, pl: 2, }}><b>{rowData.seatsAvailable}</b></Chip>
         )
@@ -62,11 +78,10 @@ function Tab1() {
         }
 
         const transportVehicles = data.vehicles as any[]
-        console.log(transportVehicles)
 
         const updatedVehicles = await Promise.all(
           transportVehicles.map(async (vehicle) => {
-            const q = query(collection(db, "STUDENTS"), where("vehicleId", "==", vehicle.vehicleId));
+            const q = query(collection(db, "STUDENTS"), where("transport_vehicle", "==", vehicle.vehicleId));
             const snapshot = await getCountFromServer(q);
             const count = snapshot.data().count;
 

@@ -7,9 +7,9 @@ import LSPage from "components/Utils/LSPage";
 import PageContainer from "components/Utils/PageContainer";
 import { SCHOOL_CLASSES, SCHOOL_FEE_MONTHS, SCHOOL_SESSIONS } from "config/schoolConfig";
 import { enqueueSnackbar } from 'notistack';
-import {  useState } from 'react';
+import { useState } from 'react';
 import { DueReportType } from 'types/reports';
-import { getClassNameByValue, getMonthTitleByValue, makeDoubleDigit } from 'utilities/UtilitiesFunctions';
+import { getClassNameByValue,  makeDoubleDigit } from 'utilities/UtilitiesFunctions';
 import { StudentDetailsType } from 'types/student';
 import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
 import { useFirebase } from 'context/firebaseContext';
@@ -18,7 +18,7 @@ import DueReportTable from 'components/Tables/DueReportTable';
 
 function DueReport() {
     const [selectedClass, setSelectedClass] = useState<number | null>(null);
-    const [selectedMonth, _setSelectedMonth] = useState<number | null>(null);
+    const [selectedMonth, setSelectedMonth] = useState<number[]>([])
     const [selectedYear, setSelectedYear] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
     const [dueStudentList, setDueStudentList] = useState<DueReportType[]>([]);
@@ -62,7 +62,7 @@ function DueReport() {
                             fatherName: studentData.father_name,
                             contact: studentData.contact_number,
                             dueAmount: challanData.totalAmount - challanData.amountPaid,
-                            dueMonth: getMonthTitleByValue(selectedMonth!)!,
+                            dueMonth: " getMonthTitleByValue(selectedMonth!)!",
                             remark: "",
                             class: getClassNameByValue(selectedClass!)!,
                             sl: "",
@@ -76,7 +76,7 @@ function DueReport() {
                     fatherName: studentData.father_name,
                     contact: studentData.contact_number,
                     dueAmount: 0,
-                    dueMonth: getMonthTitleByValue(selectedMonth!)!,
+                    dueMonth: "getMonthTitleByValue(selectedMonth!)!",
                     remark: "Challan not generated",
                     class: getClassNameByValue(selectedClass!)!,
                     sl: "",
@@ -163,6 +163,7 @@ function DueReport() {
                                 startDecorator={<TouchAppIcon />}
                                 onClick={handleGenerateDueReport}
                                 loading={loading}
+                                disabled={loading || !selectedClass || !selectedYear || selectedMonth.length===0}
                             >
                                 Generate Report
                             </Button>
@@ -170,17 +171,43 @@ function DueReport() {
                     </Stack>
                     <Divider sx={{ mt: 1, mb: 1 }} />
                     <Stack direction={"row"} flexWrap={"wrap"} justifyContent={"space-evenly"} gap={1}>
-                        <Checkbox label="Select all" variant="soft" />
+                        <Checkbox
+                            label="Select all"
+                            variant="soft"
+                            defaultChecked
+                            checked={selectedMonth.length === SCHOOL_FEE_MONTHS.length}
+                            onChange={(e) => {
+                                if (e.target.checked) {
+                                    setSelectedMonth(SCHOOL_FEE_MONTHS.map((item) => item.value));
+                                } else {
+                                    setSelectedMonth([]);
+                                }
+                            }}
+                        />
                         {SCHOOL_FEE_MONTHS.map((item) => {
                             return (
-                                <Checkbox key={item.value} label={item.title} variant="soft" />
-                            )
+                                <Checkbox
+                                    key={item.value}
+                                    label={item.title}
+                                    variant="soft"
+                                    checked={selectedMonth?.includes(item.value)}
+                                    onChange={(e) => {
+                                        if (e.target.checked) {
+                                            setSelectedMonth((prev) => [...(prev || []), item.value]);
+                                        } else {
+                                            setSelectedMonth((prev) =>
+                                                (prev || []).filter((month) => month !== item.value)
+                                            );
+                                        }
+                                    }}
+                                />
+                            );
                         })}
                     </Stack>
                 </Box>
                 <br />
                 {dueStudentList.length > 0 &&
-                 <DueReportTable/>
+                    <DueReportTable />
                 }
             </LSPage>
         </PageContainer>
