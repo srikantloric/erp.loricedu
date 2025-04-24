@@ -159,7 +159,7 @@ const PersonalTab: React.FC<StudentProfileProps> = ({ studentData }) => {
       caste: studentData.caste,
       city: studentData.city,
       class: studentData.class!,
-      class_roll: studentData.class_roll!,
+      class_roll: studentData.class_roll!.toString(),
       dob: studentData.dob,
       // email: studentData.email,
       father_name: studentData.father_name,
