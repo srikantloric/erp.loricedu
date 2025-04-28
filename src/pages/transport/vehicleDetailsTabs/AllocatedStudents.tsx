@@ -179,6 +179,7 @@ function AllocatedStudents() {
                                 paddingRight: "1rem",
                             },
                             actionsColumnIndex: -1,
+                            exportAllData: true,
                             exportMenu: [
                                 {
                                     label: 'Export PDF',
