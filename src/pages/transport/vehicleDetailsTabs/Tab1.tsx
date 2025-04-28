@@ -10,6 +10,7 @@ import { useFirebase } from "context/firebaseContext";
 import { enqueueSnackbar } from "notistack";
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { useNavigate } from "react-router-dom";
+import { ExportCsv, ExportPdf } from "@material-table/exporters";
 
 function Tab1() {
   const [isAddVehicleModalOpen, setIsAddVehicleModalOpen] = useState(false);
@@ -37,7 +38,7 @@ function Tab1() {
         return (
 
           <Chip variant="soft" color="primary" sx={{ pr: 2, pl: 2 }}>
-            <Stack direction={"row"} spacing={0.5} sx={{ alignItems: "center",justifyContent:"center" }}>
+            <Stack direction={"row"} spacing={0.5} sx={{ alignItems: "center", justifyContent: "center" }}>
               <Typography level="title-lg">
                 {rowData.studentsAllocated}
               </Typography>
@@ -146,6 +147,23 @@ function Tab1() {
             },
 
             actionsColumnIndex: -1,
+            exportAllData: true,
+            exportMenu: [
+              {
+                label: 'Export PDF',
+                exportFunc: (cols, data) => {
+                     const currentDate = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
+                    ExportPdf(cols, data, `Vehicle List (${transportVehicles.length}) - ${currentDate}`);
+                }
+              },
+              {
+                label: 'Export CSV',
+                exportFunc: (cols, data) => {
+                  const currentDate = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
+                  ExportCsv(cols, data, `Vehicle List (${transportVehicles.length}) - ${currentDate}`);
+                }
+              }
+            ]
           }}
           actions={[
             {

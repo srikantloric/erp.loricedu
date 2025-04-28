@@ -11,6 +11,7 @@ import AddPickupPointModal from "components/Modals/transport/AddPickupPointModal
 import EditPickupPointModal from "components/Modals/transport/EditPickupPointModal"
 import { doc, getDoc } from "firebase/firestore"
 import { useFirebase } from "context/firebaseContext"
+import { ExportCsv, ExportPdf } from "@material-table/exporters"
 
 type SerialNumber = {
     serialNo?: number
@@ -127,6 +128,23 @@ function Transport() {
                                 paddingRight: "1rem",
                             },
                             actionsColumnIndex: -1,
+                            exportAllData: true,
+                            exportMenu: [
+                                {
+                                    label: 'Export PDF',
+                                    exportFunc: (cols, data) => {
+                                        const currentDate = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
+                                        ExportPdf(cols, data, `Transport Locations (${transportData.length}) - ${currentDate}`);
+                                    }
+                                },
+                                {
+                                    label: 'Export CSV',
+                                    exportFunc: (cols, data) => {
+                                        const currentDate = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
+                                        ExportCsv(cols, data, `Transport Locations (${transportData.length}) - ${currentDate}`);
+                                    }
+                                }
+                            ]
                         }}
                         actions={[
                             {
