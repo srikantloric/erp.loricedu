@@ -295,7 +295,7 @@ const PersonalTab: React.FC<StudentProfileProps> = ({ studentData }) => {
             <Grid container justifyContent="space-between" mt="1rem">
               <Grid md={3} xs={12}>
                 <FormControl>
-                  <FormLabel>Bloog Group</FormLabel>
+                  <FormLabel>Blood Group</FormLabel>
                   <Input
                     type="text"
                     {...register("blood_group")}

@@ -3,14 +3,15 @@ import LSPage from "components/Utils/LSPage"
 import PageContainer from "components/Utils/PageContainer"
 import { Link, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { collection, query, where, getDocs } from "firebase/firestore";
+import { collection, query, where, getDocs, doc, getDoc } from "firebase/firestore";
 import { StudentDetailsType } from "types/student";
 import { useFirebase } from "context/firebaseContext";
 import { enqueueSnackbar } from "notistack";
 import { Avatar, Box, LinearProgress } from "@mui/joy";
 import MaterialTable from "@material-table/core";
 import PageHeaderWithHelpButton from "components/Breadcrumbs/PageHeaderWithHelpButton";
-
+import { ExportCsv, ExportPdf } from '@material-table/exporters';
+import { TransportVehicleType } from "types/transport";
 
 const classLookup = {
     1: "Nursery",
@@ -32,10 +33,52 @@ const classLookup = {
 
 function AllocatedStudents() {
     const { vehicleId } = useParams();
+    const [vehicleDetails, setVehicleDetails] = useState<TransportVehicleType | null>(null)
     const [students, setStudents] = useState<StudentDetailsType[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     //Get Firebase DB instance
     const { db } = useFirebase();
+
+    //fetch vehicle using vehicleId
+    useEffect(() => {
+        if (!vehicleId) {
+            enqueueSnackbar("No vehicle ID provided", { variant: "error" });
+        }
+        const fetchVehicleDetails = async () => {
+            setLoading(true);
+            try {
+                const transportRef = doc(db, "TRANSPORT", "transportLocations");
+                const transportSnap = await getDoc(transportRef);
+
+                if (transportSnap.exists()) {
+                    const data = transportSnap.data();
+                    if (!data.vehicles) {
+                        console.log("No vehicle found!")
+                        setLoading(false);
+                        return
+                    }
+                    const vehicles = data.vehicles as TransportVehicleType[];
+                    const vehicle = vehicles.find((v) => v.vehicleId === vehicleId);
+                    if (vehicle) {
+                        setVehicleDetails(vehicle);
+                        setLoading(false);
+                    } else {
+                        enqueueSnackbar("Vehicle not found", { variant: "error" });
+                        setLoading(false);
+                    }
+                }
+
+            } catch (error) {
+                setLoading(false);
+                enqueueSnackbar("Error fetching vehicle details", { variant: "error" });
+                console.error("Error fetching vehicle details:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchVehicleDetails();
+    }, [vehicleId]);
 
     useEffect(() => {
         const fetchStudents = async () => {
@@ -63,7 +106,7 @@ function AllocatedStudents() {
 
     const columnMat = [
         {
-            field: "student_id",
+            field: "admission_no",
             title: "ID",
             render: (rowData: StudentDetailsType) => {
                 return (
@@ -125,18 +168,33 @@ function AllocatedStudents() {
                         }}
                         columns={columnMat}
                         data={students}
-                        title={`Details of students allocated to the vehicle ${vehicleId} (${students.length})`}
+                        title={`Details of students allocated to the ${vehicleDetails?.vehicleName} (${students.length})`}
                         options={{
                             padding: 'dense',
+
                             headerStyle: {
                                 backgroundColor: "#5d87ff",
                                 color: "#FFF",
                                 paddingLeft: "1rem",
                                 paddingRight: "1rem",
                             },
-
                             actionsColumnIndex: -1,
+                            exportMenu: [
+                                {
+                                    label: 'Export PDF',
+                                    exportFunc: (cols, data) => {
+                                        ExportPdf(cols, data, `Students Allocated to ${vehicleDetails?.vehicleName} (${students.length})`);
+                                    }
+                                },
+                                {
+                                    label: 'Export CSV',
+                                    exportFunc: (cols, data) => {
+                                        ExportCsv(cols, data, `Students Allocated to ${vehicleDetails?.vehicleName} (${students.length})`);
+                                    }
+                                }
+                            ]
                         }}
+
                     />
                 </Box>
             </LSPage>
