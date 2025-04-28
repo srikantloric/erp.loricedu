@@ -2,7 +2,7 @@ import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 
 import FileResizer from "react-image-file-resizer";
-import { collection, deleteDoc, doc, getDoc, getDocs, orderBy, query, runTransaction, serverTimestamp, setDoc } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, orderBy, query, runTransaction, serverTimestamp, setDoc, where } from "firebase/firestore";
 import { StudentDetailsType } from "types/student";
 import { getDownloadURL, ref, uploadString } from "firebase/storage";
 import { getFirestoreInstance, getStorageInstance } from "context/firebaseUtility";
@@ -95,38 +95,36 @@ export const addstudent = createAsyncThunk<StudentDetailsType, { studentData: St
 //FETCH STUDENT
 export const fetchstudent = createAsyncThunk("student/fetchstudent", async () => {
   console.log("fetch data query triggered");
-  const db = await getFirestoreInstance()
+  const db = await getFirestoreInstance();
   // Create a reference to the STUDENTS collection
   const studentsRef = collection(db, "STUDENTS");
 
-  // Create a query with orderBy
-  const q = query(studentsRef, orderBy("created_at", "desc"));
+  // Create a query with orderBy and filter where is_active is true
+  const q = query(studentsRef, orderBy("created_at", "desc"), where("is_active", "==", true));
 
   // Fetch the documents based on the query
   const snap = await getDocs(q);
 
-  // Map over the snapshot and return the students data
+  // Map over the snapshot to return the student data
   const students = snap.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
+
   return students;
 });
 
-//DELETE STUDENT
+//SET STUDENT INACTIVE
 export const deleteStudent = createAsyncThunk(
   "student/deleteStudent",
   async (id: string, { rejectWithValue }) => {
-
-    const db = await getFirestoreInstance()
-
+    const db = await getFirestoreInstance();
     try {
       // Create a reference to the document
       const studentRef = doc(db, "STUDENTS", id);
-
-      // Delete the document
-      await deleteDoc(studentRef);
+      // Update the is_active field to false
+      await setDoc(studentRef, { is_active: false }, { merge: true });
       return id;
     } catch (error: any) {
-      console.error("Error removing document: ", error);
-      return rejectWithValue(error.message || "Error deleting student");
+      console.error("Error updating document: ", error);
+      return rejectWithValue(error.message || "Error setting student inactive");
     }
   }
 );

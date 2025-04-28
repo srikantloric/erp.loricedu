@@ -1,6 +1,7 @@
 import { FieldValue, Timestamp } from "firebase/firestore";
 
 export type StudentDetailsType = {
+  is_active: boolean;
   aadhar_number: string;
   address: string;
   admission_no: string;

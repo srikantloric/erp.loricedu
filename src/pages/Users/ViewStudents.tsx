@@ -17,7 +17,7 @@ import { Link, useNavigate } from "react-router-dom";
 import GrainIcon from "@mui/icons-material/Grain";
 import SearchIcon from "@mui/icons-material/Search";
 import PersonIcon from "@mui/icons-material/Person";
-
+import BlockIcon from "@mui/icons-material/Block";
 
 import {
   FormControl,
@@ -40,10 +40,13 @@ import ConfirmationModal from "../../components/Modals/ConfirmationModal";
 import { getClassNameByValue } from "utilities/UtilitiesFunctions";
 import { StudReportPDF } from "components/StudentDetailsReport/StudentReportGeneratorPDF";
 import ExportToExcel from "components/Reports/ExportToExcel";
-import { Avatar } from "@mui/joy";
+import { Avatar, Divider } from "@mui/joy";
 import { deleteStudent, fetchstudent } from "store/reducers/studentSlice";
 import { RootState, useDispatch } from "store";
 import { StudentDetailsType } from "types/student";
+import { doc, updateDoc } from "firebase/firestore";
+import { useFirebase } from "context/firebaseContext";
+
 
 
 const classLookup = {
@@ -90,6 +93,8 @@ function ViewStudents() {
   const [anchorEl, setAnchorEl] = useState(null);
   const menuOpen = Boolean(anchorEl);
 
+  //Get Firebase DB instance
+  const { db } = useFirebase();
   const handleMenuClick = (event: any, rowData: StudentDetailsType) => {
     setAnchorEl(event.currentTarget);
     setSelectedRowData(rowData);
@@ -110,6 +115,7 @@ function ViewStudents() {
 
   useEffect(() => {
     if (error) {
+      console.log("error", error);
       enqueueSnackbar("ERROR:" + error, { variant: "error" });
     }
   }, [error, enqueueSnackbar]);
@@ -237,6 +243,26 @@ function ViewStudents() {
       setFilteredData(data);
     }
   };
+
+  const deactivateUser = (student: StudentDetailsType) => {
+    if (!student) {
+      enqueueSnackbar("No student selected", { variant: "error" });
+      return
+    }
+    const studentDocRef = doc(db, "STUDENTS", student.id);
+
+    updateDoc(studentDocRef, { is_active: false })
+      .then(() => {
+        enqueueSnackbar("Student deactivated successfully!", { variant: "success" });
+
+      })
+      .catch((error) => {
+        console.error("Error deactivating student: ", error);
+        enqueueSnackbar("Failed to deactivate student", { variant: "error" });
+      });
+
+
+  }
 
   return (
     <PageContainer>
@@ -480,14 +506,14 @@ function ViewStudents() {
             </ListItemIcon>
             View Profile
           </MenuItem>
-          {/* <Divider /> */}
+          <Divider />
 
-          {/* <MenuItem onClick={handleMenuClick}>
+          <MenuItem onClick={() => deactivateUser(selectedRowData!)}>
             <ListItemIcon>
               <BlockIcon fontSize="small" />
             </ListItemIcon>
-            Suspend User
-          </MenuItem> */}
+            De-activate User
+          </MenuItem>
         </Menu>
 
       </LSPage>
