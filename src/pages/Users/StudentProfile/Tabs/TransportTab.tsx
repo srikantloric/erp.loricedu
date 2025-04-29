@@ -31,6 +31,7 @@ const TransportTab: React.FC<StudentProfileProps> = ({ studentData }) => {
 
     const fetchStudentTransportDetails = async (trasportLocationId: string, transportVehicleId: string) => {
         try {
+            setStudentTransportDetails(null);
             console.log("Fetching student transport details...");
             setLoading(true);
             const transportLocationDoc = await getDoc(doc(db, "TRANSPORT", "transportLocations"));
@@ -39,9 +40,10 @@ const TransportTab: React.FC<StudentProfileProps> = ({ studentData }) => {
                 const location = locations?.find((loc: TransportLocationType) => loc.locationId === trasportLocationId);
                 const vehicle = vehicles?.find((veh: TransportVehicleType) => veh.vehicleId === transportVehicleId);
 
-                if (location && vehicle) {
-                    setStudentTransportDetails({ ...location, ...vehicle });
-                }
+
+                setStudentTransportDetails({ ...location, ...vehicle });
+
+
                 setLoading(false);
 
             } else {
@@ -198,7 +200,7 @@ const TransportTab: React.FC<StudentProfileProps> = ({ studentData }) => {
                                     </tr>
                                     <tr>
                                         <td style={{ padding: "8px", border: "1px solid #ddd", fontWeight: "bold" }}>Transport Fee</td>
-                                        <td style={{ padding: "8px", border: "1px solid #ddd" }}>{"₹" + studentTransportDetails?.monthlyCharge || "N/A"}</td>
+                                        <td style={{ padding: "8px", border: "1px solid #ddd" }}>{"₹" + (studentTransportDetails?.monthlyCharge || "0")}</td>
                                     </tr>
                                     <tr>
                                         <td style={{ padding: "8px", border: "1px solid #ddd", fontWeight: "bold" }}>Vehicle</td>
@@ -288,6 +290,7 @@ const TransportTab: React.FC<StudentProfileProps> = ({ studentData }) => {
                         onChange={(e, val) => setTransportLocationId(val!)}
                         value={transportLocationId}
                         startDecorator={<PlaceIcon />}>
+                        <Option value="000000">--No Transport--</Option>
                         {transportLocations.map((location) => (
                             <Option key={location.locationId} value={location.locationId}>
                                 {location.pickupPointName}
@@ -299,6 +302,7 @@ const TransportTab: React.FC<StudentProfileProps> = ({ studentData }) => {
                         onChange={(e, val) => setTransportVehicleId(val!)}
                         value={transportVehicleId}
                         startDecorator={<DirectionsBusIcon />}>
+                        <Option value="000000">--No Vehicle--</Option>
                         {transportVehicle.map((vehicle) => (
                             <Option key={vehicle.vehicleId} value={vehicle.vehicleId}>
                                 {vehicle.vehicleName}
