@@ -90,7 +90,6 @@ const FormValidationSchema = Yup.object().shape({
     computer_fee: Yup.number().optional(),
     transport_fee: Yup.number().optional(),
     admission_fee: Yup.number().optional()
-
 })
 
 function AddStudentNew() {
@@ -146,6 +145,7 @@ function AddStudentNew() {
         transport_fee: 0,
         computer_fee: 0,
         admission_fee: 0
+        , is_active: true
 
     }
 
@@ -242,6 +242,7 @@ function AddStudentNew() {
                             values.transport_fee = Number(values.transport_fee || 0);
                             values.computer_fee = Number(values.computer_fee || 0);
                             values.admission_fee = Number(values.admission_fee || 0);
+
                             console.log("called..")
                             dispatch(
                                 // @ts-ignore
