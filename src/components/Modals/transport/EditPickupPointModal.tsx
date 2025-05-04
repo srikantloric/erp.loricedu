@@ -104,13 +104,13 @@ function EditPickupPointModal(props: EditPickupPointDialogProps) {
                             {formError.pickupPointName && <FormHelperText>{formError.pickupPointName}</FormHelperText>}
                         </FormControl>
                         <FormControl error={formError.distance ? true : false}>
-                            <FormLabel>Distance</FormLabel>
-                            <Input placeholder="Distance" name="distance" value={formState.distance} onChange={handleFormChange} />
+                            <FormLabel>Distance (KM)</FormLabel>
+                            <Input placeholder="Distance" name="distance" value={Number(formState.distance) || 0} onChange={handleFormChange} />
                             {formError.distance && <FormHelperText>{formError.distance}</FormHelperText>}
                         </FormControl>
                         <FormControl error={formError.monthlyCharge ? true : false}>
-                            <FormLabel>Monthly Charge</FormLabel>
-                            <Input placeholder="Monthly Charge" name="monthlyCharge" value={formState.monthlyCharge} onChange={handleFormChange} />
+                            <FormLabel>Monthly Charge (Rs.)</FormLabel>
+                            <Input placeholder="Monthly Charge" name="monthlyCharge" value={Number(formState.monthlyCharge) || 0} onChange={handleFormChange} />
                             {formError.monthlyCharge && <FormHelperText>{formError.monthlyCharge}</FormHelperText>}
                         </FormControl>
                         <Divider sx={{ mt: 1 }} />
