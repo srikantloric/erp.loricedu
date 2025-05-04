@@ -12,7 +12,7 @@ type SerialNumber = {
 type TransportData = SerialNumber & {
   locationId?: string;
   pickupPointName: string;
-  distance: string;
+  distance: number | null;
   monthlyCharge: string;
 };
 
@@ -30,7 +30,7 @@ function AddPickupPointModal(props: AddPickupPointDialogProps) {
   const { open, onClose, fetchTransportData } = props;
   const [formState, setFormState] = useState<TransportData>({
     pickupPointName: "",
-    distance: "",
+    distance: null,
     monthlyCharge: "",
   });
 
@@ -72,7 +72,7 @@ function AddPickupPointModal(props: AddPickupPointDialogProps) {
           { merge: true }
         );
 
-        setFormState({ pickupPointName: "", distance: "", monthlyCharge: "" });
+        setFormState({ pickupPointName: "", distance: null, monthlyCharge: "" });
         onClose();
         enqueueSnackbar("Pickup Point Added Successfully", { variant: "success" });
         fetchTransportData();
@@ -100,16 +100,16 @@ function AddPickupPointModal(props: AddPickupPointDialogProps) {
               {formError.pickupPointName && <FormHelperText>{formError.pickupPointName}</FormHelperText>}
             </FormControl>
             <FormControl error={!!formError.distance}>
-              <FormLabel>Distance</FormLabel>
-              <Input placeholder="Distance" name="distance" value={formState.distance} onChange={handleFormChange} />
+              <FormLabel>Distance (KM)</FormLabel>
+              <Input placeholder="Distance" name="distance" type="string" value={Number(formState.distance) || 0} onChange={handleFormChange} />
               {formError.distance && <FormHelperText>{formError.distance}</FormHelperText>}
             </FormControl>
             <FormControl error={!!formError.monthlyCharge}>
-              <FormLabel>Monthly Charge</FormLabel>
+              <FormLabel>Monthly Charge (Rs.)</FormLabel>
               <Input
                 placeholder="Monthly Charge"
                 name="monthlyCharge"
-                value={formState.monthlyCharge}
+                value={Number(formState.monthlyCharge)||0}
                 onChange={handleFormChange}
               />
               {formError.monthlyCharge && <FormHelperText>{formError.monthlyCharge}</FormHelperText>}
