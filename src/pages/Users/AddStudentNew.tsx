@@ -438,6 +438,7 @@ function AddStudentNew() {
                                             name="transport_location"
                                             label="Transport Pick Up Location"
                                         >
+                                            <MenuItem value="000000">--No Transport--</MenuItem>
                                             {
                                                 transportLocations && transportLocations.map((item, pos) => {
                                                     return (
@@ -452,6 +453,7 @@ function AddStudentNew() {
                                             name="transport_vehicle"
                                             label="Transport Vehicle"
                                         >
+                                            <MenuItem value="000000">--No Vehicle--</MenuItem>
                                             {
                                                 transportVehicle && transportVehicle.map((item, pos) => {
                                                     return (
