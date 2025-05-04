@@ -26,6 +26,13 @@ function Tab1() {
   };
 
   const columnMat = [
+    {
+      title: "S.No",
+      field: "serialNo",
+      render: (rowData: any) => rowData.tableData.id + 1,
+      cellStyle: { width: 60, maxWidth: 60 },
+      headerStyle: { width: 60, maxWidth: 60 }
+    },
     { title: "ID", field: "vehicleId", },
     { title: "Name", field: "vehicleName" },
     { title: "Vehicle Number", field: "registrationNumber" },
@@ -152,8 +159,8 @@ function Tab1() {
               {
                 label: 'Export PDF',
                 exportFunc: (cols, data) => {
-                     const currentDate = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
-                    ExportPdf(cols, data, `Vehicle List (${transportVehicles.length}) - ${currentDate}`);
+                  const currentDate = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
+                  ExportPdf(cols, data, `Vehicle List (${transportVehicles.length}) - ${currentDate}`);
                 }
               },
               {

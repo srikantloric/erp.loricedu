@@ -4,24 +4,14 @@ import { useState } from "react";
 import { enqueueSnackbar } from "notistack";
 import { doc, updateDoc } from "firebase/firestore";
 import { useFirebase } from "context/firebaseContext";
+import { TransportLocationType } from "types/transport";
 
 
-type SerialNumber = {
-    serialNo?: number
-}
-
-
-type TransportData = SerialNumber & {
-    locationId?: string,
-    pickupPointName: string,
-    distance: string,
-    monthlyCharge: string
-}
 
 
 type EditPickupPointDialogProps = {
-    locationData: TransportData[],
-    selectedLocation: TransportData,
+    locationData: TransportLocationType[],
+    selectedLocation: TransportLocationType,
     open: boolean,
     onClose: () => void
     fetchTransportData: () => void
@@ -34,7 +24,7 @@ function EditPickupPointModal(props: EditPickupPointDialogProps) {
 
 
     const { open, onClose, fetchTransportData, locationData, selectedLocation } = props
-    const [formState, setFormState] = useState<TransportData>({
+    const [formState, setFormState] = useState<TransportLocationType>({
         pickupPointName: selectedLocation.pickupPointName,
         distance: selectedLocation.distance,
         monthlyCharge: selectedLocation.monthlyCharge,
@@ -103,7 +93,7 @@ function EditPickupPointModal(props: EditPickupPointDialogProps) {
         <Modal open={open} onClose={onClose}>
             <ModalDialog minWidth="sm">
                 <DialogTitle>Edit Pickup Point</DialogTitle>
-                <Divider/>
+                <Divider />
                 <form
                     onSubmit={handleFormSubmit}
                 >

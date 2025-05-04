@@ -27,6 +27,7 @@ import PrintTopperList from "pages/ResultsManagement/PrintToperList";
 import RollNoUpdator from "pages/StudentManagement/RollNoUpdator";
 import AttendanceConfiguration from "pages/Attendance/AttendanceConfiguration";
 import AllocatedStudents from "pages/transport/vehicleDetailsTabs/AllocatedStudents";
+import AllocatedStudentsLocations from "pages/transport/vehicleDetailsTabs/AllocatedStudentsLocations";
 
 // Lazy Loaded Components
 
@@ -228,6 +229,14 @@ function App() {
                   <Route
                     path="/transport/transport-location"
                     element={<Transport />}
+                  />
+                      <Route
+                    path="/transport/transport-location/allocated-students/:locationId"
+                    element={<AllocatedStudentsLocations />}
+                  />
+                        <Route
+                    path="/transport/allocated-students/:locationId"
+                    element={<AllocatedStudentsLocations />}
                   />
                   <Route
                     path="/transport/vehicle-details"

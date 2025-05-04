@@ -2,7 +2,8 @@ export type TransportLocationType = {
     locationId: string,
     distance: string,
     monthlyCharge: number,
-    pickupPointName: string
+    pickupPointName: string,
+    studentsAllocated?:number
 }
 
 export type TransportVehicleType = {
