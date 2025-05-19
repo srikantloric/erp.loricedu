@@ -3,7 +3,7 @@ import Navbar from "components/Navbar/Navbar";
 import LSPage from "components/Utils/LSPage";
 import PageContainer from "components/Utils/PageContainer";
 import { IconReport } from "@tabler/icons-react";
-import { Avatar, Box, Button, FormControl, FormLabel, Option, Select, Stack, Typography, Chip, LinearProgress, Modal, ModalDialog, DialogTitle, DialogContent, List, ListItem, Checkbox, Input, IconButton } from "@mui/joy";
+import { Avatar, Box, Button, FormControl, Option, Select, Stack, Typography, Chip, LinearProgress, Modal, ModalDialog, DialogTitle, DialogContent, List, ListItem, Checkbox, Input, IconButton } from "@mui/joy";
 import { Paper } from "@mui/material";
 import { useEffect, useState } from "react";
 import { collection, getDocs, query, where } from "firebase/firestore";
