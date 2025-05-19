@@ -132,16 +132,13 @@ const StudentsList = () => {
         }
     }, [selectedClass, selectedSection]);
 
-    // Helper to get all selected columns (default + custom)
+    //  To get all selected columns (default + custom)
     const getAllSelectedColumns = () => {
-        // Merge selected default columns and selected custom fields (from ColumnSelector)
-        const selectedDefault = selectedColumns.filter(col => col.selected);
-        // Custom fields are managed in selectedColumns with isCustom: true
-        const selectedCustom = selectedColumns.filter(col => col.isCustom && col.selected);
-        return [...selectedDefault, ...selectedCustom];
+        // Return all selected columns (both default and custom)
+        return selectedColumns.filter(col => col.selected);
     };
 
-    // Helper to get table columns config for MaterialTable
+    // To get table columns config for MaterialTable
     const getSelectedColumnsConfig = () => {
         const allSelected = getAllSelectedColumns();
         return allSelected.map(col => {
@@ -215,32 +212,60 @@ const StudentsList = () => {
         });
     };
 
-    // Only export selected columns (including custom) in PDF/Excel
+    // To format student data based on column type
+    const formatStudentData = (student: StudentDetailsType, col: Column): string => {
+        if (!student) return '-';
+
+        switch (col.field) {
+            case "class":
+                return student.class ? getClassNameByValue(student.class) ?? '-' : '-';
+            case "contact_number":
+                return student.contact_number ? `+91-${student.contact_number}` : '-';
+            case "monthly_fee":
+            case "computer_fee":
+            case "transportation_fee":
+                const fee = (student as any)[col.field];
+                return fee ? `₹${fee}` : '-';
+            case "profil_url":
+                return ''; // Skip profile URL in exports
+            default:
+                return col.isCustom ? '-' : ((student as any)[col.field] ?? '-');
+        }
+    };
+
     const handleGeneratePDF = async () => {
         try {
             setLoading(true);
-            const allSelected = getAllSelectedColumns();
-            const selectedData = students.map(student => {
-                const filteredStudent: any = {};
-                allSelected.forEach(col => {
-                    if (col.field === "class") {
-                        filteredStudent[col.field] = getClassNameByValue(student.class!);
-                    } else if (col.field === "contact_number") {
-                        filteredStudent[col.field] = student.contact_number ? `+91-${student.contact_number}` : '-';
-                    } else if (["monthly_fee", "computer_fee", "transportation_fee"].includes(col.field)) {
-                        filteredStudent[col.field] = (student as any)[col.field] ? `₹${(student as any)[col.field]}` : '-';
-                    } else if (col.field === "profil_url") {
-                        // Skip profile in PDF export (or show as blank)
-                        filteredStudent[col.field] = '';
-                    } else if (col.isCustom) {
-                        filteredStudent[col.field] = '';
-                    } else {
-                        filteredStudent[col.field] = (student as any)[col.field] ?? '-';
-                    }
+            const selectedCols = getAllSelectedColumns().filter(col => col.field !== "profil_url");
+
+            if (selectedCols.length === 0) {
+                enqueueSnackbar("Please select at least one column to generate PDF", { variant: "warning" });
+                setLoading(false);
+                return;
+            }
+
+            // Prepare columns configuration for PDF
+            const pdfColumns = selectedCols.map(col => ({
+                field: col.field,
+                title: col.title,
+                ...(col.field === 'class' ? { lookup: classLookup } : {})
+            }));
+
+            // Create formatted data for PDF
+            const pdfData: StudentDetailsType[] = students.map(student => {
+                // Create a new object with all properties from the student
+                const formattedStudent: Partial<StudentDetailsType> = { ...student };
+
+                // Format the selected fields
+                selectedCols.forEach(col => {
+                    const formattedValue = formatStudentData(student, col);
+                    (formattedStudent as any)[col.field] = formattedValue;
                 });
-                return filteredStudent;
+
+                return formattedStudent as StudentDetailsType;
             });
-            const pdfResult = await StudReportPDF(selectedData);
+
+            const pdfResult = await StudReportPDF(pdfData, pdfColumns);
             if (pdfResult) {
                 setPdfUrl(pdfResult as string);
                 enqueueSnackbar("PDF generated successfully", { variant: "success" });
@@ -255,28 +280,29 @@ const StudentsList = () => {
 
     const handleExportExcel = () => {
         try {
-            const allSelected = getAllSelectedColumns();
-            const selectedData = students.map(student => {
-                const filteredStudent: any = {};
-                allSelected.forEach(col => {
-                    if (col.field === "class") {
-                        filteredStudent[col.field] = getClassNameByValue(student.class!);
-                    } else if (col.field === "contact_number") {
-                        filteredStudent[col.field] = student.contact_number ? `+91-${student.contact_number}` : '-';
-                    } else if (["monthly_fee", "computer_fee", "transportation_fee"].includes(col.field)) {
-                        filteredStudent[col.field] = (student as any)[col.field] ? `₹${(student as any)[col.field]}` : '-';
-                    } else if (col.field === "profil_url") {
-                        // Skip profile URL in Excel export
-                        filteredStudent[col.field] = '';
-                    } else if (col.isCustom) {
-                        filteredStudent[col.field] = '';
-                    } else {
-                        filteredStudent[col.field] = (student as any)[col.field] ?? '-';
-                    }
-                });
-                return filteredStudent;
+            const selectedCols = getAllSelectedColumns().filter(col => col.field !== "profil_url");
+
+            if (selectedCols.length === 0) {
+                enqueueSnackbar("Please select at least one column to export", { variant: "warning" });
+                return;
+            }
+
+            // Format the column configuration
+            const excelColumns = selectedCols.map(col => ({
+                field: col.field,
+                title: col.title
+            }));
+
+            // Create a filename with date
+            const currentDate = new Date().toLocaleDateString().replace(/\//g, '-');
+            const filename = `students_list_${currentDate}.xlsx`;
+
+            ExportToExcel({
+                data: students,
+                columns: excelColumns,
+                filename
             });
-            ExportToExcel(selectedData);
+
             enqueueSnackbar("Excel file exported successfully", { variant: "success" });
         } catch (error) {
             console.error("Error exporting to Excel:", error);
@@ -308,21 +334,32 @@ const StudentsList = () => {
 
         const fieldId = `custom_${newFieldName.toLowerCase().replace(/\s+/g, '_')}`;
 
-        if (customFields.some(f => f.field === fieldId)) {
+        if (selectedColumns.some(f => f.field === fieldId)) {
             enqueueSnackbar("A column with this name already exists", { variant: "warning" });
             return;
         }
 
-        setCustomFields(prev => [...prev, {
+        // Create the new custom field
+        const newColumn = {
             field: fieldId,
-            title: newFieldName
-        }]);
+            title: newFieldName,
+            selected: true,
+            isCustom: true
+        };
+
+        // Add to selectedColumns
+        setSelectedColumns(prev => [...prev, newColumn]);
+
+        setCustomFields(prev => [...prev, { field: fieldId, title: newFieldName }]);
+
         setNewFieldName("");
         enqueueSnackbar("Custom column added", { variant: "success" });
     };
 
     const handleRemoveCustomField = (field: string) => {
         setCustomFields(prev => prev.filter(f => f.field !== field));
+
+        setSelectedColumns(prev => prev.filter(col => col.field !== field));
         enqueueSnackbar("Custom column removed", { variant: "success" });
     };
 
@@ -343,14 +380,13 @@ const StudentsList = () => {
                         </Box>
                         <Stack direction="row" alignItems="center" gap={1.5}>
                             <FormControl>
-                                <FormLabel>Class</FormLabel>
                                 <Select
                                     placeholder="choose class"
                                     value={selectedClass}
                                     onChange={(e, val) => val !== null && setSelectedClass(val)}
                                     sx={{ minWidth: 150 }}
                                 >
-                                    <Option value={-1}>All Classes</Option>
+                                    <Option value={-1}>Select Class</Option>
                                     {SCHOOL_CLASSES.map((item) => (
                                         <Option key={item.id} value={item.value}>
                                             {item.title}
@@ -360,7 +396,6 @@ const StudentsList = () => {
                             </FormControl>
 
                             <FormControl>
-                                <FormLabel>Section</FormLabel>
                                 <Select
                                     placeholder="choose section"
                                     value={selectedSection}
@@ -472,9 +507,9 @@ const StudentsList = () => {
                                     {customFields.map((field) => (
                                         <ListItem key={field.field}>
                                             <Checkbox
-                                                checked={true}
+                                                checked={selectedColumns.find(col => col.field === field.field)?.selected ?? true}
                                                 label={field.title}
-                                                disabled
+                                                onChange={() => handleColumnToggle(field.field)}
                                             />
                                             <IconButton
                                                 size="sm"
