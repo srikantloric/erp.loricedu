@@ -47,6 +47,11 @@ const reports: Report[] = [
     title: "Admit Card",
     description: "Print admit card of students",
   },
+  {
+    id: "students-list",
+    title: "Student List",
+    description: "Print list for students",
+  },
 ];
 
 function Reports() {

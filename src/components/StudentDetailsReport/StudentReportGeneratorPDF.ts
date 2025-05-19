@@ -13,24 +13,25 @@ import { StudentDetailsType } from "types/student";
 import { getClassNameByValue } from "utilities/UtilitiesFunctions";
 import { getAppConfig } from "hooks/getAppConfig";
 
+interface Column {
+  id: string;
+  title: string;
+  lookup?: { [key: string]: string };
+}
 
-const AttendanceHeader = [
-  "SL",
-  "Adm no",
-  "Student Name",
-  "Father's Name",
-  "Class",
-  "Sec",
-  "Roll",
-  "Contact",
-  "Address",
-];
 
-export const StudReportPDF = async (students: StudentDetailsType[]) => {
 
+export const StudReportPDF = async (students: StudentDetailsType[], selectedColumns?: Array<{ field: string, title: string, lookup?: { [key: string]: string } }>) => {
   return new Promise((resolve, reject) => {
+    // Sort students by roll number
+    students.sort((a, b) => Number(a.class_roll) - Number(b.class_roll));
 
-    students.sort((a, b) => Number(a.class_roll) - Number(b.class_roll))
+    // Convert selectedColumns to the format expected by the PDF generator
+    const columns: Column[] = selectedColumns?.map(col => ({
+      id: col.field,
+      title: col.title,
+      lookup: col.lookup
+    })) || [];
 
     const config = getAppConfig();
     if (!config) {
@@ -50,27 +51,25 @@ export const StudReportPDF = async (students: StudentDetailsType[]) => {
         unit: "mm",
         format: "a4",
       });
+
       const cardWidth = doc.internal.pageSize.getWidth() - 15;
       const cardHeight = doc.internal.pageSize.getHeight() - 15;
       const margin = 2;
 
       const x = 5 + margin;
       const y = 5 + margin;
-      // const y=cardHeight+margin;
 
       doc.setTextColor("#000");
 
       // Load fonts
       doc.addFileToVFS("Poppins-Bold", POPPINS_BOLD);
       doc.addFont("Poppins-Bold", "Poppins", "bold");
-
       doc.addFileToVFS("Poppins-Regular", POPPINS_REGULAR);
       doc.addFont("Poppins-Regular", "Poppins", "normal");
-
       doc.addFileToVFS("Poppins-Semibold", POPPINS_SEMIBOLD);
       doc.addFont("Poppins-Semibold", "Poppins", "semibold");
-      ///Start of PDF Design
 
+      // PDF Header section
       doc.addImage(LOGO_BASE_64, x + 45, y + 1, 30, 25);
 
       const schoolHeaderStartX = x + 75;
@@ -89,11 +88,10 @@ export const StudReportPDF = async (students: StudentDetailsType[]) => {
       );
 
       const schoolContactDetailStartY = schoolHeaderStartY + 2;
-      // const schoolContactDetailStartX = schoolHeaderStartX - 5;
-
       const cardXStartPoint = x;
       const cardXEndPoint = cardWidth;
 
+      // School address section
       doc.setFillColor("#cbc9c9");
       doc.rect(
         schoolHeaderStartX + 5,
@@ -111,7 +109,7 @@ export const StudReportPDF = async (students: StudentDetailsType[]) => {
         schoolContactDetailStartY + 7.5
       );
 
-      //school contact
+      // School contact info
       doc.addImage(
         PHONE_ICON,
         schoolHeaderStartX + 9,
@@ -119,14 +117,12 @@ export const StudReportPDF = async (students: StudentDetailsType[]) => {
         3,
         3
       );
-
       doc.text(
         SCHOOL_CONTACT,
         schoolHeaderStartX + 13,
         schoolContactDetailStartY + 12
       );
 
-      //school email
       doc.addImage(
         EMAIL_ICON,
         schoolHeaderStartX + 34,
@@ -134,17 +130,15 @@ export const StudReportPDF = async (students: StudentDetailsType[]) => {
         3,
         3
       );
-
       doc.text(
         SCHOOL_EMAIL,
         schoolHeaderStartX + 38,
         schoolContactDetailStartY + 12
       );
 
+      // Title section
       doc.setFillColor("#939393");
-
       doc.rect(cardXStartPoint, y + 26, cardXEndPoint, 6, "F");
-
       doc.setFont("Poppins", "semibold");
       doc.setFontSize(9);
       doc.setTextColor("#fff");
@@ -152,24 +146,31 @@ export const StudReportPDF = async (students: StudentDetailsType[]) => {
 
       let tableX = x + 5;
       let tableY = y + 25;
-      let classValue = null;
 
+
+
+      // Table generation
       autoTable(doc, {
-        head: [AttendanceHeader],
+        head: [columns.map(col => col.title)],
         body: students.map((item, index) => {
-          const stringArr: string[] = [];
-
-          stringArr.push((index + 1).toString());
-          stringArr.push(item.admission_no);
-          stringArr.push(item.student_name);
-          stringArr.push(item.father_name);
-          classValue = getClassNameByValue(item.class!);
-          stringArr.push(classValue ? classValue.toString() : "");
-          stringArr.push(item.section);
-          stringArr.push(item.class_roll);
-          stringArr.push(item.contact_number);
-          stringArr.push(item.address);
-          return stringArr;
+          return columns.map(col => {
+            switch (col.id) {
+              case 'sl':
+                return (index + 1).toString();
+              case 'class':
+                if (item.class !== undefined) {
+                  const classValue = Number(item.class);
+                  if (!isNaN(classValue)) {
+                    // Use lookup table if provided, otherwise use utility function
+                    return col.lookup?.[classValue] || getClassNameByValue(classValue) || "";
+                  }
+                }
+                return "";
+              default:
+                const value = item[col.id as keyof StudentDetailsType];
+                return value !== undefined && value !== null ? String(value) : "";
+            }
+          }) as string[]; // Explicitly specify string[] type
         }),
         startY: tableY + 20,
         theme: "grid",
@@ -180,37 +181,21 @@ export const StudReportPDF = async (students: StudentDetailsType[]) => {
         },
         margin: { left: tableX },
         headStyles: {
-          minCellWidth: 10,
           fillColor: "#fff",
           textColor: "#000",
           minCellHeight: 4,
         },
-        columnStyles: {
-          0: { cellWidth: 10 }, //SL no
-          1: { cellWidth: 30 }, //Addm no
-          2: { cellWidth: 35 }, //Student Name
-          3: { cellWidth: 40 }, //Father Name
-          4: { cellWidth: 20 }, //Class
-          5: { cellWidth: 15 }, //Section
-          6: { cellWidth: 15 }, //Roll
-          7: { cellWidth: 25 }, //Contact
-          // 8: { cellWidth: 35 }, //Address
-        },
       });
 
-      students.forEach((data, index) => {
-        // Draw border around content
-        doc.setDrawColor("#949494");
-        doc.rect(x, y, cardWidth, cardHeight);
+      // Border and finalization
+      doc.setDrawColor("#949494");
+      doc.rect(x, y, cardWidth, cardHeight);
 
-        if (index === students.length - 1) {
-          // Save PDF and update state with URL
-          // Convert PDF to Blob
-          const blob = doc.output("blob");
-          const url = URL.createObjectURL(blob);
-          resolve(url);
-        }
-      });
+      // Generate URL and resolve  
+      const blob = doc.output("blob");
+      const url = URL.createObjectURL(blob);
+      resolve(url);
+
     } catch (error) {
       reject(error);
     }

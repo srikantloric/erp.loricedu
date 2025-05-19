@@ -426,7 +426,7 @@ function ViewStudents() {
               },
               {
                 label: "Export Excel",
-                exportFunc: () => ExportToExcel(filteredData),
+                exportFunc: () => ExportToExcel({ data: filteredData }),
               },
             ],
             actionsColumnIndex: -1,
