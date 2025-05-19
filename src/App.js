@@ -28,6 +28,7 @@ import RollNoUpdator from "pages/StudentManagement/RollNoUpdator";
 import AttendanceConfiguration from "pages/Attendance/AttendanceConfiguration";
 import AllocatedStudents from "pages/transport/vehicleDetailsTabs/AllocatedStudents";
 import AllocatedStudentsLocations from "pages/transport/vehicleDetailsTabs/AllocatedStudentsLocations";
+import NewFeeCollection from "pages/FeeManager/NewFeeCollection";
 
 // Lazy Loaded Components
 
@@ -156,6 +157,10 @@ function App() {
                   <Route
                     path="/FeeManagement/FeeDetails/:id"
                     element={<StudentFeeDetails />}
+                  />            
+                  <Route
+                    path="/FeeManagement/NewFeeDetails/:studentId"
+                    element={<NewFeeCollection />}
                   />            
                   <Route
                     path="attendance/show-student-attendance"

@@ -129,8 +129,9 @@ const FeeManager: React.FC = () => {
   const handleNextPageBtn = (e: React.FormEvent) => {
     e.preventDefault();
     if (selectedDoc) {
-      const selectedData = data.filter((student) => student.id === selectedDoc);
-      historyRef(`FeeDetails/${selectedDoc}`, { state: selectedData });
+      // const selectedData = data.filter((student) => student.id === selectedDoc);
+      // historyRef(`FeeDetails/${selectedDoc}`, { state: selectedData });
+      historyRef(`NewFeeDetails/${selectedDoc}`);
     } else {
       enqueueSnackbar("Error : Please enter student id or admission number !", {
         variant: "error",
@@ -153,8 +154,8 @@ const FeeManager: React.FC = () => {
         <Box sx={{ width: "100%", mt: "16px" }}>
           <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
             <Tabs value={value} onChange={handleChange} aria-label="tabs">
-              <Tab label="Search Student" {...a11yProps(0)} sx={{ textTransform: "capitalize" }} />
-              <Tab label="Cross-Campus Payment or Payment By CNIC" {...a11yProps(1)} sx={{ textTransform: "capitalize" }} />
+              <Tab label="Student Fee Collection" {...a11yProps(0)} sx={{ textTransform: "capitalize" }} />
+              <Tab label="miscellaneous Collection" {...a11yProps(1)} sx={{ textTransform: "capitalize" }} />
             </Tabs>
           </Box>
 
