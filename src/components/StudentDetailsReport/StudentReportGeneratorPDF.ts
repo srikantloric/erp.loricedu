@@ -19,19 +19,24 @@ interface Column {
   lookup?: { [key: string]: string };
 }
 
-
-
-export const StudReportPDF = async (students: StudentDetailsType[], selectedColumns?: Array<{ field: string, title: string, lookup?: { [key: string]: string } }>) => {
+export const StudReportPDF = async (
+  students: StudentDetailsType[],
+  selectedColumns?: Array<{
+    field: string;
+    title: string;
+    lookup?: { [key: string]: string };
+  }>
+) => {
   return new Promise((resolve, reject) => {
-    // Sort students by roll number
-    students.sort((a, b) => Number(a.class_roll) - Number(b.class_roll));
+    // Do not sort the students array - use the order provided by the caller
 
     // Convert selectedColumns to the format expected by the PDF generator
-    const columns: Column[] = selectedColumns?.map(col => ({
-      id: col.field,
-      title: col.title,
-      lookup: col.lookup
-    })) || [];
+    const columns: Column[] =
+      selectedColumns?.map((col) => ({
+        id: col.field,
+        title: col.title,
+        lookup: col.lookup,
+      })) || [];
 
     const config = getAppConfig();
     if (!config) {
@@ -147,28 +152,32 @@ export const StudReportPDF = async (students: StudentDetailsType[], selectedColu
       let tableX = x + 5;
       let tableY = y + 25;
 
-
-
       // Table generation
       autoTable(doc, {
-        head: [columns.map(col => col.title)],
+        head: [columns.map((col) => col.title)],
         body: students.map((item, index) => {
-          return columns.map(col => {
+          return columns.map((col) => {
             switch (col.id) {
-              case 'sl':
+              case "sl":
                 return (index + 1).toString();
-              case 'class':
+              case "class":
                 if (item.class !== undefined) {
                   const classValue = Number(item.class);
                   if (!isNaN(classValue)) {
                     // Use lookup table if provided, otherwise use utility function
-                    return col.lookup?.[classValue] || getClassNameByValue(classValue) || "";
+                    return (
+                      col.lookup?.[classValue] ||
+                      getClassNameByValue(classValue) ||
+                      ""
+                    );
                   }
                 }
                 return "";
               default:
                 const value = item[col.id as keyof StudentDetailsType];
-                return value !== undefined && value !== null ? String(value) : "";
+                return value !== undefined && value !== null
+                  ? String(value)
+                  : "";
             }
           }) as string[]; // Explicitly specify string[] type
         }),
@@ -191,11 +200,10 @@ export const StudReportPDF = async (students: StudentDetailsType[], selectedColu
       doc.setDrawColor("#949494");
       doc.rect(x, y, cardWidth, cardHeight);
 
-      // Generate URL and resolve  
+      // Generate URL and resolve
       const blob = doc.output("blob");
       const url = URL.createObjectURL(blob);
       resolve(url);
-
     } catch (error) {
       reject(error);
     }
