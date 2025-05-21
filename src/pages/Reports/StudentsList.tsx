@@ -94,7 +94,6 @@ interface CustomField {
 }
 
 const StudentsList = () => {
-  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [selectedClass, setSelectedClass] = useState<number>(-1);
   const [selectedSection, setSelectedSection] = useState<number>(-1);
@@ -102,7 +101,12 @@ const StudentsList = () => {
   const [filterChip, setFilterChip] = useState(false);
   const [filterChipLabel, setFilterChipLabel] = useState("");
   const [sortingPreference, setSortingPreference] = useState<
-    "student_name" | "class_roll" | "admission_no" | "date_of_addmission" | ""
+    | "student_name"
+    | "class_roll"
+    | "admission_no"
+    | "date_of_addmission"
+    | "dob"
+    | ""
   >("");
   const [columnSelectionOpen, setColumnSelectionOpen] = useState(false);
   const [selectedColumns, setSelectedColumns] =
@@ -110,11 +114,52 @@ const StudentsList = () => {
   const [customFields, setCustomFields] = useState<CustomField[]>([]);
   const [newFieldName, setNewFieldName] = useState("");
   const { db } = useFirebase();
+  const sortData = (data: StudentDetailsType[]) => {
+    if (!sortingPreference) return data;
+    return [...data].sort((a, b) => {
+      const aValue = (a as any)[sortingPreference];
+      const bValue = (b as any)[sortingPreference];
+
+      // Handle null/undefined values
+      if (!aValue && !bValue) return 0;
+      if (!aValue) return 1;
+      if (!bValue) return -1;
+
+      // Handle date fields
+      if (
+        sortingPreference === "date_of_addmission" ||
+        sortingPreference === "dob"
+      ) {
+        const aDate = new Date(aValue).getTime();
+        const bDate = new Date(bValue).getTime();
+        if (isNaN(aDate) && isNaN(bDate)) return 0;
+        if (isNaN(aDate)) return 1;
+        if (isNaN(bDate)) return -1;
+        return aDate - bDate;
+      }
+
+      // Handle numeric fields (including class_roll, admission_no)
+      if (
+        sortingPreference === "class_roll" ||
+        sortingPreference === "admission_no" ||
+        (typeof aValue === "number" && typeof bValue === "number")
+      ) {
+        const aNum = Number(aValue);
+        const bNum = Number(bValue);
+        if (isNaN(aNum) && isNaN(bNum)) return 0;
+        if (isNaN(aNum)) return 1;
+        if (isNaN(bNum)) return -1;
+        return aNum - bNum;
+      }
+
+      // Handle string fields (including student_name)
+      return String(aValue).localeCompare(String(bValue));
+    });
+  };
 
   const fetchStudents = async () => {
     try {
       setLoading(true);
-      setPdfUrl(null);
       let studentsQuery;
 
       if (selectedClass === -1) {
@@ -140,22 +185,9 @@ const StudentsList = () => {
         studentsList.push({ id: doc.id, ...doc.data() } as StudentDetailsType);
       });
 
-      // Sort students based on sortingPreference
-      if (sortingPreference) {
-        studentsList.sort((a, b) => {
-          const aValue = (a as any)[sortingPreference];
-          const bValue = (b as any)[sortingPreference];
-
-          if (aValue < bValue) {
-            return -1;
-          }
-          if (aValue > bValue) {
-            return 1;
-          }
-          return 0;
-        });
-      }
-      setStudents(studentsList);
+      // Sort the data if sorting preference is set
+      const sortedList = sortData(studentsList);
+      setStudents(sortedList);
     } catch (error) {
       console.error("Error fetching students:", error);
       enqueueSnackbar("Error fetching students: " + error, {
@@ -302,6 +334,21 @@ const StudentsList = () => {
         return;
       }
 
+      // Apply sorting to data before PDF generation
+      const sortedData = sortData(students);
+
+      // Debug log to verify sorting
+      console.log("Sorting preference:", sortingPreference);
+      if (sortingPreference) {
+        console.log(
+          "First few sorted records:",
+          sortedData.slice(0, 3).map((s) => ({
+            name: s.student_name,
+            value: (s as any)[sortingPreference],
+          }))
+        );
+      }
+
       // Prepare columns configuration for PDF
       const pdfColumns = selectedCols.map((col) => ({
         field: col.field,
@@ -309,17 +356,13 @@ const StudentsList = () => {
         ...(col.field === "class" ? { lookup: classLookup } : {}),
       }));
 
-      // Create formatted data for PDF
-      const pdfData: StudentDetailsType[] = students.map((student) => {
-        // Create a new object with all properties from the student (this will be the sorted student list)
-        const formattedStudent: Partial<StudentDetailsType> = { ...student };
-
-        // Format the selected fields
+      // Format data for PDF
+      const pdfData = sortedData.map((student) => {
+        const formattedStudent: Partial<StudentDetailsType> = {};
         selectedCols.forEach((col) => {
           const formattedValue = formatStudentData(student, col);
           (formattedStudent as any)[col.field] = formattedValue;
         });
-
         return formattedStudent as StudentDetailsType;
       });
 
@@ -349,18 +392,29 @@ const StudentsList = () => {
         return;
       }
 
-      // Format the column configuration
+      // Sort data before exporting to Excel
+      const sortedData = sortData(students);
+
+      // Format data for Excel
+      const excelData = sortedData.map((student) => {
+        const formattedRow: any = {};
+        selectedCols.forEach((col) => {
+          formattedRow[col.field] = formatStudentData(student, col);
+        });
+        return formattedRow;
+      });
+
+      // Format column configuration
       const excelColumns = selectedCols.map((col) => ({
         field: col.field,
         title: col.title,
       }));
 
-      // Create a filename with date
       const currentDate = new Date().toLocaleDateString().replace(/\//g, "-");
       const filename = `students_list_${currentDate}.xlsx`;
 
       ExportToExcel({
-        data: students, // Pass the sorted students array
+        data: excelData,
         columns: excelColumns,
         filename,
       });
@@ -381,7 +435,6 @@ const StudentsList = () => {
     setSelectedClass(-1);
     setSelectedSection(-1);
     setStudents([]);
-    setPdfUrl(null);
   };
 
   const handleColumnToggle = (field: string) => {
@@ -745,18 +798,6 @@ const StudentsList = () => {
               }}
             />
           </Box>
-        )}
-
-        {pdfUrl && (
-          <Paper sx={{ height: "100vh", mt: 2 }}>
-            <iframe
-              src={pdfUrl}
-              title="PDF Viewer"
-              width="100%"
-              height="100%"
-              frameBorder={0}
-            />
-          </Paper>
         )}
       </LSPage>
     </PageContainer>
