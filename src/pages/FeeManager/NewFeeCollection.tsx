@@ -15,9 +15,12 @@ import { doc, getDoc } from "firebase/firestore"
 import { useFirebase } from "context/firebaseContext"
 import StudentDetailsFeeHeader from "components/Headers/StudentDetailsFeeHeader"
 import TransportIcon from "assets/bus-stop-icon.png"
+import FeeHeadersTable from "components/FeeManager/FeeHeadersTable"
 function NewFeeCollection() {
 
     const [studentDetails, setStudentDetails] = useState<StudentDetailsType | null>(null)
+    const [selectedInstallments, setSelectedInstallments] = useState<InstallmentChallanType[]>([])
+    const [feeHeaders, setFeeHeaders] = useState<any[]>([])
 
     const [installments, setInstallments] = useState<InstallmentChallanType[]>([
         { id: "1", month: "January", status: "Paid" },
@@ -29,18 +32,14 @@ function NewFeeCollection() {
     ]);
 
     const { db } = useFirebase()
-
     const { studentId } = useParams();
-    console.log("Student ID:", studentId);
 
     const fetchStudentDetails = async (studentId: string) => {
         // Fetch student details from the Firestore
         const docPath = doc(db, "STUDENTS", studentId);
         const studentData = await getDoc(docPath);
-        console.log("Student Data:", studentData.data());
         setStudentDetails(studentData.data() as StudentDetailsType);
     }
-
 
     useEffect(() => {
         if (studentId) {
@@ -117,6 +116,11 @@ function NewFeeCollection() {
                                     </Stack>
 
                                 </Box>
+                            </Box>
+                            <Box>
+                                <FeeHeadersTable
+
+                                />
                             </Box>
 
                         </Stack>
