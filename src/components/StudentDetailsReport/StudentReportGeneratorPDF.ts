@@ -148,7 +148,7 @@ export const StudReportPDF = async (
       doc.setFontSize(9);
       doc.setTextColor("#fff");
 
-      let headerText = `STUDENT DETAILS Class ${students[0].class}`;
+      let headerText = `STUDENT DETAILS for ${students[0].class}`;
 
       // Center the text properly
       const textWidth = doc.getTextWidth(headerText);
