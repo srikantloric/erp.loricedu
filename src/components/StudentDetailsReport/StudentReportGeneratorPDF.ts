@@ -147,7 +147,13 @@ export const StudReportPDF = async (
       doc.setFont("Poppins", "semibold");
       doc.setFontSize(9);
       doc.setTextColor("#fff");
-      doc.text("STUDENT DETAILS", cardWidth / 2 - 10, y + 30);
+
+      let headerText = `STUDENT DETAILS Class ${students[0].class}`;
+
+      // Center the text properly
+      const textWidth = doc.getTextWidth(headerText);
+      const centerX = (cardWidth - textWidth) / 2;
+      doc.text(headerText, x + centerX, y + 30);
 
       let tableX = x + 5;
       let tableY = y + 25;
@@ -161,18 +167,18 @@ export const StudReportPDF = async (
               case "sl":
                 return (index + 1).toString();
               case "class":
-                if (item.class !== undefined) {
+                if (item.class !== undefined && item.class !== null) {
                   const classValue = Number(item.class);
                   if (!isNaN(classValue)) {
-                    // Use lookup table if provided, otherwise use utility function
-                    return (
+                    // Try lookup table first, then utility function
+                    const className =
                       col.lookup?.[classValue] ||
-                      getClassNameByValue(classValue) ||
-                      ""
-                    );
+                      getClassNameByValue(classValue);
+                    return className || classValue.toString();
                   }
+                  return item.class.toString();
                 }
-                return "";
+                return "-";
               default:
                 const value = item[col.id as keyof StudentDetailsType];
                 return value !== undefined && value !== null
