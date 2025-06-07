@@ -173,12 +173,12 @@ export function formatedDate(date: Date, format: string): string {
   const pad = (n: number) => n < 10 ? '0' + n : n.toString();
 
   const replacements: { [key: string]: string } = {
-      'dd': pad(date.getDate()),
-      'MM': pad(date.getMonth() + 1),
-      'YYYY': date.getFullYear().toString(),
-      'hh': pad(date.getHours()),
-      'mm': pad(date.getMinutes()),
-      'ss': pad(date.getSeconds())
+    'dd': pad(date.getDate()),
+    'MM': pad(date.getMonth() + 1),
+    'YYYY': date.getFullYear().toString(),
+    'hh': pad(date.getHours()),
+    'mm': pad(date.getMinutes()),
+    'ss': pad(date.getSeconds())
   };
   return format.replace(/dd|MM|YYYY|hh|mm|ss/g, match => replacements[match]);
 }
@@ -192,11 +192,11 @@ export function getOrdinal(number: number): string {
   const suffix = (n: number): string => {
     const lastDigit = n % 10;
     const lastTwoDigits = n % 100;
-    
+
     if (lastTwoDigits >= 11 && lastTwoDigits <= 13) {
       return 'th';
     }
-    
+
     switch (lastDigit) {
       case 1:
         return 'st';
@@ -216,7 +216,7 @@ export function getOrdinal(number: number): string {
 
 export const GetGradeFromMark = (obtainedMark: string | number): string => {
   if (typeof obtainedMark === "string") {
-    const validGrades = ["A+", "A", "B+", "B", "C+", "C", "D","F","AB"];
+    const validGrades = ["A+", "A", "B+", "B", "C+", "C", "D", "F", "AB"];
     if (validGrades.includes(obtainedMark)) {
       return obtainedMark; // Return the grade if it's already valid
     }
@@ -239,3 +239,56 @@ export const GetGradeFromMark = (obtainedMark: string | number): string => {
 
   return "F"; // Failing grade if below 33
 };
+
+
+export function numberToWords(n: number): string {
+  if (n === 0) return "Zero Only";
+
+  const a = [
+    "", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine",
+    "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen",
+    "Sixteen", "Seventeen", "Eighteen", "Nineteen"
+  ];
+  const b = [
+    "", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"
+  ];
+
+  function twoDigits(num: number): string {
+    if (num < 20) return a[num];
+    return b[Math.floor(num / 10)] + (num % 10 !== 0 ? " " + a[num % 10] : "");
+  }
+
+  function threeDigits(num: number): string {
+    if (num > 99) {
+      return a[Math.floor(num / 100)] + " Hundred" + (num % 100 !== 0 ? " " + twoDigits(num % 100) : "");
+    } else {
+      return twoDigits(num);
+    }
+  }
+
+  let result = "";
+
+  const crore = Math.floor(n / 10000000);
+  if (crore > 0) {
+    result += threeDigits(crore) + " Crore ";
+    n %= 10000000;
+  }
+
+  const lakh = Math.floor(n / 100000);
+  if (lakh > 0) {
+    result += threeDigits(lakh) + " Lakh ";
+    n %= 100000;
+  }
+
+  const thousand = Math.floor(n / 1000);
+  if (thousand > 0) {
+    result += threeDigits(thousand) + " Thousand ";
+    n %= 1000;
+  }
+
+  if (n > 0) {
+    result += threeDigits(n) + " ";
+  }
+
+  return result.trim() + " Only";
+}
