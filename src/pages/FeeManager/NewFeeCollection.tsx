@@ -312,6 +312,25 @@ function NewFeeCollection() {
                                         variant="soft"
                                         color="danger"
                                         startDecorator={<Restore />}
+                                        onClick={() => {
+                                            // Reset all form fields to default values
+                                            setValue("lateFine", 0);
+                                            setValue("concessionTotal", 0);
+                                            setValue("paidAmount", 0);
+                                            setValue("consessionReason", "");
+                                            setValue("payableAmount", 0);
+                                            setValue("miscTotal", 0);
+                                            setValue("posCharge", 0);
+                                            setValue("paymentMethod", "");
+                                            setValue("printPDF", true);
+                                            // Reset all installments to Pending except Paid
+                                            setInstallments((prev) => prev.map(inst => ({
+                                                ...inst,
+                                                status: inst.status === "Paid" ? "Paid" : "Pending"
+                                            })));
+                                            // Clear feeHeaders
+                                            setFeeHeaders([]);
+                                        }}
                                     >
                                         Reset Selection
                                     </Button>

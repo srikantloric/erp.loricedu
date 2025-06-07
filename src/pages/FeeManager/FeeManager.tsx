@@ -8,6 +8,7 @@ import {
   Tab,
   Box,
   createFilterOptions,
+  Badge,
 } from "@mui/material";
 import PageContainer from "../../components/Utils/PageContainer";
 
@@ -129,6 +130,18 @@ const FeeManager: React.FC = () => {
   const handleNextPageBtn = (e: React.FormEvent) => {
     e.preventDefault();
     if (selectedDoc) {
+      const selectedData = data.filter((student) => student.id === selectedDoc);
+      historyRef(`FeeDetails/${selectedDoc}`, { state: selectedData });
+
+    } else {
+      enqueueSnackbar("Error : Please enter student id or admission number !", {
+        variant: "error",
+      });
+    }
+  };
+  const handleNextPageBtnNew = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (selectedDoc) {
       // const selectedData = data.filter((student) => student.id === selectedDoc);
       // historyRef(`FeeDetails/${selectedDoc}`, { state: selectedData });
       historyRef(`NewFeeDetails/${selectedDoc}`);
@@ -155,7 +168,25 @@ const FeeManager: React.FC = () => {
           <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
             <Tabs value={value} onChange={handleChange} aria-label="tabs">
               <Tab label="Student Fee Collection" {...a11yProps(0)} sx={{ textTransform: "capitalize" }} />
-              <Tab label="miscellaneous Collection" {...a11yProps(1)} sx={{ textTransform: "capitalize" }} />
+              <Tab
+                label={
+                  <Badge
+                    color="error"
+                    badgeContent="New"
+                    sx={{
+                      '& .MuiBadge-badge': {
+                        right: -11, // less negative so badge is more visible
+                        top: 8,
+                        zIndex: 1,
+                      },
+                    }}
+                  >
+                    Payment Collectionㅤ
+                  </Badge>
+                }
+                {...a11yProps(1)}
+                sx={{ textTransform: "capitalize", pr: 4, minWidth: 180, paddingRight: 4 }} // increase minWidth and padding
+              />
             </Tabs>
           </Box>
 
@@ -198,7 +229,39 @@ const FeeManager: React.FC = () => {
           </CustomTabPanel>
 
           <CustomTabPanel value={value} index={1}>
-            In-Progress
+            <Box
+              component="form"
+              onSubmit={handleNextPageBtnNew}
+              sx={{ display: "flex", alignItems: "center", justifyContent: "center", height: "30vh" }}
+            >
+              <Autocomplete
+                id="student-search"
+                color="primary"
+                placeholder="Search with Student ID/Admission No"
+                options={searchList}
+                autoHighlight
+                filterOptions={filterOptions}
+                sx={{ width: 450, m: 1 }}
+                getOptionLabel={(option) => `${option.name} - ${option.id}`}
+                onChange={(_e, val) => setSelectedDoc(val?.id ?? null)}
+                renderOption={(props, option) => (
+                  <AutocompleteOption {...props}>
+                    <ListItemDecorator>
+                      <img loading="lazy" width="20" src={option.profile} alt="" />
+                    </ListItemDecorator>
+                    <ListItemContent sx={{ fontSize: "sm", display: "flex", flexDirection: "column" }}>
+                      <b>{option.name} | {option.class}</b>
+                      <Typography level="body-xs" fontSize={"14px"}>
+                        {option.admission} | {option.fatherName} | {option.dob}
+                      </Typography>
+                    </ListItemContent>
+                  </AutocompleteOption>
+                )}
+              />
+              <Button type="submit" variant="contained" sx={{ height: 36 }} disableElevation>
+                Search
+              </Button>
+            </Box>
           </CustomTabPanel>
         </Box>
       </LSPage>

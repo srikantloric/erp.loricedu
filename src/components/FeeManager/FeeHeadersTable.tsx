@@ -27,17 +27,12 @@ const FeeHeadersTable: React.FC<FeeHeadProps> = ({
     const [concessionValid, setConcessionValid] = useState(true);
     const [dueValid, setDueValid] = useState(true);
 
-
-
-    console.log(consessionAmount, dueAmount, "Concession and Due Amounts");
-
     // Zod schema to validate totals
     const validateTotals = (data: EditableHead[]) => {
         const concessionTotal = data.reduce((sum, h) => sum + (Number(h.concessionAmount) || 0), 0);
         const dueTotal = data.reduce((sum, h) => sum + (Number(h.dueAmount) || 0), 0);
 
-        console.log("Concession Total:", concessionTotal, "Due Total:", dueTotal);
-        console.log("Expected Concession Amount:", consessionAmount, "Expected Due Amount:", dueAmount);
+
         const schema = z.object({
             concessionTotal: z
                 .number()
@@ -50,7 +45,7 @@ const FeeHeadersTable: React.FC<FeeHeadProps> = ({
         });
 
         const result = schema.safeParse({ concessionTotal, dueTotal });
-        console.log("Validation result:", result);
+
 
         setConcessionValid(result.success || concessionTotal === consessionAmount);
         setDueValid(result.success || dueTotal === dueAmount);
@@ -177,11 +172,11 @@ const FeeHeadersTable: React.FC<FeeHeadProps> = ({
             render: (rowData: EditableHead) => (
                 <>
                     <EditableDueAmountInput
-                        value={rowData.concessionAmount}
+                        value={rowData.dueAmount}
                         onChange={(val) =>
-                            handleInputChange(rowData.headerId, "concessionAmount", val)
+                            handleInputChange(rowData.headerId, "dueAmount", val)
                         }
-                        error={!dueValid || rowData.concessionAmount < 0}
+                        error={!dueValid || rowData.dueAmount < 0}
                         helperText={
                             rowData.dueAmount < 0
                                 ? "Cannot be negative"
@@ -236,10 +231,10 @@ const FeeHeadersTable: React.FC<FeeHeadProps> = ({
                 fontWeight: '400',
                 fontSize: 15,
             }}>
-                <span >Total Amount: ₹{editedHeads.reduce((sum, h) => sum + (Number(h.amount) || 0), 0)}</span>
-                <span style={{ color: `${!concessionValid ? "red" : "black"}` }}>Total Concession: ₹{getTotal("concessionAmount")}</span>
+                <span >Total: ₹{editedHeads.reduce((sum, h) => sum + (Number(h.amount) || 0), 0)}</span>
+                <span style={{ color: `${!concessionValid ? "red" : "black"}` }}>₹{getTotal("concessionAmount")}</span>
                 {dueAmount > 0 && (
-                    <span style={{ color: `${!dueValid ? "red" : "black"}` }}>Total Due: ₹{getTotal("dueAmount")}</span>
+                    <span style={{ color: `${!dueValid ? "red" : "black"}` }}>₹{getTotal("dueAmount")}</span>
                 )}
             </div>
             {(!concessionValid || !dueValid) && (
