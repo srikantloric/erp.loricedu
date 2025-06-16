@@ -115,12 +115,14 @@ function Transport() {
         {
             title: "Distance", field: "distance", render: (rowData: TransportLocationType) => {
                 return <Chip sx={{ pl: 2, pr: 2, }} variant="soft" color="warning" ><Typography level="title-lg">{rowData.distance} km</Typography></Chip>;
-            }
+            },
+            exportValue: (rowData: TransportLocationType) => `${rowData.distance} km`,
         },
         {
             title: "Monthly Charge", field: "monthlyCharge", render: (rowData: TransportLocationType) => {
                 return <Chip sx={{ pl: 2, pr: 2, }} variant="soft" color="success" ><Typography level="title-lg">₹{rowData.monthlyCharge}/pm</Typography></Chip>;
             },
+            exportValue: (rowData: TransportLocationType) => `₹${rowData.distance} /pm`,
         }
     ]
 

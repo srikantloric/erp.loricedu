@@ -23,7 +23,7 @@ const IndividualFeeDetailsHeader: React.FC<Props> = ({
     <Paper sx={{ backgroundColor: "#FBFCFE", display: "flex" }}>
       <div style={{ margin: "10px" }}>
         <img
-          src={studentMasterData.profil_url}
+          src={studentMasterData.profil_url }
           width={100}
           height="100%"
           style={{ objectFit: "cover" }}
@@ -110,7 +110,7 @@ const IndividualFeeDetailsHeader: React.FC<Props> = ({
           >
             <Typography level="body-sm">Fee</Typography>
             <Typography level="title-sm">
-              ₹{studentMasterData.monthly_fee?studentMasterData.monthly_fee:0}
+              ₹{studentMasterData.monthly_fee ? studentMasterData.monthly_fee : 0}
             </Typography>
           </div>
           <div
@@ -122,7 +122,7 @@ const IndividualFeeDetailsHeader: React.FC<Props> = ({
           >
             <Typography level="body-sm">Discount</Typography>
             <Typography level="title-sm">
-              ₹{studentMasterData.fee_discount?studentMasterData.fee_discount:0}
+              ₹{studentMasterData.fee_discount ? studentMasterData.fee_discount : 0}
             </Typography>
           </div>
           <div
@@ -134,7 +134,7 @@ const IndividualFeeDetailsHeader: React.FC<Props> = ({
           >
             <Typography level="body-sm">Transport</Typography>
             <Typography level="title-sm">
-              ₹{studentMasterData.transportation_fee?studentMasterData.transportation_fee:0}
+              ₹{studentMasterData.transportation_fee ? studentMasterData.transportation_fee : 0}
             </Typography>
           </div>
           <div
@@ -146,7 +146,7 @@ const IndividualFeeDetailsHeader: React.FC<Props> = ({
           >
             <Typography level="body-sm">Computer</Typography>
             <Typography level="title-sm">
-              ₹{studentMasterData.computer_fee?studentMasterData.computer_fee:0}
+              ₹{studentMasterData.computer_fee ? studentMasterData.computer_fee : 0}
             </Typography>
           </div>
         </div>

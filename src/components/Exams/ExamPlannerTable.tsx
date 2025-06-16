@@ -12,17 +12,18 @@ export interface ExamData {
     sessions: ExamSession[];
 }
 
+
 export const examData: ExamData[] = [
     {
-        date: "06/03/2025",
+        date: "21/06/2025",
         sessions: [
             {
                 session: "1st",
                 subjects: {
                     "Pre-Nursery":"HINDI",
-                    "Nursery":"HINDI",
-                    "LKG":"ENGLISH",
-                    "UKG":"MATHS",
+                    "Nursery":"ENGLISH",
+                    "LKG":"MATH",
+                    "UKG":"DRAWING",
 
                     "STD-1": "HINDI",
                     "STD-2": "ENGLISH",
@@ -30,19 +31,20 @@ export const examData: ExamData[] = [
                     "STD-4": "SCIENCE",
                     "STD-5": "SST",
                     "STD-6": "COMPUTER",
+                    "STD-7": "G.K + CONV.",
                 },
             }, 
         ],
     },
     {
-        date: "07/03/2025",
+        date: "23/06/2025",
         sessions: [
             {
                 session: "1st",
                 subjects: {
                     "Pre-Nursery":"ENGLISH",
-                    "Nursery":"ENGLISH",
-                    "LKG":"MATHS",
+                    "Nursery":"MATHS",
+                    "LKG":"DRAWING",
                     "UKG":"HINDI",
 
                     "STD-1": "ENGLISH",
@@ -50,19 +52,20 @@ export const examData: ExamData[] = [
                     "STD-3": "SCIENCE",
                     "STD-4": "SST",
                     "STD-5": "COMPUTER",
-                    "STD-6": "HINDI",
+                    "STD-6": "G.K + CONV.",
+                    "STD-7": "HINDI",
                 },
             }, 
         ],
     },
     {
-        date: "08/03/2025",
+        date: "24/06/2025",
         sessions: [
             {
                 session: "1st",
                 subjects: {
                     "Pre-Nursery":"MATHS",
-                    "Nursery":"MATHS",
+                    "Nursery":"DRAWING",
                     "LKG":"HINDI",
                     "UKG":"ENGLISH",
 
@@ -70,76 +73,106 @@ export const examData: ExamData[] = [
                     "STD-2": "SCIENCE",
                     "STD-3": "SST",
                     "STD-4": "COMPUTER",
-                    "STD-5": "HINDI",
-                    "STD-6": "ENGLISH",
+                    "STD-5": "G.K + CONV.",
+                    "STD-6": "HINDI",
+                    "STD-7": "ENGLISH",
                 },
             }, 
         ],
     },
     {
-        date: "10/03/2025",
+        date: "25/06/2025",
         sessions: [
             {
                 session: "1st",
                 subjects: {
                     "Pre-Nursery":"DRAWING",
-                    "Nursery":"DRAWING",
-                    "LKG":"DRAWING",
-                    "UKG":"DRAWING",
+                    "Nursery":"HINDI",
+                    "LKG":"ENGLISH",
+                    "UKG":"MATHS",
 
                     "STD-1": "SCIENCE",
                     "STD-2": "SST",
                     "STD-3": "COMPUTER",
-                    "STD-4": "HINDI",
-                    "STD-5": "ENGLISH",
-                    "STD-6": "MATHS",
+                    "STD-4": "G.K + CONV.",
+                    "STD-5": "HINDI",
+                    "STD-6": "ENGLISH",
+                    "STD-7": "MATHS",
                 },
             }, 
         ],
     },
     {
-        date: "11/03/2025",
+        date: "26/06/2025",
         sessions: [
             {
                 session: "1st",
                 subjects: {
-                    "Pre-Nursery":"ORAL",
-                    "Nursery":"ORAL",
-                    "LKG":"ORAL",
-                    "UKG":"ORAL",
+                    "Pre-Nursery":"ORAL-HINDI",
+                    "Nursery":"ORAL-ENGLISH",
+                    "LKG":"ORAL-MATHS",
+                    "UKG":"ORAL-HINDI",
 
                     "STD-1": "SST",
                     "STD-2": "COMPUTER",
+                    "STD-3": "G.K + CONV.",
+                    "STD-4": "HINDI",
+                    "STD-5": "ENGLISH",
+                    "STD-6": "MATHS",
+                    "STD-7": "SCIENCE",
+                },
+            }, 
+        ],
+    },
+    {
+        date: "27/06/2025",
+        sessions: [
+            {
+                session: "1st",
+                subjects: {
+                    "Pre-Nursery":"ORAL-ENGLISH",
+                    "Nursery":"ORAL-MATHS",
+                    "LKG":"ORAL-HINDI",
+                    "UKG":"ORAL-ENGLISH",
+
+                    "STD-1": "COMPUTER",
+                    "STD-2": "G.K + CONV.",
                     "STD-3": "HINDI",
                     "STD-4": "ENGLISH",
                     "STD-5": "MATHS",
                     "STD-6": "SCIENCE",
+                    "STD-7": "SST",
                 },
             }, 
         ],
     },
     {
-        date: "12/03/2025",
+        date: "28/06/2025",
         sessions: [
             {
                 session: "1st",
                 subjects: {
-                    "Pre-Nursery":"ORAL",
-                    "Nursery":"ORAL",
-                    "LKG":"ORAL",
-                    "UKG":"ORAL",
-                    "STD-1": "COMPUTER",
+                    "Pre-Nursery":"ORAL-MATHS",
+                    "Nursery":"ORAL-HINDI",
+                    "LKG":"ORAL-ENGLISH",
+                    "UKG":"ORAL-MATHS",
+
+                    "STD-1": "G.K + CONV.",
                     "STD-2": "HINDI",
                     "STD-3": "ENGLISH",
                     "STD-4": "MATHS",
                     "STD-5": "SCIENCE",
-                    "STD-6": "SST.",
+                    "STD-6": "SST",
+                    "STD-7": "COMPUTER",
                 },
             }, 
         ],
     },
     
 ];
+
+
+
 
 
 const Table = styled("table")({

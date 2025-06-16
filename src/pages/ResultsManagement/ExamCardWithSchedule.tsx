@@ -22,9 +22,9 @@ function ExamCardWithSchedule() {
                     <Stack direction={"row"} spacing={2} alignItems={"center"}>
                         <Avatar color="primary" variant="solid" >1</Avatar>
                         <Stack>
-                            <Typography level="h4">Annual Exam (Term-4)</Typography>
+                            <Typography level="h4">Annual Exam (Term-1)</Typography>
                             <Typography level="body-sm">
-                                Created On :01-25-2021
+                                Created On :15/06/2025
                             </Typography>
                         </Stack>
                     </Stack>

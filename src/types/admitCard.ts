@@ -1,4 +1,4 @@
-import { ExamData } from "components/Exams/ExamPlannerTable";
+import { ExamData } from "./reports/exam";
 
 export interface admitCardType {
     studentName: string;

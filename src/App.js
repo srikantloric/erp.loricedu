@@ -28,6 +28,8 @@ import RollNoUpdator from "pages/StudentManagement/RollNoUpdator";
 import AttendanceConfiguration from "pages/Attendance/AttendanceConfiguration";
 import AllocatedStudents from "pages/transport/vehicleDetailsTabs/AllocatedStudents";
 import AllocatedStudentsLocations from "pages/transport/vehicleDetailsTabs/AllocatedStudentsLocations";
+import NewFeeCollection from "pages/FeeManager/NewFeeCollection";
+import StudentsList from "pages/Reports/StudentsList";
 
 // Lazy Loaded Components
 
@@ -145,7 +147,7 @@ function App() {
                     path="students/update-students-roll"
                     element={<RollNoUpdator />}
                   />
-                 
+
 
                   <Route
                     path="/view-faculties"
@@ -156,6 +158,10 @@ function App() {
                   <Route
                     path="/FeeManagement/FeeDetails/:id"
                     element={<StudentFeeDetails />}
+                  />            
+                  <Route
+                    path="/FeeManagement/NewFeeDetails/:studentId"
+                    element={<NewFeeCollection />}
                   />            
                   <Route
                     path="attendance/show-student-attendance"
@@ -181,7 +187,7 @@ function App() {
                     path="/students/profile/:id"
                     element={<ViewStudentProfile />}
                   />
-               
+
                   {/* Exam Management routes */}
                   <Route
                     path="/schoolResults/update-results"
@@ -205,7 +211,7 @@ function App() {
                     path="/schoolResults/print-results"
                     element={<PrintResult />}
                   />
-                   <Route
+                  <Route
                     path="schoolResults/class-migration"
                     element={<StudentMigration />}
                   />
@@ -224,17 +230,18 @@ function App() {
                   <Route path="/reports/due-report" element={<DueReport />} />
                   <Route path="/reports/demand-slip" element={<DemandSlip />} />
                   <Route path="/reports/admit-card" element={<AdmitCard />} />
+                  <Route path="/reports/students-list" element={<StudentsList />} />
 
                   {"Transport"}
                   <Route
                     path="/transport/transport-location"
                     element={<Transport />}
                   />
-                      <Route
+                  <Route
                     path="/transport/transport-location/allocated-students/:locationId"
                     element={<AllocatedStudentsLocations />}
                   />
-                        <Route
+                  <Route
                     path="/transport/allocated-students/:locationId"
                     element={<AllocatedStudentsLocations />}
                   />
