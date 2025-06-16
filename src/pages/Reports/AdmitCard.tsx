@@ -105,19 +105,19 @@ const AdmitCard = () => {
                 value={selectedExam}
                 onChange={(e, val) => setSelectedExam(val)}
               >
-                <Option value="ANNUALT4">
+                {/* <Option value="ANNUALT4">
                   <Stack>
-                    <Typography level="body-sm">Annual Exam (Term-4)</Typography>
+                    <Typography level="body-sm">Annual Exam (Term-1)</Typography>
                     <Typography level="body-xs" sx={{ color: "text.tertiary" }}>
                       2024-25
                     </Typography>
                   </Stack>
-                </Option>
-                <Option value="">
+                </Option> */}
+                <Option value="ANNUALT1">
                   <Stack>
-                    <Typography level="body-sm">Annual Exam (Term-4)</Typography>
+                    <Typography level="body-sm">Annual Exam (Term-1)</Typography>
                     <Typography level="body-xs" sx={{ color: "text.tertiary" }}>
-                      2024-25
+                      2025-26
                     </Typography>
                   </Stack>
                 </Option>
