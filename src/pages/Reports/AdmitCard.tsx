@@ -11,9 +11,9 @@ import { SCHOOL_CLASSES } from "config/schoolConfig";
 import { GenerateAdmitCard } from "../../utilities/GenerateAdmitCard";
 import { StudentDetailsType } from "types/student";
 import { getClassNameByValue } from "utilities/UtilitiesFunctions";
-import { examData } from "components/Exams/ExamPlannerTable";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { useFirebase } from "context/firebaseContext";
+import { examData } from "components/Exams/ExamPlannerTable";
 
 
 
@@ -26,62 +26,62 @@ const AdmitCard = () => {
   const [loading, setLoading] = useState<boolean>(false);
 
   //Get Firebase DB instance
-  const {db} = useFirebase();
+  const { db } = useFirebase();
 
   const handleGenerateAdmitCard = async () => {
     if (!selectedClass || !selectedExam) {
-        alert("Please select exam and class!");
-        return;
+      alert("Please select exam and class!");
+      return;
     }
 
     setLoading(true);
 
     try {
-        // Query students based on selected class
-        const studentsRef = collection(db, "STUDENTS");
-        const studentQuery = query(studentsRef, where("class", "==", selectedClass));
-        const studentSnapshot = await getDocs(studentQuery);
+      // Query students based on selected class
+      const studentsRef = collection(db, "STUDENTS");
+      const studentQuery = query(studentsRef, where("class", "==", selectedClass));
+      const studentSnapshot = await getDocs(studentQuery);
 
-        if (studentSnapshot.empty) {
-            setLoading(false);
-            alert("No students found for this class.");
-            return;
-        }
+      if (studentSnapshot.empty) {
+        setLoading(false);
+        alert("No students found for this class.");
+        return;
+      }
 
-        // Map student data
-        const studentData: admitCardType[] = studentSnapshot.docs.map((doc) => {
-            const student = doc.data() as StudentDetailsType;
-            return {
-                examTitle: "Annual Exam (Term-4)",
-                session: "2024-25",
-                startTime: "09:00 AM",
-                endTime: "12:30 PM",
-                studentName: student.student_name,
-                fatherName: student.father_name,
-                rollNumber: student.class_roll,
-                motherName: student.mother_name,
-                studentId: student.admission_no,
-                studentDOB: student.dob,
-                studentMob: student.contact_number,
-                className: student.class ? getClassNameByValue(student.class) || "N/A" : "N/A",
-                profile_url: student.profil_url,
-                timeTabel: examData
-            };
-        });
+      // Map student data
+      const studentData: admitCardType[] = studentSnapshot.docs.map((doc) => {
+        const student = doc.data() as StudentDetailsType;
+        return {
+          examTitle: "Annual Exam (Term-4)",
+          session: "2024-25",
+          startTime: "09:00 AM",
+          endTime: "12:30 PM",
+          studentName: student.student_name,
+          fatherName: student.father_name,
+          rollNumber: student.class_roll,
+          motherName: student.mother_name,
+          studentId: student.admission_no,
+          studentDOB: student.dob,
+          studentMob: student.contact_number,
+          className: student.class ? getClassNameByValue(student.class) || "N/A" : "N/A",
+          profile_url: student.profil_url,
+          timeTabel: examData
+        };
+      });
 
-        setStudentData(studentData);
-        
-        // Generate PDF
-        const pdfUrl = await GenerateAdmitCard(studentData);
-        setPdfUrl(pdfUrl);
+      setStudentData(studentData);
+
+      // Generate PDF
+      const pdfUrl = await GenerateAdmitCard(studentData);
+      setPdfUrl(pdfUrl);
 
     } catch (error) {
-        console.error("Error fetching student data:", error);
-        alert("Failed to generate admit card. Please try again.");
+      console.error("Error fetching student data:", error);
+      alert("Failed to generate admit card. Please try again.");
     }
 
     setLoading(false);
-};
+  };
 
   return (
     <PageContainer>
@@ -106,8 +106,22 @@ const AdmitCard = () => {
                 onChange={(e, val) => setSelectedExam(val)}
               >
                 <Option value="ANNUALT4">
-                  Annual Exam (Term-4)
+                  <Stack>
+                    <Typography level="body-sm">Annual Exam (Term-4)</Typography>
+                    <Typography level="body-xs" sx={{ color: "text.tertiary" }}>
+                      2024-25
+                    </Typography>
+                  </Stack>
                 </Option>
+                <Option value="">
+                  <Stack>
+                    <Typography level="body-sm">Annual Exam (Term-4)</Typography>
+                    <Typography level="body-xs" sx={{ color: "text.tertiary" }}>
+                      2024-25
+                    </Typography>
+                  </Stack>
+                </Option>
+
 
               </Select>
               <Select
