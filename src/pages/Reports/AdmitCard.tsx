@@ -52,10 +52,10 @@ const AdmitCard = () => {
       const studentData: admitCardType[] = studentSnapshot.docs.map((doc) => {
         const student = doc.data() as StudentDetailsType;
         return {
-          examTitle: "Annual Exam (Term-4)",
-          session: "2024-25",
-          startTime: "09:00 AM",
-          endTime: "12:30 PM",
+          examTitle: "Annual Exam (Term-1)",
+          session: "2025-26",
+          startTime: "08:00 AM",
+          endTime: "09:30 AM",
           studentName: student.student_name,
           fatherName: student.father_name,
           rollNumber: student.class_roll,
