@@ -115,7 +115,7 @@ const AdmitCard = () => {
                 </Option> */}
                 <Option value="ANNUALT1">
                   <Stack>
-                    <Typography level="body-sm">Annual Exam (Term-1)</Typography>
+                    <Typography level="body-sm">Term-1 Examination</Typography>
                     <Typography level="body-xs" sx={{ color: "text.tertiary" }}>
                       2025-26
                     </Typography>
