@@ -14,40 +14,7 @@ export interface ExamData {
 
 
 export const examData: ExamData[] = [
-    {
-        date: "21/06/2025",
-        sessions: [
-            {
-                session: "1st",
-                subjects: {
-                    "Pre-Nursery": "HINDI",
-                    "Nursery": "ENGLISH",
-                    "LKG": "MATH",
-                    "UKG": "DRAWING",
-
-                    "STD-1": "HINDI",
-                    "STD-2": "ENGLISH",
-                    "STD-3": "MATH",
-                    "STD-4": "SCIENCE",
-                    "STD-5": "SST",
-                    "STD-6": "COMPUTER",
-                    "STD-7": "G.K + CONV.",
-                },
-            },
-            {
-                session: "2nd",
-                subjects: {
-                    "STD-1": "ORAL",
-                    "STD-2": "ORAL",
-                    "STD-3": "ORAL",
-                    "STD-4": "ORAL",
-                    "STD-5": "ORAL",
-                    "STD-6": "ORAL",
-                    "STD-7": "ORAL",
-                },
-            }
-        ],
-    },
+    
     {
         date: "23/06/2025",
         sessions: [
@@ -236,6 +203,40 @@ export const examData: ExamData[] = [
                     "STD-5": "SCIENCE",
                     "STD-6": "SST",
                     "STD-7": "COMPUTER",
+                },
+            },
+            {
+                session: "2nd",
+                subjects: {
+                    "STD-1": "ORAL",
+                    "STD-2": "ORAL",
+                    "STD-3": "ORAL",
+                    "STD-4": "ORAL",
+                    "STD-5": "ORAL",
+                    "STD-6": "ORAL",
+                    "STD-7": "ORAL",
+                },
+            }
+        ],
+    },
+    {
+        date: "30/06/2025",
+        sessions: [
+            {
+                session: "1st",
+                subjects: {
+                    "Pre-Nursery": "HINDI",
+                    "Nursery": "ENGLISH",
+                    "LKG": "MATH",
+                    "UKG": "DRAWING",
+
+                    "STD-1": "HINDI",
+                    "STD-2": "ENGLISH",
+                    "STD-3": "MATH",
+                    "STD-4": "SCIENCE",
+                    "STD-5": "SST",
+                    "STD-6": "COMPUTER",
+                    "STD-7": "G.K + CONV.",
                 },
             },
             {

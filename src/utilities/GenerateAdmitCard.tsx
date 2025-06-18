@@ -1,7 +1,7 @@
 import jsPDF from "jspdf";
 import { admitCardType } from "types/admitCard";
 
-import { POPPINS_BOLD, POPPINS_REGULAR, POPPINS_SEMIBOLD, PROFILE_PLACEHOLDER_BASE64 } from "./Base64Url";
+import { POPPINS_BOLD, POPPINS_REGULAR, POPPINS_SEMIBOLD, PROFILE_PLACEHOLDER_BASE64, SIGN_ADMIT_BASE64 } from "./Base64Url";
 
 import { examData } from "components/Exams/ExamPlannerTable";
 import { getAppConfig } from "hooks/getAppConfig";
@@ -203,9 +203,10 @@ export const GenerateAdmitCard = async (
       // Signatures
       const signatureY = positionY + cardHeight - 15;
       doc.setFont("Poppins", "normal");
-      doc.setFontSize(10);
+      doc.setFontSize(8);
       // doc.text("(Exam Controller)", margin + 20, signatureY);
-      doc.text("(Exam Controller)", 150, signatureY);
+      doc.text("(Exam Controller)", 150, signatureY+4);
+      doc.addImage(SIGN_ADMIT_BASE64, "PNG", 150, signatureY-10, 20, 15); // Placeholder for signature image
       // doc.text("(Class Teacher)", 85, signatureY);
       // doc.text("(Director)", 150, signatureY);
     });
