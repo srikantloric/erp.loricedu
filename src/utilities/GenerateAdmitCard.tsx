@@ -186,7 +186,18 @@ export const GenerateAdmitCard = async (
         doc.text(item.sessions[0].subject, timeTableX + 35, rowY - 2, {
           align: "center",
         });
+      });
+      const classSessionSchedule2 = getScheduleForClassAndSession(studentData.className, "2nd");
+      console.log(classSessionSchedule);
+      if (classSessionSchedule2.length !== 0) {
+        doc.text("2nd Seating", timeTableX + 60, startY - 2, { align: "center" });
+      }
 
+      classSessionSchedule2.forEach((item, index) => {
+        const rowY = startY + (index + 1) * 6;
+        doc.text(item.sessions[0].subject, timeTableX + 60, rowY - 2, {
+          align: "center",
+        });
       });
 
       // Signatures

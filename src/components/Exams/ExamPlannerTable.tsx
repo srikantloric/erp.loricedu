@@ -20,10 +20,10 @@ export const examData: ExamData[] = [
             {
                 session: "1st",
                 subjects: {
-                    "Pre-Nursery":"HINDI",
-                    "Nursery":"ENGLISH",
-                    "LKG":"MATH",
-                    "UKG":"DRAWING",
+                    "Pre-Nursery": "HINDI",
+                    "Nursery": "ENGLISH",
+                    "LKG": "MATH",
+                    "UKG": "DRAWING",
 
                     "STD-1": "HINDI",
                     "STD-2": "ENGLISH",
@@ -33,7 +33,19 @@ export const examData: ExamData[] = [
                     "STD-6": "COMPUTER",
                     "STD-7": "G.K + CONV.",
                 },
-            }, 
+            },
+            {
+                session: "2nd",
+                subjects: {
+                    "STD-1": "ORAL",
+                    "STD-2": "ORAL",
+                    "STD-3": "ORAL",
+                    "STD-4": "ORAL",
+                    "STD-5": "ORAL",
+                    "STD-6": "ORAL",
+                    "STD-7": "ORAL",
+                },
+            }
         ],
     },
     {
@@ -42,10 +54,10 @@ export const examData: ExamData[] = [
             {
                 session: "1st",
                 subjects: {
-                    "Pre-Nursery":"ENGLISH",
-                    "Nursery":"MATHS",
-                    "LKG":"DRAWING",
-                    "UKG":"HINDI",
+                    "Pre-Nursery": "ENGLISH",
+                    "Nursery": "MATHS",
+                    "LKG": "DRAWING",
+                    "UKG": "HINDI",
 
                     "STD-1": "ENGLISH",
                     "STD-2": "MATHS",
@@ -55,7 +67,19 @@ export const examData: ExamData[] = [
                     "STD-6": "G.K + CONV.",
                     "STD-7": "HINDI",
                 },
-            }, 
+            },
+            {
+                session: "2nd",
+                subjects: {
+                    "STD-1": "ORAL",
+                    "STD-2": "ORAL",
+                    "STD-3": "ORAL",
+                    "STD-4": "ORAL",
+                    "STD-5": "ORAL",
+                    "STD-6": "ORAL",
+                    "STD-7": "ORAL",
+                },
+            }
         ],
     },
     {
@@ -64,10 +88,10 @@ export const examData: ExamData[] = [
             {
                 session: "1st",
                 subjects: {
-                    "Pre-Nursery":"MATHS",
-                    "Nursery":"DRAWING",
-                    "LKG":"HINDI",
-                    "UKG":"ENGLISH",
+                    "Pre-Nursery": "MATHS",
+                    "Nursery": "DRAWING",
+                    "LKG": "HINDI",
+                    "UKG": "ENGLISH",
 
                     "STD-1": "MATHS",
                     "STD-2": "SCIENCE",
@@ -77,7 +101,19 @@ export const examData: ExamData[] = [
                     "STD-6": "HINDI",
                     "STD-7": "ENGLISH",
                 },
-            }, 
+            },
+            {
+                session: "2nd",
+                subjects: {
+                    "STD-1": "ORAL",
+                    "STD-2": "ORAL",
+                    "STD-3": "ORAL",
+                    "STD-4": "ORAL",
+                    "STD-5": "ORAL",
+                    "STD-6": "ORAL",
+                    "STD-7": "ORAL",
+                },
+            }
         ],
     },
     {
@@ -86,10 +122,10 @@ export const examData: ExamData[] = [
             {
                 session: "1st",
                 subjects: {
-                    "Pre-Nursery":"DRAWING",
-                    "Nursery":"HINDI",
-                    "LKG":"ENGLISH",
-                    "UKG":"MATHS",
+                    "Pre-Nursery": "DRAWING",
+                    "Nursery": "HINDI",
+                    "LKG": "ENGLISH",
+                    "UKG": "MATHS",
 
                     "STD-1": "SCIENCE",
                     "STD-2": "SST",
@@ -99,7 +135,19 @@ export const examData: ExamData[] = [
                     "STD-6": "ENGLISH",
                     "STD-7": "MATHS",
                 },
-            }, 
+            },
+            {
+                session: "2nd",
+                subjects: {
+                    "STD-1": "ORAL",
+                    "STD-2": "ORAL",
+                    "STD-3": "ORAL",
+                    "STD-4": "ORAL",
+                    "STD-5": "ORAL",
+                    "STD-6": "ORAL",
+                    "STD-7": "ORAL",
+                },
+            }
         ],
     },
     {
@@ -108,10 +156,10 @@ export const examData: ExamData[] = [
             {
                 session: "1st",
                 subjects: {
-                    "Pre-Nursery":"ORAL-HINDI",
-                    "Nursery":"ORAL-ENGLISH",
-                    "LKG":"ORAL-MATHS",
-                    "UKG":"ORAL-HINDI",
+                    "Pre-Nursery": "ORAL-HINDI",
+                    "Nursery": "ORAL-ENGLISH",
+                    "LKG": "ORAL-MATHS",
+                    "UKG": "ORAL-HINDI",
 
                     "STD-1": "SST",
                     "STD-2": "COMPUTER",
@@ -121,7 +169,19 @@ export const examData: ExamData[] = [
                     "STD-6": "MATHS",
                     "STD-7": "SCIENCE",
                 },
-            }, 
+            },
+            {
+                session: "2nd",
+                subjects: {
+                    "STD-1": "ORAL",
+                    "STD-2": "ORAL",
+                    "STD-3": "ORAL",
+                    "STD-4": "ORAL",
+                    "STD-5": "ORAL",
+                    "STD-6": "ORAL",
+                    "STD-7": "ORAL",
+                },
+            }
         ],
     },
     {
@@ -130,10 +190,10 @@ export const examData: ExamData[] = [
             {
                 session: "1st",
                 subjects: {
-                    "Pre-Nursery":"ORAL-ENGLISH",
-                    "Nursery":"ORAL-MATHS",
-                    "LKG":"ORAL-HINDI",
-                    "UKG":"ORAL-ENGLISH",
+                    "Pre-Nursery": "ORAL-ENGLISH",
+                    "Nursery": "ORAL-MATHS",
+                    "LKG": "ORAL-HINDI",
+                    "UKG": "ORAL-ENGLISH",
 
                     "STD-1": "COMPUTER",
                     "STD-2": "G.K + CONV.",
@@ -143,7 +203,19 @@ export const examData: ExamData[] = [
                     "STD-6": "SCIENCE",
                     "STD-7": "SST",
                 },
-            }, 
+            },
+            {
+                session: "2nd",
+                subjects: {
+                    "STD-1": "ORAL",
+                    "STD-2": "ORAL",
+                    "STD-3": "ORAL",
+                    "STD-4": "ORAL",
+                    "STD-5": "ORAL",
+                    "STD-6": "ORAL",
+                    "STD-7": "ORAL",
+                },
+            }
         ],
     },
     {
@@ -152,10 +224,10 @@ export const examData: ExamData[] = [
             {
                 session: "1st",
                 subjects: {
-                    "Pre-Nursery":"ORAL-MATHS",
-                    "Nursery":"ORAL-HINDI",
-                    "LKG":"ORAL-ENGLISH",
-                    "UKG":"ORAL-MATHS",
+                    "Pre-Nursery": "ORAL-MATHS",
+                    "Nursery": "ORAL-HINDI",
+                    "LKG": "ORAL-ENGLISH",
+                    "UKG": "ORAL-MATHS",
 
                     "STD-1": "G.K + CONV.",
                     "STD-2": "HINDI",
@@ -165,10 +237,22 @@ export const examData: ExamData[] = [
                     "STD-6": "SST",
                     "STD-7": "COMPUTER",
                 },
-            }, 
+            },
+            {
+                session: "2nd",
+                subjects: {
+                    "STD-1": "ORAL",
+                    "STD-2": "ORAL",
+                    "STD-3": "ORAL",
+                    "STD-4": "ORAL",
+                    "STD-5": "ORAL",
+                    "STD-6": "ORAL",
+                    "STD-7": "ORAL",
+                },
+            }
         ],
     },
-    
+
 ];
 
 
@@ -205,8 +289,8 @@ const Tr = styled("tr")(({ theme }) => ({
 
 const ExamPlannerTable: React.FC = () => {
     return (
-       
-            <Table >
+
+        <Table >
             <thead>
                 <Tr>
                     <Th>Sl</Th>
@@ -237,7 +321,7 @@ const ExamPlannerTable: React.FC = () => {
                 )}
             </tbody>
         </Table>
-      
+
     );
 };
 export default ExamPlannerTable;
