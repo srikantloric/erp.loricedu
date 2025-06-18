@@ -52,7 +52,7 @@ const AdmitCard = () => {
       const studentData: admitCardType[] = studentSnapshot.docs.map((doc) => {
         const student = doc.data() as StudentDetailsType;
         return {
-          examTitle: "Annual Exam (Term-1)",
+          examTitle: "Term-1 Examination",
           session: "2025-26",
           startTime: "08:00 AM",
           endTime: "09:30 AM",
