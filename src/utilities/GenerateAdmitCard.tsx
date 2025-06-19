@@ -33,7 +33,8 @@ export const GenerateAdmitCard = async (
     const {
       schoolName: SCHOOL_NAME,
       schoolAddress: SCHOOL_ADDRESS,
-      schoolWebsite: SCHOOL_WEBSITE
+      schoolWebsite: SCHOOL_WEBSITE,
+      schoolPrincipalSignBase64: PRINCIPAL_SIGN
     } = config;
 
 
@@ -204,11 +205,15 @@ export const GenerateAdmitCard = async (
       const signatureY = positionY + cardHeight - 15;
       doc.setFont("Poppins", "normal");
       doc.setFontSize(8);
-      // doc.text("(Exam Controller)", margin + 20, signatureY);
-      doc.text("(Exam Controller)", 150, signatureY+4);
-      doc.addImage(SIGN_ADMIT_BASE64, "PNG", 150, signatureY-10, 20, 15); // Placeholder for signature image
-      // doc.text("(Class Teacher)", 85, signatureY);
-      // doc.text("(Director)", 150, signatureY);
+
+      doc.text("(Class Teacher)", margin+20, signatureY+4);
+
+
+      doc.addImage(PRINCIPAL_SIGN, "PNG", 80, signatureY - 10, 25, 13); // Placeholder for signature image
+      doc.text("(Principal)", 85, signatureY+4);
+
+      doc.text("(Exam Controller)", 150, signatureY + 4);
+      doc.addImage(SIGN_ADMIT_BASE64, "PNG", 150, signatureY - 10, 20, 15); // Placeholder for signature image
     });
     const blob = doc.output("blob");
     const url = URL.createObjectURL(blob);
