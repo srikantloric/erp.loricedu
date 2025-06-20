@@ -1,6 +1,4 @@
 import {
-  EMAIL_ICON,
-  LOGO_BASE_64,
   PHONE_ICON,
   POPPINS_BOLD,
   POPPINS_REGULAR,
@@ -47,7 +45,7 @@ export const StudReportPDF = async (
       schoolName: SCHOOL_NAME,
       schoolAddress: SCHOOL_ADDRESS,
       schoolContact: SCHOOL_CONTACT,
-      schoolEmail: SCHOOL_EMAIL,
+      schoolLogoBase64: SCHOOL_LOGO,
     } = config;
 
     try {
@@ -75,7 +73,7 @@ export const StudReportPDF = async (
       doc.addFont("Poppins-Semibold", "Poppins", "semibold");
 
       // PDF Header section
-      doc.addImage(LOGO_BASE_64, x + 45, y + 1, 30, 25);
+      doc.addImage(SCHOOL_LOGO, x + 45, y + 1, 30, 25);
 
       const schoolHeaderStartX = x + 75;
       const schoolHeaderStartY = y + 5;
@@ -87,7 +85,7 @@ export const StudReportPDF = async (
       doc.setFontSize(8);
       doc.setFont("Poppins", "semibold");
       doc.text(
-        "An English Medium School Based on CBSE Syllabus",
+        "An English Medium School Based on CBSE Curriculum",
         schoolHeaderStartX + 7,
         schoolHeaderStartY + 5
       );
@@ -128,18 +126,18 @@ export const StudReportPDF = async (
         schoolContactDetailStartY + 12
       );
 
-      doc.addImage(
-        EMAIL_ICON,
-        schoolHeaderStartX + 34,
-        schoolContactDetailStartY + 10,
-        3,
-        3
-      );
-      doc.text(
-        SCHOOL_EMAIL,
-        schoolHeaderStartX + 38,
-        schoolContactDetailStartY + 12
-      );
+      // doc.addImage(
+      //   EMAIL_ICON,
+      //   schoolHeaderStartX + 34,
+      //   schoolContactDetailStartY + 10,
+      //   3,
+      //   3
+      // );
+      // doc.text(
+      //   SCHOOL_EMAIL,
+      //   schoolHeaderStartX + 38,
+      //   schoolContactDetailStartY + 12
+      // );
 
       // Title section
       doc.setFillColor("#939393");
