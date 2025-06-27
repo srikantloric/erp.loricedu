@@ -21,7 +21,8 @@ import {
 import { Circle, Logout, Settings } from "@mui/icons-material";
 import { auth } from "../../firebase";
 import { useSearchDialog } from "context/SearchDialogContext";
-import { Chip } from "@mui/joy";
+import { Chip, Option, Select } from "@mui/joy";
+import { useNavbar } from "context/NavbarContext";
 
 function Navbar() {
   const [screenSize, setScreenSize] = useState(getCurrentDimension());
@@ -38,6 +39,8 @@ function Navbar() {
   /////
 
   const { openDialog } = useSearchDialog();
+
+  const { session, setSession } = useNavbar();
 
   const notificationsLabel = (count: number) => {
     if (count === 0) {
@@ -100,7 +103,11 @@ function Navbar() {
             </div>
           )}
         </div>
+
         <div className="navbar-rightsection">
+
+
+
           {screenSize.width > 768 && (
             <Chip
               color="primary"
@@ -110,6 +117,11 @@ function Navbar() {
               {environment}
             </Chip>
           )}
+
+          <Select sx={{ mr: 2 }} size="sm" value={session} onChange={(e, val) => setSession(val!)} variant="soft">
+            <Option value="2025-26">2025-26</Option>
+            <Option value="2024-25">2024-25</Option>
+          </Select>
 
           {screenSize.width > 768 && (
             <>
@@ -160,6 +172,8 @@ function Navbar() {
               </Avatar>
             </IconButton>
           </Tooltip>
+
+
 
           <Menu
             anchorEl={anchorEl}

@@ -30,6 +30,7 @@ import AllocatedStudents from "pages/transport/vehicleDetailsTabs/AllocatedStude
 import AllocatedStudentsLocations from "pages/transport/vehicleDetailsTabs/AllocatedStudentsLocations";
 import NewFeeCollection from "pages/FeeManager/NewFeeCollection";
 import StudentsList from "pages/Reports/StudentsList";
+import { NavbarProvider } from "context/NavbarContext";
 
 // Lazy Loaded Components
 
@@ -125,6 +126,7 @@ function App() {
       <FirebaseProvider key={authKey}>
         <SideBarContext.Provider value={{ isActive, toggle, setSidebarOpen }}>
           <SearchDialogProvider>
+            <NavbarProvider>
             <Suspense>
               <Routes>
                 <Route path="/" element={<DashboardLayout />}>
@@ -264,6 +266,7 @@ function App() {
                 </Route>
               </Routes>
             </Suspense>
+            </NavbarProvider>
           </SearchDialogProvider>
         </SideBarContext.Provider>
       </FirebaseProvider>

@@ -27,6 +27,8 @@ const FeeHeadersTable: React.FC<FeeHeadProps> = ({
     const [concessionValid, setConcessionValid] = useState(true);
     const [dueValid, setDueValid] = useState(true);
 
+    
+
     // Zod schema to validate totals
     const validateTotals = (data: EditableHead[]) => {
         const concessionTotal = data.reduce((sum, h) => sum + (Number(h.concessionAmount) || 0), 0);
@@ -136,6 +138,18 @@ const FeeHeadersTable: React.FC<FeeHeadProps> = ({
                     sx={{ color: "#000", fontWeight: "bold" }}
                 >
                     ₹{rowData.amount}
+                </Typography>
+            )
+        },
+        {
+            title:"Pre. Dues",
+            field: "previousDues",
+            render: (rowData: EditableHead) => (
+                <Typography
+                    variant="body2"
+                    sx={{ color: "#000", fontWeight: "bold" }}
+                >
+                    ₹{rowData.previousDues || 0}
                 </Typography>
             )
         },
