@@ -21,8 +21,9 @@ import {
 import { Circle, Logout, Settings } from "@mui/icons-material";
 import { auth } from "../../firebase";
 import { useSearchDialog } from "context/SearchDialogContext";
-import { Chip, Option, Select } from "@mui/joy";
+import { Chip, Option, Select, Stack, Typography } from "@mui/joy";
 import { useNavbar } from "context/NavbarContext";
+import { useAuth } from "context/AuthContext";
 
 function Navbar() {
   const [screenSize, setScreenSize] = useState(getCurrentDimension());
@@ -56,6 +57,10 @@ function Navbar() {
   const handleOnClick = () => {
     status.toggle();
   };
+
+  //auth context
+  const {  displayName, userType } = useAuth()
+
 
   function getCurrentDimension() {
     return {
@@ -168,13 +173,10 @@ function Navbar() {
                   backgroundColor: "var(--bs-orange)",
                 }}
               >
-                A
+                {displayName ? displayName.charAt(0).toUpperCase() : "U"}
               </Avatar>
             </IconButton>
           </Tooltip>
-
-
-
           <Menu
             anchorEl={anchorEl}
             id="account-menu"
@@ -211,7 +213,16 @@ function Navbar() {
             anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
           >
             <MenuItem onClick={handleClose}>
-              <Avatar /> admin@apxschool.org
+              <Avatar />
+              <Stack display={"flex"} direction={"column"}>
+                <Typography level="title-md">
+                  {displayName}
+                </Typography>
+                <Typography level="body-sm" sx={{ color: "text.secondary" }}>
+                  {userType}
+                </Typography>
+              </Stack>
+
             </MenuItem>
 
             <Divider />

@@ -8,29 +8,26 @@ import PageContainer from "components/Utils/PageContainer";
 import { SCHOOL_CLASSES, SCHOOL_FEE_MONTHS, SCHOOL_SESSIONS } from "config/schoolConfig";
 import { enqueueSnackbar } from 'notistack';
 import { useState } from 'react';
-import { DueReportType } from 'types/reports';
-import { getClassNameByValue,  makeDoubleDigit } from 'utilities/UtilitiesFunctions';
+import { getClassNameByValue, makeDoubleDigit } from 'utilities/UtilitiesFunctions';
 import { StudentDetailsType } from 'types/student';
 import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
 import { useFirebase } from 'context/firebaseContext';
-import DueReportTable from 'components/Tables/DueReportTable';
+import DueReportTable, { DueReportRow } from 'components/Tables/DueReportTable';
 
 
 function DueReport() {
     const [selectedClass, setSelectedClass] = useState<number | null>(null);
-    const [selectedMonth, setSelectedMonth] = useState<number[]>([])
-    const [selectedYear, setSelectedYear] = useState<string | null>(null);
+    const [selectedMonths, setSelectedMonths] = useState<number[]>([])
+    const [selectedSession, setSelectedSession] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
-    const [dueStudentList, setDueStudentList] = useState<DueReportType[]>([]);
+    const [dueStudentList, setDueStudentList] = useState<DueReportRow[]>([]);
 
     //Get Firebase DB instance
     const { db } = useFirebase();
 
-    async function getDueListByClass(className: number) {
-        const dueList: DueReportType[] = [];
-        console.log("Searching for class", className);
+    async function getDueListByClass(className: number, selectedMonths: number[]) {
+        const dueList: any[] = [];
         setLoading(true);
-
         try {
             // Query students based on class
             const studentsRef = collection(db, "STUDENTS");
@@ -43,50 +40,60 @@ function DueReport() {
                 return dueList;
             }
 
-            const constructedChallanId = `CHALLAN${makeDoubleDigit("" + selectedMonth)}${selectedYear}`;
+            // Only show columns for selected months
+            const selectedMonthObjs = SCHOOL_FEE_MONTHS.filter(m => selectedMonths.includes(m.value));
 
-            // Create an array of Firestore promises
-            const challanPromises = studentSnapshot.docs.map(async (studentDoc) => {
+            // For each student, fetch challan data for selected months
+            const studentRows = await Promise.all(studentSnapshot.docs.map(async (studentDoc, idx) => {
                 const studentData = studentDoc.data() as StudentDetailsType;
+
                 const studentId = studentDoc.id;
+                let paid = 0;
+                let due = 0;
+                const dueMonths: { month: string, value: number }[] = [];
 
-                if (studentData?.generatedChallans?.includes(constructedChallanId)) {
-                    const challanRef = doc(db, `STUDENTS/${studentId}/CHALLANS`, constructedChallanId);
-                    const challanSnap = await getDoc(challanRef);
-                    const challanData = challanSnap.data();
-
-                    if (challanData && challanData.status !== "PAID") {
-                        return {
-                            studentId: studentData.admission_no,
-                            studentName: studentData.student_name,
-                            fatherName: studentData.father_name,
-                            contact: studentData.contact_number,
-                            dueAmount: challanData.totalAmount - challanData.amountPaid,
-                            dueMonth: " getMonthTitleByValue(selectedMonth!)!",
-                            remark: "",
-                            class: getClassNameByValue(selectedClass!)!,
-                            sl: "",
-                        };
+                for (const monthObj of selectedMonthObjs) {
+                    // Determine the correct year for the challan based on the month and session
+                    let challanYear = "";
+                    if (monthObj.value >= 4 && monthObj.value <= 12) {
+                        challanYear = selectedSession?.split("-")[0] || "";
+                    } else {
+                        challanYear = selectedSession?.split("-")[1] || "";
                     }
+                    const constructedChallanId = `CHALLAN${makeDoubleDigit("" + monthObj.value)}${challanYear}`;
+                    let monthPaid = 0;
+                    let monthDue = 0;
+
+                    if (studentData?.generatedChallans?.includes(constructedChallanId)) {
+                        const challanRef = doc(db, `STUDENTS/${studentId}/CHALLANS`, constructedChallanId);
+                        const challanSnap = await getDoc(challanRef);
+                        const challanData = challanSnap.data();
+                        if (challanData) {
+                            monthPaid = challanData.amountPaid || 0;
+                            monthDue = (challanData.totalAmount || 0) - (challanData.amountPaid || 0);
+                        }
+                    }
+                    if (monthDue > 0) {
+                        dueMonths.push({ month: monthObj.title, value: monthDue });
+                    }
+                    paid += monthPaid;
+                    due += monthDue > 0 ? monthDue : 0;
                 }
 
-                return {
-                    studentId: studentData.admission_no,
-                    studentName: studentData.student_name,
-                    fatherName: studentData.father_name,
+                // Build row for DueReportTable, only include dueMonths array
+                const row: any = {
+                    sl: idx + 1,
+                    name: studentData.student_name,
+                    fname: studentData.father_name,
                     contact: studentData.contact_number,
-                    dueAmount: 0,
-                    dueMonth: "getMonthTitleByValue(selectedMonth!)!",
-                    remark: "Challan not generated",
-                    class: getClassNameByValue(selectedClass!)!,
-                    sl: "",
+                    paid,
+                    due,
+                    dueMonths,
                 };
-            });
+                return row;
+            }));
 
-            // Wait for all promises to resolve
-            const results = await Promise.all(challanPromises);
-            dueList.push(...results);
-
+            dueList.push(...studentRows);
             setLoading(false);
             enqueueSnackbar("Report generated successfully!", { variant: "success" });
             return dueList;
@@ -104,20 +111,22 @@ function DueReport() {
             enqueueSnackbar("Please select class!", { variant: "error" })
             return
         }
-        if (!selectedYear) {
+        if (!selectedSession) {
             enqueueSnackbar("Please select Year!", { variant: "error" })
             return
         }
-        if (!selectedMonth) {
+        if (!selectedMonths) {
             enqueueSnackbar("Please select month!", { variant: "error" })
 
         }
 
         //fetch due from PAYMENT COLLECTION
-        const result = await getDueListByClass(selectedClass)
+        const result = await getDueListByClass(selectedClass, selectedMonths)
         setDueStudentList(result)
     }
 
+
+    console.log("Due Student List", dueStudentList);
     return (
         <PageContainer>
             <Navbar />
@@ -148,11 +157,10 @@ function DueReport() {
                                     return <Option value={item.value}>{item.title}</Option>;
                                 })}
                             </Select>
-
                             <Select
                                 placeholder="choose session"
-                                value={selectedYear}
-                                onChange={(e, val) => setSelectedYear(val)}
+                                value={selectedSession}
+                                onChange={(e, val) => setSelectedSession(val)}
                             >
                                 {SCHOOL_SESSIONS.map((item) => {
                                     return <Option value={item.value}>{item.title}</Option>;
@@ -163,7 +171,7 @@ function DueReport() {
                                 startDecorator={<TouchAppIcon />}
                                 onClick={handleGenerateDueReport}
                                 loading={loading}
-                                disabled={loading || !selectedClass || !selectedYear || selectedMonth.length===0}
+                                disabled={loading || !selectedClass || !selectedSession || selectedMonths.length === 0}
                             >
                                 Generate Report
                             </Button>
@@ -175,12 +183,12 @@ function DueReport() {
                             label="Select all"
                             variant="soft"
                             defaultChecked
-                            checked={selectedMonth.length === SCHOOL_FEE_MONTHS.length}
+                            checked={selectedMonths.length === SCHOOL_FEE_MONTHS.length}
                             onChange={(e) => {
                                 if (e.target.checked) {
-                                    setSelectedMonth(SCHOOL_FEE_MONTHS.map((item) => item.value));
+                                    setSelectedMonths(SCHOOL_FEE_MONTHS.map((item) => item.value));
                                 } else {
-                                    setSelectedMonth([]);
+                                    setSelectedMonths([]);
                                 }
                             }}
                         />
@@ -190,12 +198,12 @@ function DueReport() {
                                     key={item.value}
                                     label={item.title}
                                     variant="soft"
-                                    checked={selectedMonth?.includes(item.value)}
+                                    checked={selectedMonths?.includes(item.value)}
                                     onChange={(e) => {
                                         if (e.target.checked) {
-                                            setSelectedMonth((prev) => [...(prev || []), item.value]);
+                                            setSelectedMonths((prev) => [...(prev || []), item.value]);
                                         } else {
-                                            setSelectedMonth((prev) =>
+                                            setSelectedMonths((prev) =>
                                                 (prev || []).filter((month) => month !== item.value)
                                             );
                                         }
@@ -207,7 +215,16 @@ function DueReport() {
                 </Box>
                 <br />
                 {dueStudentList.length > 0 &&
-                    <DueReportTable />
+                    <DueReportTable
+                        selectedSession={selectedSession!}
+                        selectedClass={""+getClassNameByValue(selectedClass!)}
+                        data={dueStudentList}
+                        selectedMonths={
+                            selectedMonths
+                                .map(m => SCHOOL_FEE_MONTHS.find(month => month.value === m)?.title)
+                                .filter((title): title is string => Boolean(title))
+                        }
+                    />
                 }
             </LSPage>
         </PageContainer>

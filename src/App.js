@@ -122,155 +122,155 @@ function App() {
   console.log("Version: 1.2.0");
 
   return (
-    <AuthProvider>
-      <FirebaseProvider key={authKey}>
+    <FirebaseProvider key={authKey}>
+      <AuthProvider>
         <SideBarContext.Provider value={{ isActive, toggle, setSidebarOpen }}>
           <SearchDialogProvider>
             <NavbarProvider>
-            <Suspense>
-              <Routes>
-                <Route path="/" element={<DashboardLayout />}>
-                  {routeItems}
-                  <Route
-                    path="students/add-students"
-                    element={<AddStudentNew />}
-                  />
-                  <Route
-                    path="students/Admission-students"
-                    element={<AdmissionEnquiry />}
-                  />
+              <Suspense>
+                <Routes>
+                  <Route path="/" element={<DashboardLayout />}>
+                    {routeItems}
+                    <Route
+                      path="students/add-students"
+                      element={<AddStudentNew />}
+                    />
+                    <Route
+                      path="students/Admission-students"
+                      element={<AdmissionEnquiry />}
+                    />
 
-                  <Route
-                    path="students/view-students"
-                    element={<ViewStudents />}
-                  />
+                    <Route
+                      path="students/view-students"
+                      element={<ViewStudents />}
+                    />
 
-                  <Route
-                    path="students/update-students-roll"
-                    element={<RollNoUpdator />}
-                  />
+                    <Route
+                      path="students/update-students-roll"
+                      element={<RollNoUpdator />}
+                    />
 
 
-                  <Route
-                    path="/view-faculties"
-                    element={<UnderConstruction />}
-                  />
-                  <Route path="/Faculties/:id" element={<FacultyDetail />} />
-                  <Route path="/add-faculty" element={<UnderConstruction />} />
-                  <Route
-                    path="/FeeManagement/FeeDetails/:id"
-                    element={<StudentFeeDetails />}
-                  />            
-                  <Route
-                    path="/FeeManagement/NewFeeDetails/:studentId"
-                    element={<NewFeeCollection />}
-                  />            
-                  <Route
-                    path="attendance/show-student-attendance"
-                    element={<ViewAttendance />}
-                  />
-                  <Route
-                    path="attendance/mark-manual-attendance"
-                    element={<ManualAttendance />}
-                  />
-                  <Route
-                    path="attendance/generate-attendance-qr"
-                    element={<GenerateQrSticker />}
-                  />
-                  <Route
-                    path="attendance/Facuities"
-                    element={<FacultyAttendance />}
-                  />
-                  <Route
-                    path="attendance/config"
-                    element={<AttendanceConfiguration />}
-                  />
-                  <Route
-                    path="/students/profile/:id"
-                    element={<ViewStudentProfile />}
-                  />
+                    <Route
+                      path="/view-faculties"
+                      element={<UnderConstruction />}
+                    />
+                    <Route path="/Faculties/:id" element={<FacultyDetail />} />
+                    <Route path="/add-faculty" element={<UnderConstruction />} />
+                    <Route
+                      path="/FeeManagement/FeeDetails/:id"
+                      element={<StudentFeeDetails />}
+                    />
+                    <Route
+                      path="/FeeManagement/NewFeeDetails/:studentId"
+                      element={<NewFeeCollection />}
+                    />
+                    <Route
+                      path="attendance/show-student-attendance"
+                      element={<ViewAttendance />}
+                    />
+                    <Route
+                      path="attendance/mark-manual-attendance"
+                      element={<ManualAttendance />}
+                    />
+                    <Route
+                      path="attendance/generate-attendance-qr"
+                      element={<GenerateQrSticker />}
+                    />
+                    <Route
+                      path="attendance/Facuities"
+                      element={<FacultyAttendance />}
+                    />
+                    <Route
+                      path="attendance/config"
+                      element={<AttendanceConfiguration />}
+                    />
+                    <Route
+                      path="/students/profile/:id"
+                      element={<ViewStudentProfile />}
+                    />
 
-                  {/* Exam Management routes */}
-                  <Route
-                    path="/schoolResults/update-results"
-                    element={<UpdateResults />}
-                  />
-                  <Route
-                    path="/schoolResults/print-rank-list"
-                    element={<PrintRankList />}
-                  />
+                    {/* Exam Management routes */}
+                    <Route
+                      path="/schoolResults/update-results"
+                      element={<UpdateResults />}
+                    />
+                    <Route
+                      path="/schoolResults/print-rank-list"
+                      element={<PrintRankList />}
+                    />
 
-                  <Route
-                    path="/schoolResults/print-toppers-list"
-                    element={<PrintTopperList />}
-                  />
+                    <Route
+                      path="/schoolResults/print-toppers-list"
+                      element={<PrintTopperList />}
+                    />
 
-                  <Route
-                    path="/schoolResults/exam-planner"
-                    element={<ExamPlanner />}
-                  />
-                  <Route
-                    path="/schoolResults/print-results"
-                    element={<PrintResult />}
-                  />
-                  <Route
-                    path="schoolResults/class-migration"
-                    element={<StudentMigration />}
-                  />
-                  {/* Exam Management routes */}
-                  <Route
-                    path="/print-id-cards"
-                    element={<IdCardGeneration />}
-                  />
+                    <Route
+                      path="/schoolResults/exam-planner"
+                      element={<ExamPlanner />}
+                    />
+                    <Route
+                      path="/schoolResults/print-results"
+                      element={<PrintResult />}
+                    />
+                    <Route
+                      path="schoolResults/class-migration"
+                      element={<StudentMigration />}
+                    />
+                    {/* Exam Management routes */}
+                    <Route
+                      path="/print-id-cards"
+                      element={<IdCardGeneration />}
+                    />
 
-                  {/* Reports Routes */}
-                  <Route
-                    path="/reports/balance-sheet"
-                    element={<BalanceSheet />}
-                  />
+                    {/* Reports Routes */}
+                    <Route
+                      path="/reports/balance-sheet"
+                      element={<BalanceSheet />}
+                    />
 
-                  <Route path="/reports/due-report" element={<DueReport />} />
-                  <Route path="/reports/demand-slip" element={<DemandSlip />} />
-                  <Route path="/reports/admit-card" element={<AdmitCard />} />
-                  <Route path="/reports/students-list" element={<StudentsList />} />
+                    <Route path="/reports/due-report" element={<DueReport />} />
+                    <Route path="/reports/demand-slip" element={<DemandSlip />} />
+                    <Route path="/reports/admit-card" element={<AdmitCard />} />
+                    <Route path="/reports/students-list" element={<StudentsList />} />
 
-                  {"Transport"}
+                    {"Transport"}
+                    <Route
+                      path="/transport/transport-location"
+                      element={<Transport />}
+                    />
+                    <Route
+                      path="/transport/transport-location/allocated-students/:locationId"
+                      element={<AllocatedStudentsLocations />}
+                    />
+                    <Route
+                      path="/transport/allocated-students/:locationId"
+                      element={<AllocatedStudentsLocations />}
+                    />
+                    <Route
+                      path="/transport/vehicle-details"
+                      element={<VehicleDetails />}
+                    />
+                    <Route
+                      path="/transport/vehicle-details/allocated-students/:vehicleId"
+                      element={<AllocatedStudents />}
+                    />
+                  </Route>
                   <Route
-                    path="/transport/transport-location"
-                    element={<Transport />}
+                    path="update-student-profile-picture"
+                    element={<StudentProfilePictureUpdater />}
                   />
-                  <Route
-                    path="/transport/transport-location/allocated-students/:locationId"
-                    element={<AllocatedStudentsLocations />}
-                  />
-                  <Route
-                    path="/transport/allocated-students/:locationId"
-                    element={<AllocatedStudentsLocations />}
-                  />
-                  <Route
-                    path="/transport/vehicle-details"
-                    element={<VehicleDetails />}
-                  />
-                  <Route
-                    path="/transport/vehicle-details/allocated-students/:vehicleId"
-                    element={<AllocatedStudents />}
-                  />
-                </Route>
-                <Route
-                  path="update-student-profile-picture"
-                  element={<StudentProfilePictureUpdater />}
-                />
-                <Route path="livePdfEditor" element={<PdfLivePreview />} />
-                <Route path="/login" element={<AuthenticationLayout />}>
-                  <Route index element={<Login />} />
-                </Route>
-              </Routes>
-            </Suspense>
+                  <Route path="livePdfEditor" element={<PdfLivePreview />} />
+                  <Route path="/login" element={<AuthenticationLayout />}>
+                    <Route index element={<Login />} />
+                  </Route>
+                </Routes>
+              </Suspense>
             </NavbarProvider>
           </SearchDialogProvider>
         </SideBarContext.Provider>
-      </FirebaseProvider>
-    </AuthProvider>
+      </AuthProvider>
+    </FirebaseProvider>
   );
 }
 
