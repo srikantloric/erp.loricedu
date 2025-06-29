@@ -159,9 +159,35 @@ function DueReportTable({ data = [], selectedMonths = [], selectedClass, selecte
       style={{ display: "grid", overflow: "hidden", border: "1px solid oklch(.905 .013 255.508)", borderRadius: "10px", boxShadow: "none" }}
       data={data}
       columns={columns}
+      renderSummaryRow={({ columns, column, index, data, currentData }) => {
+        if (column.field === 'contact') {
+          return { value: 'Total', style: { fontWeight: 'bold' } };
+        }
+        // Handle dynamic month columns
+        if (selectedMonths && selectedMonths.length > 0 && column.field && selectedMonths.map(m => m.toLowerCase()).includes(String(column.field).toLowerCase())) {
+          const monthName = String(column.field);
+          const total = data.reduce((sum, row) => {
+            const found = row.dueMonths?.find(dm => dm.month.toLowerCase() === monthName.toLowerCase());
+            return sum + (found ? found.value : 0);
+          }, 0);
+          return { value: `₹${total}`, style: { fontWeight: 'bold', textAlign: 'center' } };
+        }
+        // Paid total
+        if (column.field === 'paid') {
+          const totalPaid = data.reduce((sum, row) => sum + (row.paid || 0), 0);
+          return { value: `₹${totalPaid}`, style: { fontWeight: 'bold', textAlign: 'center' } };
+        }
+        // Due total
+        if (column.field === 'due') {
+          const totalDue = data.reduce((sum, row) => sum + (row.due || 0), 0);
+          return { value: `₹${totalDue}`, style: { fontWeight: 'bold', textAlign: 'center' } };
+        }
+
+        return null;
+      }}
       options={{
         pageSizeOptions: [5, 10, 20, 50, 100],
-        pageSize: 20,
+        pageSize: 10,
         padding: 'dense',
         headerStyle: {
           whiteSpace: 'nowrap',
