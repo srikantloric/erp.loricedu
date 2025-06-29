@@ -45,6 +45,7 @@ export type StudentDetailsType = {
   rfidCode?:string
   transport_location?: string | null;
   transport_vehicle?: string | null;
+  paidInstallments?: string[];
 };
 
 type PromotionRecord = {

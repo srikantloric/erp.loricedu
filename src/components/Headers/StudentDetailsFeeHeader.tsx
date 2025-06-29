@@ -15,7 +15,7 @@ const StudentDetailsFeeHeader: React.FC<Props> = ({
         <Box sx={{ display: "flex", flex: 1 }}>
             <div style={{ margin: "10px" }}>
                 <img
-                    src={studentMasterData.profil_url}
+                    src={studentMasterData.profil_url||"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ4YreOWfDX3kK-QLAbAL4ufCPc84ol2MA8Xg&s"}
                     width={120}
                     height={150}
                     style={{ objectFit: "cover" }}

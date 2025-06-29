@@ -21,7 +21,9 @@ import {
 import { Circle, Logout, Settings } from "@mui/icons-material";
 import { auth } from "../../firebase";
 import { useSearchDialog } from "context/SearchDialogContext";
-import { Chip } from "@mui/joy";
+import { Chip, Option, Select, Stack, Typography } from "@mui/joy";
+import { useNavbar } from "context/NavbarContext";
+import { useAuth } from "context/AuthContext";
 
 function Navbar() {
   const [screenSize, setScreenSize] = useState(getCurrentDimension());
@@ -39,6 +41,8 @@ function Navbar() {
 
   const { openDialog } = useSearchDialog();
 
+  const { session, setSession } = useNavbar();
+
   const notificationsLabel = (count: number) => {
     if (count === 0) {
       return "no notifications";
@@ -53,6 +57,10 @@ function Navbar() {
   const handleOnClick = () => {
     status.toggle();
   };
+
+  //auth context
+  const {  displayName, userType } = useAuth()
+
 
   function getCurrentDimension() {
     return {
@@ -100,7 +108,11 @@ function Navbar() {
             </div>
           )}
         </div>
+
         <div className="navbar-rightsection">
+
+
+
           {screenSize.width > 768 && (
             <Chip
               color="primary"
@@ -110,6 +122,11 @@ function Navbar() {
               {environment}
             </Chip>
           )}
+
+          <Select sx={{ mr: 2 }} size="sm" value={session} onChange={(e, val) => setSession(val!)} variant="soft">
+            <Option value="2025-26">2025-26</Option>
+            <Option value="2024-25">2024-25</Option>
+          </Select>
 
           {screenSize.width > 768 && (
             <>
@@ -156,11 +173,10 @@ function Navbar() {
                   backgroundColor: "var(--bs-orange)",
                 }}
               >
-                A
+                {displayName ? displayName.charAt(0).toUpperCase() : "U"}
               </Avatar>
             </IconButton>
           </Tooltip>
-
           <Menu
             anchorEl={anchorEl}
             id="account-menu"
@@ -197,7 +213,16 @@ function Navbar() {
             anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
           >
             <MenuItem onClick={handleClose}>
-              <Avatar /> admin@apxschool.org
+              <Avatar />
+              <Stack display={"flex"} direction={"column"}>
+                <Typography level="title-md">
+                  {displayName}
+                </Typography>
+                <Typography level="body-sm" sx={{ color: "text.secondary" }}>
+                  {userType}
+                </Typography>
+              </Stack>
+
             </MenuItem>
 
             <Divider />

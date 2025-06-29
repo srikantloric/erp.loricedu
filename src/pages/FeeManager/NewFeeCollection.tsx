@@ -1,5 +1,5 @@
 import { InfoOutlined, Pageview, Restore } from "@mui/icons-material"
-import { Box, Button, Checkbox, Chip, Divider, FormControl, FormLabel, Input, Stack, Typography } from "@mui/joy"
+import { Box, Button, Checkbox, Chip, Divider, FormControl, FormLabel, Input, Option, Select, Stack, Typography } from "@mui/joy"
 import PageHeaderWithHelpButton from "components/Breadcrumbs/PageHeaderWithHelpButton"
 import MonthCard from "components/Card/MonthCard"
 import Navbar from "components/Navbar/Navbar"
@@ -11,7 +11,7 @@ import CurrencyRupeeIcon from '@mui/icons-material/CurrencyRupee';
 import { useParams } from "react-router-dom"
 import { StudentDetailsType } from "types/student"
 import { enqueueSnackbar } from "notistack"
-import { doc, getDoc } from "firebase/firestore"
+import { doc, getDoc, getDocs, Timestamp } from "firebase/firestore"
 import { useFirebase } from "context/firebaseContext"
 import StudentDetailsFeeHeader from "components/Headers/StudentDetailsFeeHeader"
 import TransportIcon from "assets/bus-stop-icon.png"
@@ -19,8 +19,13 @@ import FeeHeadersTable from "components/FeeManager/FeeHeadersTable"
 import { z as Z } from "zod"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { FormHelperText } from "@mui/material"
+import { CircularProgress, FormHelperText } from "@mui/material"
 import { numberToWords } from "utilities/UtilitiesFunctions"
+import { TransportLocationType, TransportVehicleType } from "types/transport"
+import { useNavbar } from "context/NavbarContext"
+import { collection, addDoc } from "firebase/firestore";
+import { arrayUnion, updateDoc } from "firebase/firestore";
+
 
 // Use a schema that allows concessionTotal to be validated against the current calculated amountTotal
 const schema = Z.object({
@@ -57,26 +62,19 @@ function NewFeeCollection() {
 
     const [studentDetails, setStudentDetails] = useState<StudentDetailsType | null>(null)
     const [feeHeaders, setFeeHeaders] = useState<FeeHeadType[]>([])
+    const [finalHeaders, setFinalHeaders] = useState<FeeHeadType[]>([]);
 
     // const [amountTotal, setAmountTotal] = useState<number>(0);
     const [installmentTotal, setInstallmentTotal] = useState<number>(0);
-    const [preDuesTotal, _setPreDuesTotal] = useState<number>(0);
+    const [preDuesTotal, setPreDuesTotal] = useState<number>(0);
     const [currentDue, setCurrentDue] = useState<number>(0);
 
-    const [installments, setInstallments] = useState<InstallmentChallanType[]>([
-        { id: "APRIL_2025_2026", month: "April", year: "2025", session: "2025-26", status: "Paid" },
-        { id: "MAY_2025_2026", month: "May", year: "2025", session: "2025-26", status: "Pending" },
-        { id: "JUNE_2025_2026", month: "June", year: "20205", session: "2025-26", status: "Pending" },
-        { id: "JULY_2025_2026", month: "July", year: "2025", session: "2025-26", status: "Pending" },
-        { id: "AUGUST_2025_2026", month: "August", year: "2025", session: "2025-26", status: "Pending" },
-        { id: "SEPTEMPBER_2025_2026", month: "Setp", year: "2025", session: "2025-26", status: "Pending" },
-        { id: "OCTOBER_2025_2026", month: "October", year: "2025", session: "2025-26", status: "Pending" },
-        { id: "NOVEMBER_2025_2026", month: "November", year: "2025", session: "2025-26", status: "Pending" },
-        { id: "DECEMBER_2025_2026", month: "December", year: "2025", session: "2025-26", status: "Pending" },
-        { id: "JANUARY_2025_2026", month: "January", year: "2026", session: "2025-26", status: "Pending" },
-        { id: "FEBURARY_2025_2026", month: "Feburary", year: "2026", session: "2025-26", status: "Pending" },
-        { id: "MARCH_2025_2026", month: "March", year: "2026", session: "2025-26", status: "Pending" },
-    ]);
+    //Transport
+    const [studentTransportDetails, setStudentTransportDetails] = useState<TransportLocationType & TransportVehicleType | null>(null);
+    //Loading
+    const [loading, setLoading] = useState<boolean>(false);
+
+    const [installments, setInstallments] = useState<InstallmentChallanType[]>([]);
 
 
     const {
@@ -104,8 +102,11 @@ function NewFeeCollection() {
         }
     });
 
+
+    //hooks
     const { db } = useFirebase()
     const { studentId } = useParams();
+    const { session } = useNavbar();
 
     // Watch the form fields to get their current values
     const lateFine = watch("lateFine");
@@ -123,15 +124,92 @@ function NewFeeCollection() {
         const docPath = doc(db, "STUDENTS", studentId);
         const studentData = await getDoc(docPath);
         setStudentDetails(studentData.data() as StudentDetailsType);
+        return studentData.data() as StudentDetailsType;
     }
 
-    useEffect(() => {
-        if (studentId) {
-            fetchStudentDetails(studentId);
-        } else {
-            enqueueSnackbar("Student ID not found", { variant: "error" })
+    const initAll = async () => {
+        if (!studentId) {
+            enqueueSnackbar("Student ID not found", { variant: "error" });
+            return;
         }
-    }, [])
+
+        // Fetch student details
+        const studentDetails = await fetchStudentDetails(studentId);
+
+        //Fetch transport details
+        fetchStudentTransportDetails(studentDetails.transport_location!, studentDetails.transport_vehicle!);
+
+        // Setup Fee Headers based on installments
+
+        const paidInstallments = studentDetails.paidInstallments
+
+        // Helper to get month names
+        const monthNames = [
+            "April", "May", "June", "July", "August", "September",
+            "October", "November", "December", "January", "February", "March"
+        ];
+
+        // Extract session years
+        let sessionStart = 0, sessionEnd = 0;
+        if (session && typeof session === "string") {
+            const [start, end] = session.split("-").map(Number);
+            sessionStart = start;
+            sessionEnd = end;
+        }
+
+        // Build installments array
+        const generatedInstallments: InstallmentChallanType[] = monthNames.map((month, idx) => {
+            // April (idx 0) to December (idx 8) are sessionStart, Jan/Feb/Mar are sessionEnd
+            const year = idx < 9 ? sessionStart : sessionEnd;
+            // Format month number as 2-digit
+            const monthNum = (idx + 4) > 12 ? (idx - 8) : (idx + 4);
+            const monthNumStr = monthNum.toString().padStart(2, "0");
+            // ID format: INST_202526_04
+            const id = `INST_${sessionStart}${sessionEnd}_${monthNumStr}`;
+            // Check if paid
+
+            const status = paidInstallments && paidInstallments.includes(id) ? "Paid" : "Pending";
+            return {
+                id: id, month: month, year: year.toString(), session: `${sessionStart}-${sessionEnd}`, status: status
+            } as InstallmentChallanType;
+        });
+        setInstallments(generatedInstallments);
+
+        // Calculate pre dues total
+        const subColRef = collection(db, "STUDENTS", studentId, "FEE_COLLECTIONS");
+
+        const feeCollectionSnap = await getDocs(subColRef);
+
+        const initialFeeHeaders: FeeHeadType[] = [];
+
+        feeCollectionSnap.forEach((doc) => {
+            const data = doc.data()
+            console.log("Fee Collection Data:", data,doc.id);
+            if (data.dueAmount && data.dueAmount > 0) {
+                setPreDuesTotal((prev) => prev + data.dueAmount);
+                const headers = data.headers as FeeHeadType[];
+
+                console.log("Headers Data:", headers);
+
+                initialFeeHeaders.push(...headers.map((header: FeeHeadType) => ({
+                    ...header,
+                    previousDues: header.dueAmount,
+                    amount: 0
+                })));
+
+            }
+        }
+        );
+
+        setFeeHeaders(initialFeeHeaders);
+
+
+    }
+
+    //Main useEffect
+    useEffect(() => {
+        initAll();
+    }, [session, studentId, db]);
 
 
     const handleInstallmentSelection = (selectedInstallment: any) => {
@@ -209,8 +287,139 @@ function NewFeeCollection() {
         });
     }, [payableAmount, setValue]);
 
+
+    //fetch transport details
+
+    const fetchStudentTransportDetails = async (trasportLocationId: string, transportVehicleId: string) => {
+        try {
+            setStudentTransportDetails(null);
+            console.log("Fetching student transport details...");
+            setLoading(true);
+            const transportLocationDoc = await getDoc(doc(db, "TRANSPORT", "transportLocations"));
+            if (transportLocationDoc.exists()) {
+                const { locations, vehicles } = transportLocationDoc.data() || {};
+                const location = locations?.find((loc: TransportLocationType) => loc.locationId === trasportLocationId);
+                const vehicle = vehicles?.find((veh: TransportVehicleType) => veh.vehicleId === transportVehicleId);
+
+
+                setStudentTransportDetails({ ...location, ...vehicle });
+
+
+                setLoading(false);
+
+            } else {
+                setLoading(false);
+                console.log("No transport details found!");
+            }
+        } catch (error) {
+            setLoading(false);
+            console.error("Error fetching student transport details:", error);
+        }
+    };
+
+
+
+
     const onSubmit = (data: PayableFormFields) => {
-        console.log("Form Data:", data);
+
+        if (!studentDetails) {
+            enqueueSnackbar("Student details not found", { variant: "error" });
+            return;
+        }
+
+        const saveFeeCollection = async () => {
+            try {
+                if (!studentId) {
+                    enqueueSnackbar("Student ID missing", { variant: "error" });
+                    return;
+                }
+                setLoading(true);
+
+                const dueAmount = data.payableAmount - data.paidAmount;
+
+
+
+                // Prepare the data to save
+                const feeCollectionData = {
+                    studentId,
+                    amountTotal: data.amountTotal,
+                    paidAmount: data.paidAmount,
+                    payableAmount: data.payableAmount,
+                    dueAmount: dueAmount,
+                    concessionTotal: data.concessionTotal,
+                    lateFine: data.lateFine,
+                    posCharge: data.posCharge,
+                    miscTotal: data.miscTotal,
+                    consessionReason: data.consessionReason,
+                    headers: finalHeaders,
+                    paymentMethod: data.paymentMethod,
+                    paymentStatus: dueAmount <= 0 ? "Paid" : "Pending",
+                    createdAt: Timestamp.now(),
+                    updatedAt: Timestamp.now(),
+                };
+
+
+                const subColRef = collection(db, "STUDENTS", studentId, "FEE_COLLECTIONS");
+                await addDoc(subColRef, feeCollectionData);
+
+                const studentRef = doc(db, "STUDENTS", studentId);
+
+                // Update the student's paid installments
+                await updateDoc(studentRef, {
+                    paidInstallments: arrayUnion(...finalHeaders.map(h => h.headerId)),
+                });
+
+                enqueueSnackbar("Fee collection saved successfully!", { variant: "success" });
+
+                setInstallments((prev) =>
+                    prev.map(inst =>
+                        finalHeaders.some(header => header.headerId === inst.id)
+                            ? { ...inst, status: "Paid" }
+                            : inst
+                    )
+                );
+
+                resetFeeHeaders(finalHeaders)
+
+
+            } catch (error) {
+                enqueueSnackbar("Failed to save fee collection", { variant: "error" });
+                console.error("Error saving fee collection:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        saveFeeCollection();
+
+    }
+
+
+    const resetFeeHeaders = (finalFeeHeaders?: FeeHeadType[]) => {
+        // Reset all form fields to default values
+        setValue("lateFine", 0);
+        setValue("concessionTotal", 0);
+        setValue("paidAmount", 0);
+        setValue("consessionReason", "");
+        setValue("payableAmount", 0);
+        setValue("miscTotal", 0);
+        setValue("posCharge", 0);
+        setValue("paymentMethod", "");
+        setValue("printPDF", true);
+        // Reset all installments to Pending except Paid
+        setInstallments((prev) => prev.map(inst => ({
+            ...inst,
+            status: inst.status === "Paid" ? "Paid" : "Pending"
+        })));
+        // Clear feeHeaders
+
+        if (finalFeeHeaders) {
+            const headsNew = finalFeeHeaders.filter(header => header.dueAmount && header.dueAmount > 0)
+            console.log("Resetting Fee Headers:", headsNew);
+            setFeeHeaders(headsNew);
+        }
+
+
     }
 
     return (
@@ -219,6 +428,7 @@ function NewFeeCollection() {
                 <Navbar />
                 <LSPage>
                     <PageHeaderWithHelpButton title="Students Fee Collection" />
+
                     <br />
                     <Stack direction={{ xs: "column", lg: "row" }} flex={1} spacing={2}>
                         <Stack sx={{ flex: 1, }} spacing={2} >
@@ -235,6 +445,7 @@ function NewFeeCollection() {
 
                                 </Box>
                             </Box>
+                            {loading && <CircularProgress />}
                             <Box>
                                 <Typography level="title-lg" startDecorator={<InfoOutlined />} color="primary">Transport Details</Typography>
                                 <Box sx={{ border: "1px solid oklch(.900 .013 255.508)", borderRadius: "10px", padding: "8px", display: "flex", mt: 1, gap: 1, }}>
@@ -249,12 +460,12 @@ function NewFeeCollection() {
 
                                                 endDecorator={<Pageview sx={{ mt: 0.5 }} color="primary" />}
                                             >
-                                                Siyatand
+                                                {studentTransportDetails?.pickupPointName || "N/A"}
                                             </Typography>
                                         </Stack>
                                         <Stack direction={"column"}>
                                             <Typography level="body-sm">Distance From School</Typography>
-                                            <Typography level="title-lg" >5KM</Typography>
+                                            <Typography level="title-lg" >{studentTransportDetails?.distance}KM</Typography>
                                         </Stack>
                                         <Stack direction={"column"}>
                                             <Typography level="body-sm">Vehicle</Typography>
@@ -266,19 +477,18 @@ function NewFeeCollection() {
                                                 // color="primary"
                                                 endDecorator={<Pageview sx={{ mt: 0.5 }} color="primary" />}
                                             >
-                                                Van 1
+                                                {studentTransportDetails?.vehicleName || "N/A"}
                                             </Typography>
                                         </Stack>
                                         <Stack direction={"column"}>
                                             <Typography level="body-sm">Driver</Typography>
-                                            <Typography level="title-lg" >Rohit </Typography>
+                                            <Typography level="title-lg" >{studentTransportDetails?.driverName || "N/A"} </Typography>
                                         </Stack>
                                         <Stack direction={"column"}>
                                             <Typography level="body-sm">Transport Fee</Typography>
-                                            <Typography level="title-lg" >₹400</Typography>
+                                            <Typography level="title-lg" >₹{studentTransportDetails?.monthlyCharge || "N/A"}</Typography>
                                         </Stack>
                                     </Stack>
-
                                 </Box>
                             </Box>
                             <Box>
@@ -287,7 +497,7 @@ function NewFeeCollection() {
                                     dueAmount={currentDue}
                                     consessionAmount={concessionTotal}
                                     onChangeHeads={(updatedHeads) => {
-                                        console.log("Updated Heads:", updatedHeads);
+                                        setFinalHeaders(updatedHeads);
                                     }}
                                 />
                             </Box>
@@ -296,6 +506,7 @@ function NewFeeCollection() {
                         <Box sx={{ width: "550px" }}  >
                             <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: "0px" }}>
                                 <Typography level="title-lg" startDecorator={<InfoOutlined />} color="primary">Installement/Fee Months Selection</Typography>
+                                {session}
                                 <Box
                                     sx={{
                                         borderTop: "1px solid var(--bs-gray-300)",
@@ -312,25 +523,9 @@ function NewFeeCollection() {
                                         variant="soft"
                                         color="danger"
                                         startDecorator={<Restore />}
-                                        onClick={() => {
-                                            // Reset all form fields to default values
-                                            setValue("lateFine", 0);
-                                            setValue("concessionTotal", 0);
-                                            setValue("paidAmount", 0);
-                                            setValue("consessionReason", "");
-                                            setValue("payableAmount", 0);
-                                            setValue("miscTotal", 0);
-                                            setValue("posCharge", 0);
-                                            setValue("paymentMethod", "");
-                                            setValue("printPDF", true);
-                                            // Reset all installments to Pending except Paid
-                                            setInstallments((prev) => prev.map(inst => ({
-                                                ...inst,
-                                                status: inst.status === "Paid" ? "Paid" : "Pending"
-                                            })));
-                                            // Clear feeHeaders
-                                            setFeeHeaders([]);
-                                        }}
+                                        onClick={() =>
+                                            resetFeeHeaders()
+                                        }
                                     >
                                         Reset Selection
                                     </Button>
@@ -493,7 +688,7 @@ function NewFeeCollection() {
                                         </Stack>
                                         <Stack direction={"row"} justifyContent={"center"} alignItems={"center"} spacing={2}>
                                             <Checkbox label="Print PDF" />
-                                            <Button type="submit">Collect/Save Fee</Button>
+                                            <Button type="submit" >Collect/Save Fee</Button>
                                         </Stack>
                                     </Stack>
                                 </Box>
@@ -504,13 +699,11 @@ function NewFeeCollection() {
                                 <Stack sx={{ flex: 1 }} spacing={2} >
                                     <FormControl>
                                         <FormLabel>Payment Methods</FormLabel>
-                                        <Input sx={{
-                                            width: "150px",
-                                            fontWeight: "bold",
-                                        }}
-                                            value={0}
-                                            color="success"
-                                            startDecorator={<CurrencyRupeeIcon fontSize="small" />} />
+                                        <Select defaultValue="cash">
+                                            <Option value="cash">Cash</Option>
+                                            <Option value="upi-bank">UPI/BANK Transfer</Option>
+                                            <Option value="cheque">Cheque</Option>
+                                        </Select>
                                     </FormControl>
                                 </Stack>
                             </Box>
