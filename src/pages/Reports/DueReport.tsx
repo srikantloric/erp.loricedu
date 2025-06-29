@@ -7,12 +7,13 @@ import LSPage from "components/Utils/LSPage";
 import PageContainer from "components/Utils/PageContainer";
 import { SCHOOL_CLASSES, SCHOOL_FEE_MONTHS, SCHOOL_SESSIONS } from "config/schoolConfig";
 import { enqueueSnackbar } from 'notistack';
-import { useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { getClassNameByValue, makeDoubleDigit } from 'utilities/UtilitiesFunctions';
 import { StudentDetailsType } from 'types/student';
 import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
 import { useFirebase } from 'context/firebaseContext';
 import DueReportTable, { DueReportRow } from 'components/Tables/DueReportTable';
+import SideBarContext from 'context/SidebarContext';
 
 
 function DueReport() {
@@ -24,6 +25,11 @@ function DueReport() {
 
     //Get Firebase DB instance
     const { db } = useFirebase();
+    const { setSidebarOpen } = useContext(SideBarContext);
+
+    useEffect(() => {
+        setSidebarOpen(false);
+    }, [setSidebarOpen]);
 
     async function getDueListByClass(className: number, selectedMonths: number[]) {
         const dueList: any[] = [];
@@ -126,7 +132,6 @@ function DueReport() {
     }
 
 
-    console.log("Due Student List", dueStudentList);
     return (
         <PageContainer>
             <Navbar />
