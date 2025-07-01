@@ -76,7 +76,7 @@ function DueReport() {
                         const challanData = challanSnap.data();
                         if (challanData) {
                             monthPaid = challanData.amountPaid || 0;
-                            monthDue = (challanData.totalAmount || 0) - (challanData.amountPaid || 0);
+                            monthDue = (challanData.totalAmount || 0) - (challanData.amountPaid || 0) - (challanData.feeDiscount || 0) - (challanData.feeConsession || 0);
                         }
                     }
                     if (monthDue > 0) {
@@ -222,7 +222,7 @@ function DueReport() {
                 {dueStudentList.length > 0 &&
                     <DueReportTable
                         selectedSession={selectedSession!}
-                        selectedClass={""+getClassNameByValue(selectedClass!)}
+                        selectedClass={"" + getClassNameByValue(selectedClass!)}
                         data={dueStudentList}
                         selectedMonths={
                             selectedMonths
