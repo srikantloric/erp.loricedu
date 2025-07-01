@@ -108,22 +108,27 @@ const StudentsList = () => {
     | "dob"
     | ""
   >("");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [columnSelectionOpen, setColumnSelectionOpen] = useState(false);
   const [selectedColumns, setSelectedColumns] =
     useState<Column[]>(defaultColumns);
   const [customFields, setCustomFields] = useState<CustomField[]>([]);
   const [newFieldName, setNewFieldName] = useState("");
   const { db } = useFirebase();
+
   const sortData = (data: StudentDetailsType[]) => {
     if (!sortingPreference) return data;
+
     return [...data].sort((a, b) => {
       const aValue = (a as any)[sortingPreference];
       const bValue = (b as any)[sortingPreference];
 
       // Handle null/undefined values
       if (!aValue && !bValue) return 0;
-      if (!aValue) return 1;
-      if (!bValue) return -1;
+      if (!aValue) return sortOrder === "asc" ? 1 : -1;
+      if (!bValue) return sortOrder === "asc" ? -1 : 1;
+
+      let comparison = 0;
 
       // Handle date fields
       if (
@@ -133,13 +138,12 @@ const StudentsList = () => {
         const aDate = new Date(aValue).getTime();
         const bDate = new Date(bValue).getTime();
         if (isNaN(aDate) && isNaN(bDate)) return 0;
-        if (isNaN(aDate)) return 1;
-        if (isNaN(bDate)) return -1;
-        return aDate - bDate;
+        if (isNaN(aDate)) return sortOrder === "asc" ? 1 : -1;
+        if (isNaN(bDate)) return sortOrder === "asc" ? -1 : 1;
+        comparison = aDate - bDate;
       }
-
       // Handle numeric fields (including class_roll, admission_no)
-      if (
+      else if (
         sortingPreference === "class_roll" ||
         sortingPreference === "admission_no" ||
         (typeof aValue === "number" && typeof bValue === "number")
@@ -147,13 +151,17 @@ const StudentsList = () => {
         const aNum = Number(aValue);
         const bNum = Number(bValue);
         if (isNaN(aNum) && isNaN(bNum)) return 0;
-        if (isNaN(aNum)) return 1;
-        if (isNaN(bNum)) return -1;
-        return aNum - bNum;
+        if (isNaN(aNum)) return sortOrder === "asc" ? 1 : -1;
+        if (isNaN(bNum)) return sortOrder === "asc" ? -1 : 1;
+        comparison = aNum - bNum;
+      }
+      // Handle string fields (including student_name)
+      else {
+        comparison = String(aValue).localeCompare(String(bValue));
       }
 
-      // Handle string fields (including student_name)
-      return String(aValue).localeCompare(String(bValue));
+      // Apply sort order (asc/desc)
+      return sortOrder === "asc" ? comparison : -comparison;
     });
   };
 
@@ -487,6 +495,24 @@ const StudentsList = () => {
     enqueueSnackbar("Custom column removed", { variant: "success" });
   };
 
+  // Handle sort order change and re-sort existing data
+  const handleSortOrderChange = (newOrder: "asc" | "desc") => {
+    setSortOrder(newOrder);
+    if (students.length > 0 && sortingPreference) {
+      const sortedData = sortData(students);
+      setStudents(sortedData);
+    }
+  };
+
+  // Handle sorting preference change and re-sort existing data
+  const handleSortingPreferenceChange = (newPreference: string) => {
+    setSortingPreference(newPreference as any);
+    if (students.length > 0 && newPreference) {
+      const sortedData = sortData(students);
+      setStudents(sortedData);
+    }
+  };
+
   return (
     <PageContainer>
       <Navbar />
@@ -556,7 +582,9 @@ const StudentsList = () => {
                   <Select
                     placeholder="Select sorting preference"
                     value={sortingPreference}
-                    onChange={(e, val) => setSortingPreference(val || "")}
+                    onChange={(e, val) =>
+                      handleSortingPreferenceChange(val || "")
+                    }
                     sx={{ minWidth: 200 }}
                   >
                     <Option value="">None</Option>
@@ -571,6 +599,23 @@ const StudentsList = () => {
                   </Select>
                 </FormControl>
               </Box>
+
+              <Box>
+                <FormControl>
+                  <FormLabel>Sort Order</FormLabel>
+                  <Select
+                    placeholder="Select sort order"
+                    value={sortOrder}
+                    onChange={(e, val) => val && handleSortOrderChange(val)}
+                    disabled={!sortingPreference}
+                    sx={{ minWidth: 150 }}
+                  >
+                    <Option value="asc">Ascending</Option>
+                    <Option value="desc">Descending</Option>
+                  </Select>
+                </FormControl>
+              </Box>
+
               <Box>
                 <Button onClick={handelFetchStudentDetails} sx={{ mt: 3 }}>
                   Fetch Students
@@ -761,6 +806,12 @@ const StudentsList = () => {
             <Chip color="primary" variant="soft">
               Total Students: {students.length}
             </Chip>
+            {sortingPreference && (
+              <Chip color="success" variant="soft">
+                Sorted by: {sortingPreference.replace(/_/g, " ")} (
+                {sortOrder === "asc" ? "Ascending" : "Descending"})
+              </Chip>
+            )}
           </Stack>
         )}
 
