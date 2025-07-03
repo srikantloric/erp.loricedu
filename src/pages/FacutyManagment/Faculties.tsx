@@ -81,7 +81,7 @@ function Faculties() {
           >
             {facultiesList &&
               facultiesList.map((dta) => {
-                return <Card facultyData={dta} key={dta.id} />;
+                return <Card facultyData={dta} key={dta.facultyId} />;
               })}
           </div>
         </LSPage>
