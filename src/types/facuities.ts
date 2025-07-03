@@ -1,20 +1,37 @@
 import { FieldValue, Timestamp } from "firebase/firestore";
+
 export interface FacultyType {
-  id: string;
+  facultyId: string;
   facultyName: string;
-  facultyEmail: string;
+  facultyEmail?: string;
   facultyPhone: string;
-  facultyAddress: string;
+  facultyAddress?: string;
   facultyGender: string;
-  facultyImage: string;
-  facultyImageThumb: string;
-  facultyAadhar: string;
-  facultyPass: string;
-  facultyQualification: string;
+  facultyImage?: string;
+  facultyImageThumb?: string;
+  facultyAadhar?: string;
+  facultyPass?: string;
+  facultyQualification?: string;
   facultySpecification: string;
   facultyDob: string;
-  facultyDoj: string;
+  facultyDoj?: string;
   isFromManagement: boolean;
+  isSendingSms?: boolean
+  rfidCode?: string
+  isActive: boolean
+}
+
+export type AttenzyAttendanceType = {
+  checkIn?: Timestamp,
+  checkOut?: Timestamp,
+  date: string,
+  id: string,
+  name: string,
+  phone: string,
+  profileImage: string,
+  status: string,
+  studentId: string,
+  timestamp: Timestamp
 }
 
 

@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import {  collection, getDocs } from "firebase/firestore";
+import { collection, getDocs } from "firebase/firestore";
 import { FacultyType } from "types/facuities";
 import { query, where } from "firebase/firestore";
 import { getFirestoreInstance } from "context/firebaseUtility";
@@ -25,7 +25,7 @@ export const fetchTeacher = createAsyncThunk<FacultyType[], void>(
     const querySnapshot = await getDocs(facultyQuery);
     const teachers: FacultyType[] = querySnapshot.docs.map((doc) => ({
       ...doc.data(),
-      id: doc.id,
+      facultyId: doc.id,
     })) as FacultyType[];
     return teachers;
   }
