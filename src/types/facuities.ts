@@ -1,39 +1,40 @@
 import { FieldValue, Timestamp } from "firebase/firestore";
 export interface FacultyType {
   id: string;
-  faculty_name: string;
-  faculty_email: string;
-  faculty_phone: string;
-  faculty_address: string;
-  faculty_gender: string;
-  faculty_image: string;
-  faculty_image_thumb: string;
-  faculty_aadhar: string;
-  faculty_pass: string;
-  faculty_qualification: string;
-  faculty_specification: string;
-  faculty_dob:string;
-  faculty_doj:string
+  facultyName: string;
+  facultyEmail: string;
+  facultyPhone: string;
+  facultyAddress: string;
+  facultyGender: string;
+  facultyImage: string;
+  facultyImageThumb: string;
+  facultyAadhar: string;
+  facultyPass: string;
+  facultyQualification: string;
+  facultySpecification: string;
+  facultyDob: string;
+  facultyDoj: string;
+  isFromManagement: boolean;
 }
 
 
 export type FacultyAttendanceShema = {
   isSmartAttendance?: boolean;
 
-  faculty_phone?: number;
+  facultyPhone?: number;
   comment?: string;
- 
-  faculty_image?: string;
-  faculty_name: string;
+
+  facultyImage?: string;
+  facultyName: string;
   id: string;
   createdAt:
-    | Timestamp
-    | FieldValue
-    | Date;
+  | Timestamp
+  | FieldValue
+  | Date;
   attendanceDate: string;
   attendanceStatus: string;
 
-  
+
 };
 export interface facultyAttendanceGlobalSchema {
   totalAbsent?: number;

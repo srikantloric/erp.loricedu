@@ -9,9 +9,10 @@ import PersonIcon from "@mui/icons-material/Person";
 import GrainIcon from "@mui/icons-material/Grain";
 import { Breadcrumbs, Typography } from "@mui/material";
 import { Box, Button, Input, LinearProgress } from "@mui/joy";
-import { Add, Search } from "@mui/icons-material";
+import { Search } from "@mui/icons-material";
 import { RootState, useDispatch, useSelector } from "store";
 import { fetchTeacher } from "store/reducers/facultiesSlice";
+import { User } from "iconsax-react";
 
 function Faculties() {
   const facultiesList = useSelector((state: RootState) => state.faculties.teacherArray);
@@ -35,7 +36,7 @@ function Faculties() {
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
-              border:"1px solid oklch(.905 .013 255.508)"
+              border: "1px solid oklch(.905 .013 255.508)"
             }}
           >
             <Breadcrumbs aria-label="breadcrumb">
@@ -60,9 +61,9 @@ function Faculties() {
             </Breadcrumbs>
             <Button
               variant="soft"
-              startDecorator={<Add />}
+              startDecorator={<User />}
             >
-              Add
+              Add New Faculty
             </Button>
           </Box>
           <br />

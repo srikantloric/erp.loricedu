@@ -8,6 +8,8 @@
     "@dnd-kit/utilities": "^3.2.2",
     "@emotion/react": "^11.10.6",
     "@emotion/styled": "^11.10.6",
+    "@fullcalendar/daygrid": "^6.1.18",
+    "@fullcalendar/react": "^6.1.18",
     "@hookform/resolvers": "^3.3.4",
     "@material-table/core": "^6.3.0",
     "@material-table/exporters": "^1.2.18",

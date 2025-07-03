@@ -2,13 +2,20 @@ import { useState } from "react";
 import Styles from "./Cards.module.scss";
 import { Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import { FacultyType } from "types/facuities";
 // import LOGO from "../../assets/logotransparent.png";
 
-function Card({ facultyData }) {
-  const navigate = useNavigate();
-  const [imageLoaded, setImageLoaded] = useState();
 
-  const FacultyDetail = (data) => {
+
+interface CardProps {
+  facultyData: FacultyType;
+}
+
+function Card({ facultyData }: CardProps) {
+  const navigate = useNavigate();
+  const [imageLoaded, setImageLoaded] = useState<boolean>(false);
+
+  const FacultyDetail = (data: string | number) => {
     navigate(`/Faculties/${data}`);
   };
 
@@ -23,29 +30,25 @@ function Card({ facultyData }) {
           <div
             className={Styles.blurLoading}
             style={{
-              backgroundImage: `url(${facultyData.faculty_image_thumb})`,
+              backgroundImage: `url(${facultyData.facultyImageThumb})`,
             }}
           >
             <img
-              className={`${Styles.facultyImage} ${imageLoaded && Styles.loaded
-                }`}
-              src={facultyData.faculty_image}
+              className={`${Styles.facultyImage} ${imageLoaded && Styles.loaded}`}
+              src={facultyData.facultyImage}
               loading="lazy"
               onLoad={handleImageOnLoad}
               alt="facultyImage"
-            ></img>
+            />
           </div>
 
-          {facultyData.is_from_management && imageLoaded ? (
-            <img className={Styles.badge}
-              alt="badge"
-            ></img>
+          {facultyData.isFromManagement && imageLoaded ? (
+            <img className={Styles.badge} alt="badge" />
           ) : null}
         </div>
         <div className={Styles.cardBody}>
-          <h3>{facultyData.faculty_name}</h3>
-          <p>{facultyData.faculty_specification}</p>
-          <h4>{facultyData.doj}</h4>
+          <h3>{facultyData.facultyName}</h3>
+          <p>{facultyData.facultySpecification}</p>
         </div>
         <div className={Styles.cardFooter}>
           <Button

@@ -1,8 +1,8 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { getFirestore, collection, getDocs } from "firebase/firestore";
+import {  collection, getDocs } from "firebase/firestore";
 import { FacultyType } from "types/facuities";
-
-const db = getFirestore();
+import { query, where } from "firebase/firestore";
+import { getFirestoreInstance } from "context/firebaseUtility";
 
 interface FacultyState {
   teacherArray: FacultyType[];
@@ -14,13 +14,19 @@ interface FacultyState {
 export const fetchTeacher = createAsyncThunk<FacultyType[], void>(
   "teachers/fetchTeacher",
   async () => {
-    const querySnapshot = await getDocs(collection(db, "FACULTIES"));
+
+    const db = await getFirestoreInstance()
+    console.log("Fetching teachers...");
+    const facultyQuery = query(
+      collection(db, "STUDENTS"),
+      where("isFaculty", "==", true),
+      where("isActive", "==", true)
+    );
+    const querySnapshot = await getDocs(facultyQuery);
     const teachers: FacultyType[] = querySnapshot.docs.map((doc) => ({
       ...doc.data(),
       id: doc.id,
     })) as FacultyType[];
-
-    sessionStorage.setItem("faculties_list", JSON.stringify(teachers));
     return teachers;
   }
 );

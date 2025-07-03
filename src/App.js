@@ -31,6 +31,7 @@ import AllocatedStudentsLocations from "pages/transport/vehicleDetailsTabs/Alloc
 import NewFeeCollection from "pages/FeeManager/NewFeeCollection";
 import StudentsList from "pages/Reports/StudentsList";
 import { NavbarProvider } from "context/NavbarContext";
+import IotAttendance from "pages/Attendance/iotAttendanance/IotAttendance";
 
 // Lazy Loaded Components
 
@@ -182,8 +183,8 @@ function App() {
                       element={<FacultyAttendance />}
                     />
                     <Route
-                      path="attendance/config"
-                      element={<AttendanceConfiguration />}
+                      path="attendance/iot-attendance"
+                      element={<IotAttendance />}
                     />
                     <Route
                       path="/students/profile/:id"
