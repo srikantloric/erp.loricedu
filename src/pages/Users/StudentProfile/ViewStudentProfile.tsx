@@ -6,10 +6,8 @@ import ListItemDecorator from "@mui/joy/ListItemDecorator";
 import PageContainer from "components/Utils/PageContainer";
 import Navbar from "components/Navbar/Navbar";
 import LSPage from "components/Utils/LSPage";
-import BreadCrumbsV2 from "components/Breadcrumbs/BreadCrumbsV2";
-import AccountCircleIcon from "@mui/icons-material/AccountCircle";
-import { Book, Bus,  Profile, Setting4, UserEdit } from "iconsax-react";
-import { Box, TabPanel, Typography } from "@mui/joy";
+import { Book, Bus, Profile, Setting4, UserEdit } from "iconsax-react";
+import { Box, TabPanel } from "@mui/joy";
 import ProfileTab from "./Tabs/ProfileTab";
 import PersonalTab from "./Tabs/PersonalTab";
 import { useSelector } from "react-redux";
@@ -20,6 +18,8 @@ import { enqueueSnackbar } from "notistack";
 import { doc, getDoc } from "firebase/firestore";
 import { useFirebase } from "context/firebaseContext";
 import TransportTab from "./Tabs/TransportTab";
+import AttendanceTab from "./Tabs/AttendanceTab";
+import PageHeaderWithHelpButton from "components/Breadcrumbs/PageHeaderWithHelpButton";
 
 interface IStudentReduxStore {
   studentarray: [];
@@ -83,13 +83,7 @@ function ViewStudentProfile() {
     <PageContainer>
       <Navbar />
       <LSPage>
-        <BreadCrumbsV2
-          Icon={AccountCircleIcon}
-          Path="Students  /StudentProfile"
-        />
-        <Typography level="h3" m="6px">
-          Student Profile
-        </Typography>
+        <PageHeaderWithHelpButton title="Student Profile" />
         <Box
           mt="12px"
           sx={{
@@ -127,7 +121,7 @@ function ViewStudentProfile() {
                 <ListItemDecorator>
                   <Book size="18" />
                 </ListItemDecorator>
-                Exams
+                Attendance
               </Tab>
               <Tab>
                 <ListItemDecorator>
@@ -146,7 +140,7 @@ function ViewStudentProfile() {
               {studentData ? <TransportTab studentData={studentData!} /> : null}
             </TabPanel>
             <TabPanel value={3}>
-              In Progress
+              {studentData ? <AttendanceTab studentData={studentData} /> : null}
             </TabPanel>
             <TabPanel value={4}>
               Settings

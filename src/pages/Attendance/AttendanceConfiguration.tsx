@@ -4,7 +4,7 @@ import PageHeaderWithHelpButton from "components/Breadcrumbs/PageHeaderWithHelpB
 import Navbar from "components/Navbar/Navbar"
 import LSPage from "components/Utils/LSPage"
 import PageContainer from "components/Utils/PageContainer"
-import RFIDConfigTab from "./attendanceConfigTabs/RFIDConfigTab"
+import RFIDConfigTab from "./iotAttendanance/attendanceConfigTabs/RFIDConfigTab"
 
 function AttendanceConfiguration() {
 

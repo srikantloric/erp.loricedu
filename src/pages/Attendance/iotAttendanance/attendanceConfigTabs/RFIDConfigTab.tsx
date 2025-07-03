@@ -1,4 +1,5 @@
 import {
+    Box,
     Divider,
     FormControl,
     FormLabel,
@@ -14,7 +15,6 @@ import { useEffect, useState } from "react";
 import { useFirebase } from "context/firebaseContext";
 import { StudentDetailsType } from "types/student";
 import RFIDStudentRow from "./RFIDStudentRow";
-import { Paper } from "@mui/material";
 import { SCHOOL_CLASSES } from "config/schoolConfig";
 import { Search } from "@mui/icons-material";
 
@@ -70,7 +70,7 @@ export default function RFIDConfigTab() {
     });
 
     return (
-        <Paper sx={{ p: 2 }}>
+        <Box sx={{ border: "1px solid oklch(.900 .013 255.508)", backgroundColor: "#fff", borderRadius: "10px", p: 2 }}>
             <Stack direction="row" justifyContent="space-between" mb={2}>
                 <FormControl>
                     <FormLabel>Class</FormLabel>
@@ -105,7 +105,7 @@ export default function RFIDConfigTab() {
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
-                     
+
                     </div>
                     <br />
                     <Table>
@@ -130,6 +130,6 @@ export default function RFIDConfigTab() {
                     </Table>
                 </>
             )}
-        </Paper>
+        </Box>
     );
 }

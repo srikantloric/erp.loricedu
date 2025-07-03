@@ -132,7 +132,7 @@ function FacultyAttendance() {
 
 
   const filteredfaculty = FacultyData.filter((faculty) => {
-    const isMatchedByName = faculty.faculty_name
+    const isMatchedByName = faculty.facultyName
       .toLowerCase()
       .includes(searchTerm.toLowerCase());
     return isMatchedByName;
@@ -145,7 +145,7 @@ function FacultyAttendance() {
     FacultyData.forEach((faculty) => {
       const attendanceDataForSave: FacultyAttendanceShema = {
         isSmartAttendance: false,
-        faculty_name: faculty.faculty_name,
+        facultyName: faculty.facultyName,
         id: faculty.id,
         createdAt: serverTimestamp(),
         comment: faculty.comment,
@@ -160,9 +160,9 @@ function FacultyAttendance() {
         comment: faculty.comment,
         attendanceDate: selectedDate,
         attendanceStatus: faculty.selected_option!,
-        faculty_name: faculty.faculty_name,
-        faculty_image: faculty.faculty_image,
-        faculty_phone: faculty.faculty_phone,
+        facultyName: faculty.facultyName,
+        facultyImage: faculty.facultyImage,
+        facultyPhone: faculty.facultyPhone,
       };
 
       tempAttArr.push(attendanceDataForSave);
@@ -307,7 +307,7 @@ function FacultyAttendance() {
                         filteredfaculty.map((faculty, i) => {
                           return (
                             <tr key={faculty.id}>
-                              <td>{faculty.faculty_phone}</td>
+                              <td>{faculty.facultyPhone}</td>
                               <td>
                                 <div
                                   style={{
@@ -316,8 +316,8 @@ function FacultyAttendance() {
                                     gap: "10px",
                                   }}
                                 >
-                                  <Avatar src={faculty.faculty_image} />
-                                  {faculty.faculty_name}
+                                  <Avatar src={faculty.facultyImage} />
+                                  {faculty.facultyName}
                                 </div>
                               </td>
                               <td>

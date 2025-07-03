@@ -36,6 +36,7 @@ import RollNoUpdator from "pages/StudentManagement/RollNoUpdator";
 import AdmissionEnquiry from "pages/Admission/AdmissionEnquiry";
 import Attendance from "pages/Attendance/Attendance";
 import AttendanceConfiguration from "pages/Attendance/AttendanceConfiguration";
+import IotAttendance from "pages/Attendance/iotAttendanance/IotAttendance";
 
 export const routesConfig = [
   {
@@ -181,11 +182,11 @@ export const routesConfig = [
         Component: <Attendance />,
       },
       {
-        title: "Configurations",
-        to: "attendance/config",
+        title: "IOT Attendance",
+        to: "attendance/iot-attendance",
         isCollapsable: false,
         isHeader: false,
-        Component: <AttendanceConfiguration />,
+        Component: <IotAttendance />,
       },
 
     ],
