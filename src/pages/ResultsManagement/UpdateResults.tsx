@@ -30,7 +30,7 @@ import Navbar from "components/Navbar/Navbar";
 import LSPage from "components/Utils/LSPage";
 import PageContainer from "components/Utils/PageContainer";
 import { SCHOOL_CLASSES } from "config/schoolConfig";
-import { Delete, Print, Search } from "@mui/icons-material";
+import { Delete, Print, Search, Upload } from "@mui/icons-material";
 import { useEffect, useState } from "react";
 import { StudentDetailsType } from "types/student";
 import { enqueueSnackbar } from "notistack";
@@ -41,6 +41,7 @@ import { collection, deleteDoc, doc, getDoc, getDocs, onSnapshot, orderBy, query
 import { useFirebase } from "context/firebaseContext";
 
 import PageHeaderWithHelpButton from "components/Breadcrumbs/PageHeaderWithHelpButton";
+import { useNavigate } from "react-router-dom";
 
 type examType = {
   examId: string;
@@ -95,6 +96,7 @@ function UpdateResults() {
   const { db } = useFirebase()
   const grades = ["A+", "A", "B+", "B", "C+", "C", "D", "F", "AB"];
 
+  const navigate = useNavigate()
 
   useEffect(() => {
     const fetchExamConfig = async () => {
@@ -425,99 +427,6 @@ function UpdateResults() {
     window.open(pdfUrl, "_blank", createPDFWindow);
   };
 
-
-  // const sendWhatsappMessage = () => {
-  //   const student = currentSelectedStudent;
-  //   if (!student) return;
-
-  //   if (student.contact_number === "") {
-  //     enqueueSnackbar("Contact number is not available!", { variant: "error" });
-  //     return;
-  //   }
-  //   if (student.contact_number.length !== 10) {
-  //     enqueueSnackbar("Invalid contact number!", { variant: "error" });
-  //     return;
-  //   }
-
-  //   if (student.class === undefined) {
-  //     enqueueSnackbar("Class is not available!", { variant: "error" });
-  //     return;
-  //   }
-
-  //   const messagePayload = {
-  //     messaging_product: "whatsapp",
-  //     to: "91" + student.contact_number,
-  //     type: "template",
-  //     template: {
-  //       name: "result_announded_hindi",
-  //       language: {
-  //         code: "hi",
-  //       },
-  //       components: [
-  //         {
-  //           type: "header",
-  //           parameters: [
-  //             {
-  //               type: "image",
-  //               image: {
-  //                 link: "https://firebasestorage.googleapis.com/v0/b/haristudio-69dee.appspot.com/o/result_announced.jpg?alt=media&token=015c33c1-8f70-4922-a7eb-30d79972782d",
-  //               },
-  //             },
-  //           ],
-  //         },
-  //         {
-  //           type: "body",
-  //           parameters: [
-  //             {
-  //               type: "text",
-  //               text: student.student_name.toUpperCase() || "Student",
-  //             },
-  //             {
-  //               type: "text",
-  //               text: getClassNameByValue(student.class!)?.toUpperCase() || "Grade",
-  //             },
-  //           ],
-  //         },
-  //         {
-  //           type: "button",
-  //           sub_type: "url",
-  //           index: "0",
-  //           parameters: [
-  //             {
-  //               type: "text",
-  //               text: student.admission_no,
-  //             },
-  //           ],
-  //         },
-  //       ],
-  //     },
-  //   };
-
-  //   const whatsappApiUrl = "https://graph.facebook.com/v22.0/560510770487956/messages";
-
-  //   const wsAuthKey = localStorage.getItem("wsAuthKey");
-  //   if (!wsAuthKey) {
-  //     enqueueSnackbar("WhatsApp authorization key is missing!", { variant: "error" });
-  //     return;
-  //   }
-  //   const whatsappApiHeaders = {
-  //     Authorization: "Bearer " + wsAuthKey,
-  //     "Content-Type": "application/json",
-  //   };
-  //   axios
-  //     .post(whatsappApiUrl, messagePayload, {
-  //       headers: whatsappApiHeaders,
-  //     })
-  //     .then(async (res: any) => {
-  //       enqueueSnackbar("Message sent successfully! To " + student.contact_number, { variant: "success" });
-  //       console.log(`Message sent to ${student.contact_number}: ${res.data.messages[0].id}`);
-  //     })
-  //     .catch(async (error: any) => {
-  //       enqueueSnackbar("Failed to send message!", { variant: "error" });
-  //       console.error(`Failed to send message to ${student.contact_number}: ${error.message}`);
-  //     });
-  // }
-
   return (
     <PageContainer>
       <Navbar />
@@ -568,6 +477,8 @@ function UpdateResults() {
               >
                 Reset
               </Button>
+              <Divider orientation="vertical" />
+              <Button color="success" startDecorator={<Upload />} onClick={() => navigate("/SchoolResults/update-results/bulk-update")}>Bulk Upload</Button>
             </Stack>
           </Stack>
           {currentSelectedStudent ? (

@@ -57,6 +57,9 @@ const ViewStudentProfile = Loadable(
 const UpdateResults = Loadable(
   lazy(() => import("pages/ResultsManagement/UpdateResults"))
 );
+const UpdateResultsBulk = Loadable(
+  lazy(() => import("pages/ResultsManagement/UpdateResultBulk"))
+);
 const PrintResult = Loadable(
   lazy(() => import("pages/ResultsManagement/PrintResult"))
 );
@@ -195,6 +198,10 @@ function App() {
                     <Route
                       path="/schoolResults/update-results"
                       element={<UpdateResults />}
+                    />
+                    <Route
+                      path="/schoolResults/update-results/bulk-update"
+                      element={<UpdateResultsBulk />}
                     />
                     <Route
                       path="/schoolResults/print-rank-list"
