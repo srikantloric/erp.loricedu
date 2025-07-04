@@ -146,6 +146,22 @@ export function AddFacultyDialog({ open, onClose }: AddFacultyDialogProps) {
         }
     };
 
+    // Handle phone number input to restrict to 10 digits
+    const handlePhoneChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const value = event.target.value;
+        // Only allow digits and limit to 10 characters
+        const numericValue = value.replace(/\D/g, '').slice(0, 10);
+        formik.setFieldValue('facultyPhone', numericValue);
+    };
+
+    // Handle Aadhar number input to restrict to 12 digits
+    const handleAadharChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const value = event.target.value;
+        // Only allow digits and limit to 12 characters
+        const numericValue = value.replace(/\D/g, '').slice(0, 12);
+        formik.setFieldValue('facultyAadhar', numericValue);
+    };
+
     return (
         <Modal open={open} onClose={onClose}>
             <ModalDialog sx={{ width: 800, maxWidth: '95vw', p: 3, maxHeight: '90vh', overflow: 'auto' }}>
@@ -263,8 +279,10 @@ export function AddFacultyDialog({ open, onClose }: AddFacultyDialogProps) {
                                     <FormLabel>Phone Number *</FormLabel>
                                     <Input
                                         name="facultyPhone"
-                                        onChange={formik.handleChange}
+                                        onChange={handlePhoneChange}
                                         value={formik.values.facultyPhone}
+                                        placeholder="Enter 10-digit phone number"
+                                        slotProps={{ input: { maxLength: 10 } }}
                                     />
                                     {formik.errors.facultyPhone && formik.touched.facultyPhone && (
                                         <Typography level="body-sm" color="danger">
@@ -356,9 +374,10 @@ export function AddFacultyDialog({ open, onClose }: AddFacultyDialogProps) {
                                     <FormLabel>Aadhar Number</FormLabel>
                                     <Input
                                         name="facultyAadhar"
-                                        onChange={formik.handleChange}
+                                        onChange={handleAadharChange}
                                         value={formik.values.facultyAadhar}
-                                        placeholder="12 digit Aadhar number"
+                                        placeholder="Enter 12-digit Aadhar number"
+                                        slotProps={{ input: { maxLength: 12 } }}
                                     />
                                     {formik.errors.facultyAadhar && formik.touched.facultyAadhar && (
                                         <Typography level="body-sm" color="danger">
