@@ -9,7 +9,7 @@ import {
 } from "utilities/Base64Url";
 import { getAppConfig } from 'hooks/getAppConfig';
 
-export const generateFacultyAttendanceReport = async (attendanceData: FacultyAttendanceShema[]) => {
+export const generateFacultyAttendanceReport = async (attendanceData: FacultyAttendanceShema[], selectedDate?: string) => {
     const config = getAppConfig();
     if (!config) {
         console.error("Error: App config not found.");
@@ -21,13 +21,12 @@ export const generateFacultyAttendanceReport = async (attendanceData: FacultyAtt
         schoolContact: SCHOOL_CONTACT,
         schoolLogoBase64: SCHOOL_LOGO,
     } = config;
-    const doc = new jsPDF({ orientation: "l", unit: "mm", format: "a4" });
-    const cardWidth = doc.internal.pageSize.getWidth() - 15;
-    const cardHeight = doc.internal.pageSize.getHeight() - 15;
+    const doc = new jsPDF({ orientation: "p", unit: "mm", format: "a4" });
+    const cardWidth = doc.internal.pageSize.getWidth() - 10;
+    const cardHeight = doc.internal.pageSize.getHeight() - 10;
     const margin = 2;
     const x = 5 + margin;
     const y = 5 + margin;
-
 
     doc.setTextColor("#000");
 
@@ -92,19 +91,6 @@ export const generateFacultyAttendanceReport = async (attendanceData: FacultyAtt
         schoolContactDetailStartY + 12
     );
 
-    // doc.addImage(
-    //   EMAIL_ICON,
-    //   schoolHeaderStartX + 34,
-    //   schoolContactDetailStartY + 10,
-    //   3,
-    //   3
-    // );
-    // doc.text(
-    //   SCHOOL_EMAIL,
-    //   schoolHeaderStartX + 38,
-    //   schoolContactDetailStartY + 12
-    // );
-
     // Title section
     doc.setFillColor("#939393");
     doc.rect(cardXStartPoint, y + 26, cardXEndPoint, 6, "F");
@@ -112,32 +98,48 @@ export const generateFacultyAttendanceReport = async (attendanceData: FacultyAtt
     doc.setFontSize(9);
     doc.setTextColor("#fff");
 
-    let headerText = "Faculty Daily Attendance Report";
+    // Format date for display
+    const formatDate = (dateString: string) => {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+    };
 
-    // Center the text properly
+    let headerText = selectedDate
+        ? `Faculty Daily Attendance Report - ${formatDate(selectedDate)}`
+        : "Faculty Daily Attendance Report";
+
     const textWidth = doc.getTextWidth(headerText);
     const centerX = (cardWidth - textWidth) / 2;
     doc.text(headerText, x + centerX, y + 30);
 
-    let tableX = x + 5;
-    let tableY = y + 25;
+    let tableX = x + 2;
+    let tableY = y + 35;
 
-
-    // Table header and body
     const tableHeader = [
         "#",
+        "ID",
         "Name",
         "Phone",
         "Mode",
+        "Status",
         "Comment"
     ];
     const tableBody = attendanceData.map((record, index) => [
         (index + 1).toString(),
+        record.id || '-',
         record.facultyName,
         record.facultyPhone?.toString() || '-',
         record.isSmartAttendance ? 'Smart' : 'Manual',
+        record.attendanceStatus || '-',
         record.comment || '-'
     ]);
+
+    // Calculate available width for table
+    const availableWidth = cardWidth - 4;
 
     autoTable(doc, {
         head: [tableHeader],
@@ -146,22 +148,24 @@ export const generateFacultyAttendanceReport = async (attendanceData: FacultyAtt
         theme: 'grid',
         styles: {
             textColor: '#000',
-            fontSize: 8,
+            fontSize: 7,
             minCellHeight: 4,
         },
-        margin: { left: tableX + 2 },
+        margin: { left: tableX, right: tableX },
         headStyles: {
-            cellWidth: 20,
             fillColor: '#fff',
             textColor: '#000',
             minCellHeight: 3,
-            fontSize: 7,
+            fontSize: 6,
         },
         columnStyles: {
-            1: { cellWidth: 40 }, // Name
-            2: { cellWidth: 28 }, // Phone
-            3: { cellWidth: 20 }, // Mode
-            4: { cellWidth: 60 }, // Comment
+            0: { cellWidth: 8 },  // #
+            1: { cellWidth: 25 }, // ID
+            2: { cellWidth: 40 }, // Name
+            3: { cellWidth: 25 }, // Phone
+            4: { cellWidth: 20 }, // Mode
+            5: { cellWidth: 20 }, // Status
+            6: { cellWidth: availableWidth - 138 }, // Comment - takes remaining width
         },
     });
 
@@ -169,10 +173,15 @@ export const generateFacultyAttendanceReport = async (attendanceData: FacultyAtt
     doc.setDrawColor("#949494");
     doc.rect(x, y, cardWidth, cardHeight);
 
-    return doc;
+    const pdfBlob = doc.output('blob');
+    return URL.createObjectURL(pdfBlob);
 }
 
-export const generateMonthlyFacultyAttendanceReport = async (attendanceData: { [date: string]: FacultyAttendanceShema[] }) => {
+export const generateMonthlyFacultyAttendanceReport = async (
+    attendanceData: { [date: string]: FacultyAttendanceShema[] },
+    monthName?: string,
+    year?: string
+) => {
     const config = getAppConfig();
     if (!config) {
         console.error("Error: App config not found.");
@@ -190,7 +199,6 @@ export const generateMonthlyFacultyAttendanceReport = async (attendanceData: { [
     const margin = 2;
     const x = 5 + margin;
     const y = 5 + margin;
-
 
     doc.setTextColor("#000");
 
@@ -255,19 +263,6 @@ export const generateMonthlyFacultyAttendanceReport = async (attendanceData: { [
         schoolContactDetailStartY + 12
     );
 
-    // doc.addImage(
-    //   EMAIL_ICON,
-    //   schoolHeaderStartX + 34,
-    //   schoolContactDetailStartY + 10,
-    //   3,
-    //   3
-    // );
-    // doc.text(
-    //   SCHOOL_EMAIL,
-    //   schoolHeaderStartX + 38,
-    //   schoolContactDetailStartY + 12
-    // );
-
     // Title section
     doc.setFillColor("#939393");
     doc.rect(cardXStartPoint, y + 26, cardXEndPoint, 6, "F");
@@ -275,17 +270,22 @@ export const generateMonthlyFacultyAttendanceReport = async (attendanceData: { [
     doc.setFontSize(9);
     doc.setTextColor("#fff");
 
-    let headerText = "Faculty Daily Attendance Report";
+    let headerText = monthName && year
+        ? `Faculty Monthly Attendance Report - ${monthName} ${year}`
+        : "Faculty Monthly Attendance Report";
 
-    // Center the text properly
     const textWidth = doc.getTextWidth(headerText);
     const centerX = (cardWidth - textWidth) / 2;
     doc.text(headerText, x + centerX, y + 30);
 
-    let tableX = x + 5;
-    let tableY = y + 25;
-    // Get all unique faculty members
-    const facultyMap = new Map<string, { name: string; attendance: { [date: string]: string } }>();
+    let tableX = x + 2;
+    let tableY = y + 35;
+
+    const facultyMap = new Map<string, {
+        name: string;
+        phone: string;
+        attendance: { [date: string]: { status: string; mode: string } }
+    }>();
 
     // Process attendance data
     Object.entries(attendanceData).forEach(([date, records]) => {
@@ -293,23 +293,47 @@ export const generateMonthlyFacultyAttendanceReport = async (attendanceData: { [
             if (!facultyMap.has(record.id)) {
                 facultyMap.set(record.id, {
                     name: record.facultyName,
+                    phone: record.facultyPhone?.toString() || '-',
                     attendance: {}
                 });
             }
-            facultyMap.get(record.id)!.attendance[date] = record.isSmartAttendance ? 'P' : 'M';
+
+            const attendanceStatus = record.attendanceStatus || (record.isSmartAttendance ? 'P' : 'M');
+            const mode = record.isSmartAttendance ? 'S' : 'M';
+            facultyMap.get(record.id)!.attendance[date] = { status: attendanceStatus, mode: mode };
         });
     });
 
-    // Create table data
+    // Create table data with only date numbers in headers
     const dates = Object.keys(attendanceData).sort();
-    const tableHeader = ["#", "Name", ...dates];
-    const tableBody = Array.from(facultyMap.values()).map((faculty, index) => {
+    const dateHeaders = dates.map(date => {
+        // Extract only the day from the date (e.g., "2024-01-15" -> "15")
+        const day = date.split('-')[2];
+        return day;
+    });
+
+    const tableHeader = ["#", "ID", "Name", "Phone", "Mode", ...dateHeaders];
+    const tableBody = Array.from(facultyMap.entries()).map(([id, faculty], index) => {
+        const modes = Object.values(faculty.attendance).map(att => att.mode);
+        const mostCommonMode = modes.length > 0 ? modes.reduce((a, b, i, arr) =>
+            arr.filter(v => v === a).length >= arr.filter(v => v === b).length ? a : b
+        ) : 'M';
+
         return [
             (index + 1).toString(),
+            id,
             faculty.name,
-            ...dates.map(date => faculty.attendance[date] || 'A')
+            faculty.phone,
+            mostCommonMode,
+            ...dates.map(date => faculty.attendance[date]?.status || 'A')
         ];
     });
+
+    // Calculate available width for table
+    const availableWidth = cardWidth - 4; // Leave small margin on both sides
+    const fixedColumnsWidth = 6 + 12 + 20 + 15 + 8; // Sum of fixed columns
+    const dateColumnsCount = dates.length;
+    const dateColumnWidth = Math.max(6, (availableWidth - fixedColumnsWidth) / dateColumnsCount);
 
     autoTable(doc, {
         head: [tableHeader],
@@ -318,26 +342,36 @@ export const generateMonthlyFacultyAttendanceReport = async (attendanceData: { [
         theme: 'grid',
         styles: {
             textColor: '#000',
-            fontSize: 7,
-            minCellHeight: 4,
+            fontSize: 5,
+            minCellHeight: 3,
         },
-        margin: { left: tableX + 2 },
+        margin: { left: tableX, right: tableX },
         headStyles: {
-            cellWidth: 20,
             fillColor: '#fff',
             textColor: '#000',
             minCellHeight: 3,
-            fontSize: 6,
+            fontSize: 4,
         },
         columnStyles: {
-            1: { cellWidth: 40 }, // Name
+            0: { cellWidth: 6 },  // #
+            1: { cellWidth: 12 }, // ID
+            2: { cellWidth: 20 }, // Name
+            3: { cellWidth: 15 }, // Phone
+            4: { cellWidth: 8 },  // Mode
         },
+        // Set individual date column widths to use full width
+        didParseCell: function (data) {
+            if (data.column.index >= 5) {
+                // Date columns - use calculated width
+                data.cell.styles.cellWidth = dateColumnWidth;
+            }
+        }
     });
 
     // Draw border around content
     doc.setDrawColor("#949494");
     doc.rect(x, y, cardWidth, cardHeight);
 
-    return doc;
+    const pdfBlob = doc.output('blob');
+    return URL.createObjectURL(pdfBlob);
 }
-

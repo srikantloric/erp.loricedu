@@ -8,31 +8,88 @@ import { useState } from "react";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { getFirestoreInstance } from "context/firebaseUtility";
 import { generateFacultyAttendanceReport } from "utilities/facultyReportGenerator";
+import { FacultyType, AttenzyAttendanceType } from "types/facuities";
+import { enqueueSnackbar } from "notistack";
 
 export default function FacultyDailyAttendanceReport() {
     const [selectedDate, setSelectedDate] = useState("");
+    const [loading, setLoading] = useState(false);
 
     const handleGenerateReport = async () => {
         if (!selectedDate) return;
 
+        setLoading(true);
         const db = await getFirestoreInstance();
-        const attendanceQuery = query(
-            collection(db, "FACULTY_ATTENDANCE"),
-            where("date", "==", selectedDate)
-        );
 
         try {
-            const querySnapshot = await getDocs(attendanceQuery);
-            const attendanceData = querySnapshot.docs.map(doc => ({
-                ...doc.data(),
-                id: doc.id
-            })) as any[];
+            // First, fetch all faculty members
+            const facultyQuery = query(
+                collection(db, "STUDENTS"),
+                where("isFaculty", "==", true),
+                where("isActive", "==", true)
+            );
 
-            // Directly call the generator with attendance data only
-            const doc = await generateFacultyAttendanceReport(attendanceData);
-            if (doc) doc.save(`Faculty_Attendance_${selectedDate}.pdf`);
+            const facultySnapshot = await getDocs(facultyQuery);
+            const facultyMembers: FacultyType[] = facultySnapshot.docs.map((doc) => ({
+                ...doc.data(),
+                facultyId: doc.id,
+            })) as FacultyType[];
+
+            // Now fetch attendance data for each faculty member
+            const attendanceData: any[] = [];
+
+            for (const faculty of facultyMembers) {
+                const attendanceQuery = query(
+                    collection(db, "STUDENTS", faculty.facultyId, "MY_ATTENDANCE"),
+                    where("date", "==", selectedDate)
+                );
+
+                const attendanceSnapshot = await getDocs(attendanceQuery);
+
+                if (attendanceSnapshot.docs.length > 0) {
+                    attendanceSnapshot.docs.forEach(doc => {
+                        const attendanceRecord = doc.data() as AttenzyAttendanceType;
+                        attendanceData.push({
+                            id: attendanceRecord.id,
+                            facultyName: attendanceRecord.name,
+                            facultyPhone: attendanceRecord.phone,
+                            facultyImage: attendanceRecord.profileImage,
+                            attendanceStatus: attendanceRecord.status,
+                            attendanceDate: attendanceRecord.date,
+                            checkIn: attendanceRecord.checkIn,
+                            checkOut: attendanceRecord.checkOut,
+                            isSmartAttendance: true,
+                            comment: `Check-in: ${attendanceRecord.checkIn ? attendanceRecord.checkIn.toDate().toLocaleTimeString() : 'N/A'}, Check-out: ${attendanceRecord.checkOut ? attendanceRecord.checkOut.toDate().toLocaleTimeString() : 'N/A'}`,
+                            createdAt: attendanceRecord.timestamp
+                        });
+                    });
+                } else {
+                    // Faculty has no attendance record for this date - mark as absent
+                    attendanceData.push({
+                        id: faculty.facultyId,
+                        facultyName: faculty.facultyName,
+                        facultyPhone: faculty.facultyPhone,
+                        facultyImage: faculty.facultyImage,
+                        attendanceStatus: "Absent",
+                        attendanceDate: selectedDate,
+                        isSmartAttendance: false,
+                        comment: "No attendance record found",
+                        createdAt: new Date()
+                    });
+                }
+            }
+
+            // Generate the report with selected date
+            const pdfResult = await generateFacultyAttendanceReport(attendanceData, selectedDate);
+            if (pdfResult) {
+                window.open(pdfResult as string, "_blank");
+                enqueueSnackbar("PDF generated successfully", { variant: "success" });
+            }
         } catch (error) {
             console.error("Error generating report:", error);
+            enqueueSnackbar("Error generating report", { variant: "error" });
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -58,9 +115,10 @@ export default function FacultyDailyAttendanceReport() {
                     <Button
                         sx={{ mt: 2 }}
                         onClick={handleGenerateReport}
-                        disabled={!selectedDate}
+                        disabled={!selectedDate || loading}
+                        loading={loading}
                     >
-                        Generate Report
+                        {loading ? "Generating..." : "Generate Report"}
                     </Button>
                 </Box>
             </LSPage>
