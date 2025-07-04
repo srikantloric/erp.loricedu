@@ -86,6 +86,12 @@ const FacultyDetail = Loadable(
 const StudentFeeDetails = Loadable(
   lazy(() => import("./pages/FeeManager/StudentFeeDetails"))
 );
+// const FacultyDailyAttendanceReport = Loadable(
+//   lazy(() => import("pages/Reports/FacultyDailyAttendanceReport"))
+// );
+// const FacultyMonthlyAttendanceReport = Loadable(
+//   lazy(() => import("pages/Reports/FacultyMonthlyAttendanceReport"))
+// );
 
 function App() {
   const routeItems = routesConfig.map(
@@ -234,6 +240,8 @@ function App() {
                     <Route path="/reports/demand-slip" element={<DemandSlip />} />
                     <Route path="/reports/admit-card" element={<AdmitCard />} />
                     <Route path="/reports/students-list" element={<StudentsList />} />
+                    {/* <Route path="/reports/faculty-daily-attendance" element={<FacultyDailyAttendanceReport />} /> */}
+                    {/* <Route path="/reports/faculty-monthly-attendance" element={<FacultyMonthlyAttendanceReport />} /> */}
 
                     {"Transport"}
                     <Route
