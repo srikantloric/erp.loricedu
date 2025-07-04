@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Navbar from "../../components/Navbar/Navbar";
 import LSPage from "../../components/Utils/LSPage";
 import PageContainer from "../../components/Utils/PageContainer";
@@ -13,8 +13,10 @@ import { Search } from "@mui/icons-material";
 import { RootState, useDispatch, useSelector } from "store";
 import { fetchTeacher } from "store/reducers/facultiesSlice";
 import { User } from "iconsax-react";
+import { AddFacultyDialog } from "components/Modals/AddFacultyDialog";
 
 function Faculties() {
+  const [openAddDialog, setOpenAddDialog] = useState(false);
   const facultiesList = useSelector((state: RootState) => state.faculties.teacherArray);
   const dipatch = useDispatch()
 
@@ -62,6 +64,7 @@ function Faculties() {
             <Button
               variant="soft"
               startDecorator={<User />}
+              onClick={() => setOpenAddDialog(true)}
             >
               Add New Faculty
             </Button>
@@ -86,6 +89,10 @@ function Faculties() {
           </div>
         </LSPage>
       </PageContainer>
+      <AddFacultyDialog 
+        open={openAddDialog}
+        onClose={() => setOpenAddDialog(false)}
+      />
     </>
   );
 }

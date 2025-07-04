@@ -15,12 +15,7 @@ type Report = {
 };
 
 const reports: Report[] = [
-  // {
-  //   id: "balance-sheet",
-  //   title: "Balance Sheet",
-  //   description:
-  //     "Get today's complete overview of expenditure and income in a single report",
-  // },
+
   {
     id: "due-report",
     title: "Due Sheet",
@@ -51,6 +46,16 @@ const reports: Report[] = [
     id: "students-list",
     title: "Student List",
     description: "Print list for students",
+  },
+  {
+    id: "faculty-daily-attendance",
+    title: "Faculty Daily Attendance",
+    description: "Generate daily attendance report for faculty members",
+  },
+  {
+    id: "faculty-monthly-attendance",
+    title: "Faculty Monthly Attendance",
+    description: "Generate monthly attendance report for faculty members",
   },
 ];
 
