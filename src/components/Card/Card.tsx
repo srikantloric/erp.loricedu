@@ -56,7 +56,7 @@ function Card({ facultyData }: CardProps) {
             variant="contained"
             disableElevation
             onClick={() => {
-              FacultyDetail(facultyData.id);
+              FacultyDetail(facultyData.facultyId);
             }}
           >
             View Details

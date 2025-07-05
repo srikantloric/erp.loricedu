@@ -200,7 +200,6 @@ const studentslice = createSlice({
       })
       .addCase(addstudent.fulfilled, (state, action: PayloadAction<StudentDetailsType>) => {
         state.loading = false;
-        console.log("addstudent payload : ", action.payload);
         state.studentarray.push(action.payload);
       })
       .addCase(addstudent.rejected, (state, action) => {
@@ -249,7 +248,6 @@ const studentslice = createSlice({
         );
         if (studentindex !== -1) {
           state.studentarray[studentindex] = payload;
-          console.log("state updated");
         }
       })
       .addCase(updatedatastudent.rejected, (state, action) => {

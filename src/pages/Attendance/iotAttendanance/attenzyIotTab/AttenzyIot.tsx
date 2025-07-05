@@ -67,7 +67,7 @@ function AttenzyIot() {
                 });
 
                 // Sort by timestamp (latest first)
-                splitRecords.sort((a:any, b:any) => b.timestamp.seconds - a.timestamp.seconds);
+                splitRecords.sort((a: any, b: any) => b.timestamp.seconds - a.timestamp.seconds);
 
                 setAttendanceRecords(splitRecords);
             },

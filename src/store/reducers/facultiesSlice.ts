@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import {  collection, getDocs } from "firebase/firestore";
+import { addDoc, collection, getDocs, Timestamp } from "firebase/firestore";
 import { FacultyType } from "types/facuities";
 import { query, where } from "firebase/firestore";
 import { getFirestoreInstance } from "context/firebaseUtility";
@@ -10,7 +10,7 @@ interface FacultyState {
   error: string | null;
 }
 
-// FETCH
+// fetching faculty
 export const fetchTeacher = createAsyncThunk<FacultyType[], void>(
   "teachers/fetchTeacher",
   async () => {
@@ -23,11 +23,33 @@ export const fetchTeacher = createAsyncThunk<FacultyType[], void>(
       where("isActive", "==", true)
     );
     const querySnapshot = await getDocs(facultyQuery);
-    const teachers: FacultyType[] = querySnapshot.docs.map((doc) => ({
+    const teachers: FacultyType[] = querySnapshot.docs.map((doc: any) => ({
       ...doc.data(),
-      id: doc.id,
     })) as FacultyType[];
     return teachers;
+  }
+);
+
+//  adding faculty
+export const addFaculty = createAsyncThunk<FacultyType, Partial<FacultyType>>(
+  "teachers/addFaculty",
+  async (facultyData) => {
+    const db = await getFirestoreInstance();
+    console.log("Adding new faculty...");
+
+    const facultyToAdd = {
+      ...facultyData,
+      isFaculty: true,
+      createdAt: Timestamp.now(),
+      updatedAt: Timestamp.now(),
+    };
+
+    const docRef = await addDoc(collection(db, "STUDENTS"), facultyToAdd);
+
+    return {
+      ...facultyData,
+      facultyId: docRef.id,
+    } as FacultyType;
   }
 );
 
@@ -53,7 +75,16 @@ const facultiesSlice = createSlice({
       .addCase(fetchTeacher.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || null;
-      });
+      })
+      .addCase(addFaculty.pending, (state) => {
+        state.loading = true;
+      }).addCase(addFaculty.fulfilled, (state, action: PayloadAction<FacultyType>) => {
+        state.loading = false;
+        state.teacherArray.push(action.payload);
+      }).addCase(addFaculty.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || null;
+      })
   },
 });
 
