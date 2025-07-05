@@ -1,6 +1,7 @@
 import { FieldValue, Timestamp } from "firebase/firestore";
 
 export interface FacultyType {
+  id?:string;
   facultyId: string;
   facultyName: string;
   facultyEmail?: string;

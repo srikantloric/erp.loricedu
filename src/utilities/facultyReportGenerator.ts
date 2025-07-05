@@ -20,11 +20,13 @@ export const generateFacultyAttendanceReport = async (attendanceData: FacultyAtt
         schoolAddress: SCHOOL_ADDRESS,
         schoolContact: SCHOOL_CONTACT,
         schoolLogoBase64: SCHOOL_LOGO,
+        schoolWebsite: SCHOOL_WEBSITE
     } = config;
     const doc = new jsPDF({ orientation: "p", unit: "mm", format: "a4" });
-    const cardWidth = doc.internal.pageSize.getWidth() - 10;
-    const cardHeight = doc.internal.pageSize.getHeight() - 10;
-    const margin = 2;
+
+    const cardWidth = doc.internal.pageSize.getWidth() - 18;
+    const cardHeight = doc.internal.pageSize.getHeight() - 18;
+    const margin = 4;
     const x = 5 + margin;
     const y = 5 + margin;
 
@@ -38,62 +40,70 @@ export const generateFacultyAttendanceReport = async (attendanceData: FacultyAtt
     doc.addFileToVFS("Poppins-Semibold", POPPINS_SEMIBOLD);
     doc.addFont("Poppins-Semibold", "Poppins", "semibold");
 
-    doc.addImage(SCHOOL_LOGO, x + 45, y + 1, 30, 25);
 
-    const schoolHeaderStartX = x + 75;
-    const schoolHeaderStartY = y + 5;
 
-    doc.setFontSize(15);
+
+    const schoolHeaderStartX = x + 5;
+    const schoolHeaderStartY = y + 10;
+
+    ///Start of PDF Design
+
+    //right logo
+    doc.addImage(SCHOOL_LOGO, cardWidth - 25, y + 2, 27, 25);
+
+
+    doc.setFontSize(22);
     doc.setFont("Poppins", "bold");
-    doc.text(SCHOOL_NAME, schoolHeaderStartX + 10, schoolHeaderStartY);
+    doc.setTextColor("#0000");
+
+    doc.text(
+        SCHOOL_NAME.toUpperCase(),
+        schoolHeaderStartX,
+        schoolHeaderStartY,
+        { align: "left" }
+    );
 
     doc.setFontSize(8);
     doc.setFont("Poppins", "semibold");
+    const tagline = "An English Medium School Based on CBSE Curriculum";
     doc.text(
-        "An English Medium School Based on CBSE Curriculum",
-        schoolHeaderStartX + 7,
-        schoolHeaderStartY + 5
+        tagline,
+        schoolHeaderStartX,
+        schoolHeaderStartY + 5,
+        { align: "left" }
     );
 
-    const schoolContactDetailStartY = schoolHeaderStartY + 2;
+    const schoolContactDetailStartY = schoolHeaderStartY + 5;
+    doc.setFontSize(8);
+    doc.setFont("Poppins", "normal");
+    const address = "Address: " + SCHOOL_ADDRESS;
+    doc.text(
+        address,
+        schoolHeaderStartX,
+        schoolContactDetailStartY + 5,
+        { align: "left" }
+    );
+
+    const contact = "Phone: " + SCHOOL_CONTACT;
+    doc.text(
+        contact,
+        schoolHeaderStartX,
+        schoolContactDetailStartY + 9
+    );
+
+    const websiteName = "" + SCHOOL_WEBSITE;
+    doc.text(
+        websiteName,
+        schoolHeaderStartX,
+        schoolContactDetailStartY + 13
+    );
+
     const cardXStartPoint = x;
     const cardXEndPoint = cardWidth;
 
-    // School address section
-    doc.setFillColor("#cbc9c9");
-    doc.rect(
-        schoolHeaderStartX + 5,
-        schoolContactDetailStartY + 5,
-        cardXEndPoint - 200,
-        4,
-        "F"
-    );
-
-    doc.setFontSize(6);
-    doc.setFont("Poppins", "normal");
-    doc.text(
-        SCHOOL_ADDRESS,
-        schoolHeaderStartX + 12,
-        schoolContactDetailStartY + 7.5
-    );
-
-    // School contact info
-    doc.addImage(
-        PHONE_ICON,
-        schoolHeaderStartX + 9,
-        schoolContactDetailStartY + 10,
-        3,
-        3
-    );
-    doc.text(
-        SCHOOL_CONTACT,
-        schoolHeaderStartX + 13,
-        schoolContactDetailStartY + 12
-    );
-
     // Title section
     doc.setFillColor("#939393");
-    doc.rect(cardXStartPoint, y + 26, cardXEndPoint, 6, "F");
+    doc.rect(cardXStartPoint, y + 35, cardXEndPoint, 6, "F");
     doc.setFont("Poppins", "semibold");
     doc.setFontSize(9);
     doc.setTextColor("#fff");
@@ -114,10 +124,15 @@ export const generateFacultyAttendanceReport = async (attendanceData: FacultyAtt
 
     const textWidth = doc.getTextWidth(headerText);
     const centerX = (cardWidth - textWidth) / 2;
-    doc.text(headerText, x + centerX, y + 30);
+    doc.text(headerText, x + centerX, y + 39);
+
+    const footerText = "Report generated usign LoricEdu Software" + " | " + new Date().toLocaleString()
+    doc.setTextColor("#000")
+    doc.setFontSize(6)
+    doc.text(footerText, doc.internal.pageSize.getWidth() / 2, doc.internal.pageSize.getHeight() - 4, { align: "center" });
 
     let tableX = x + 2;
-    let tableY = y + 35;
+    let tableY = y + 45;
 
     const tableHeader = [
         "#",
@@ -267,7 +282,7 @@ export const generateMonthlyFacultyAttendanceReport = async (
     doc.setFillColor("#939393");
     doc.rect(cardXStartPoint, y + 26, cardXEndPoint, 6, "F");
     doc.setFont("Poppins", "semibold");
-    doc.setFontSize(9);
+    doc.setFontSize(8);
     doc.setTextColor("#fff");
 
     let headerText = monthName && year
@@ -277,6 +292,10 @@ export const generateMonthlyFacultyAttendanceReport = async (
     const textWidth = doc.getTextWidth(headerText);
     const centerX = (cardWidth - textWidth) / 2;
     doc.text(headerText, x + centerX, y + 30);
+
+    doc.setTextColor("#000")
+    doc.text(headerText, x + centerX, y + 50);
+
 
     let tableX = x + 2;
     let tableY = y + 35;
@@ -350,7 +369,7 @@ export const generateMonthlyFacultyAttendanceReport = async (
             fillColor: '#fff',
             textColor: '#000',
             minCellHeight: 3,
-            fontSize: 4,
+            fontSize: 5,
         },
         columnStyles: {
             0: { cellWidth: 6 },  // #
@@ -371,6 +390,8 @@ export const generateMonthlyFacultyAttendanceReport = async (
     // Draw border around content
     doc.setDrawColor("#949494");
     doc.rect(x, y, cardWidth, cardHeight);
+
+
 
     const pdfBlob = doc.output('blob');
     return URL.createObjectURL(pdfBlob);

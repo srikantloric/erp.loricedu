@@ -23,11 +23,9 @@ import * as Yup from "yup";
 import { User, Camera, DocumentUpload, Trash } from "iconsax-react";
 import { FacultyType } from "types/facuities";
 import { useState, useRef } from "react";
-import { createAsyncThunk } from "@reduxjs/toolkit";
-import { collection, addDoc, Timestamp } from "firebase/firestore";
-import { getFirestoreInstance } from "context/firebaseUtility";
-import { useDispatch } from "react-redux";
-import { fetchTeacher } from "store/reducers/facultiesSlice";
+
+import { addFaculty } from "store/reducers/facultiesSlice";
+import { useDispatch } from "store";
 
 const validationSchema = Yup.object({
     facultyName: Yup.string().required("Faculty name is required"),
@@ -49,28 +47,7 @@ const validationSchema = Yup.object({
     isActive: Yup.boolean(),
 });
 
-// Create async thunk for adding faculty
-export const addFaculty = createAsyncThunk<FacultyType, Partial<FacultyType>>(
-    "teachers/addFaculty",
-    async (facultyData) => {
-        const db = await getFirestoreInstance();
-        console.log("Adding new faculty...");
 
-        const facultyToAdd = {
-            ...facultyData,
-            isFaculty: true,
-            createdAt: Timestamp.now(),
-            updatedAt: Timestamp.now(),
-        };
-
-        const docRef = await addDoc(collection(db, "STUDENTS"), facultyToAdd);
-
-        return {
-            ...facultyData,
-            facultyId: docRef.id,
-        } as FacultyType;
-    }
-);
 
 interface AddFacultyDialogProps {
     open: boolean;
@@ -108,13 +85,9 @@ export function AddFacultyDialog({ open, onClose }: AddFacultyDialogProps) {
                 const faculty: Partial<FacultyType> = {
                     ...values,
                     facultyImage: selectedImage || undefined,
-                    facultyImageThumb: selectedImage || undefined, // You might want to create a thumbnail version
+                    facultyImageThumb: selectedImage || undefined, 
                 };
-
-                await dispatch(addFaculty(faculty) as any);
-                await dispatch(fetchTeacher() as any);
-
-                console.log("Faculty added successfully");
+                await dispatch(addFaculty(faculty));
                 onClose();
                 formik.resetForm();
                 setSelectedImage(null);

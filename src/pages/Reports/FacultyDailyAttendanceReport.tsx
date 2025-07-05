@@ -30,9 +30,9 @@ export default function FacultyDailyAttendanceReport() {
             );
 
             const facultySnapshot = await getDocs(facultyQuery);
-            const facultyMembers: FacultyType[] = facultySnapshot.docs.map((doc) => ({
+            const facultyMembers: FacultyType[] = facultySnapshot.docs.map((doc: any) => ({
                 ...doc.data(),
-                facultyId: doc.id,
+                id: doc.id,
             })) as FacultyType[];
 
             // Now fetch attendance data for each faculty member
@@ -40,7 +40,7 @@ export default function FacultyDailyAttendanceReport() {
 
             for (const faculty of facultyMembers) {
                 const attendanceQuery = query(
-                    collection(db, "STUDENTS", faculty.facultyId, "MY_ATTENDANCE"),
+                    collection(db, "STUDENTS", faculty.id!, "MY_ATTENDANCE"),
                     where("date", "==", selectedDate)
                 );
 
@@ -73,7 +73,7 @@ export default function FacultyDailyAttendanceReport() {
                         attendanceStatus: "Absent",
                         attendanceDate: selectedDate,
                         isSmartAttendance: false,
-                        comment: "No attendance record found",
+                        comment: "N/A",
                         createdAt: new Date()
                     });
                 }
