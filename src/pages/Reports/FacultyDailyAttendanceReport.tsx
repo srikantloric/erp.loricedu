@@ -7,7 +7,7 @@ import { IconReport } from "@tabler/icons-react";
 import { useState } from "react";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { getFirestoreInstance } from "context/firebaseUtility";
-import { generateFacultyAttendanceReport } from "utilities/facultyReportGenerator";
+import { generateFacultyAttendanceReport } from "utilities/GenerateFacultyAttendanceReport";
 import { FacultyType, AttenzyAttendanceType } from "types/facuities";
 import { enqueueSnackbar } from "notistack";
 
