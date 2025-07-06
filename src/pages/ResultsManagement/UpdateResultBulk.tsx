@@ -19,7 +19,8 @@ export type ExamPapers = {
   paperId: string,
   paperTitle: string,
   maxPractical: number;
-  scoreType: "number" | "grade";
+  grade?: string[],
+  scoreType?: string,
   maxTheory: number;
   totalMarks: number;
 }
@@ -40,6 +41,7 @@ export type ResultsState = {
     [paperId: string]: {
       theory: number | string;
       practical: number | string;
+      grade?: string
     };
   };
 };
@@ -130,6 +132,7 @@ function UpdateResultBulk() {
                 fetchedResults[student.id][entry.paperId] = {
                   theory: entry.theory ?? '',
                   practical: entry.practical ?? '',
+                  ...(entry.grade !== undefined ? { grade: entry.grade } : {})
                 };
               });
             }
@@ -148,10 +151,10 @@ function UpdateResultBulk() {
   return (
     <div
       style={{
-      maxWidth: "95vw",
-      marginLeft: selectedExamPapers.length < 3 ? "80px" : undefined,
-      width: selectedExamPapers.length < 3 ? "100%" : undefined,
-      backgroundColor: "#fff",
+        maxWidth: "95vw",
+        marginLeft: "80px",
+        width: selectedExamPapers.length < 3 ? "100%" : undefined,
+        backgroundColor: "#fff",
       }}
     >
       <Navbar />
@@ -200,7 +203,14 @@ function UpdateResultBulk() {
           </Stack>
           <Divider />
           <br />
-          <StudentsResultUpdateTable students={students} papers={selectedExamPapers} results={results} setResults={setResults} selectedExam={selectedExam} savedStudents={savedStudents} setSavedStudents={setSavedStudents} />
+          <StudentsResultUpdateTable students={students}
+            papers={selectedExamPapers}
+            results={results}
+            setResults={setResults}
+            selectedExam={selectedExam}
+            selectedExamTitle={examConfig && selectedExam && examConfig.exams.filter((exam) => exam.examId === selectedExam)[0].examTitle || "N/A"}
+            savedStudents={savedStudents}
+            setSavedStudents={setSavedStudents} />
         </Stack>
       </LSPage>
     </div >
