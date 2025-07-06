@@ -18,6 +18,23 @@ export type resultType = {
   docId?: string;
 };
 
+
+export type paperMarksTypeNew = {
+  paperId: string;
+  paperTitle: string;
+  practical: string;
+  theory: string;
+  grade?: string
+}
+
+export type resultTypeNew = {
+  examId: string;
+  examTitle: string;
+  createdAt: Timestamp;
+  result: paperMarksTypeNew[];
+  docId?: string;
+}
+
 export type marksheetType = {
   student: StudentDetailsType;
   examTitle: string;
