@@ -1,25 +1,26 @@
 import { Search } from "@mui/icons-material"
-import { Box, Button, Checkbox, Divider, Option, Select, Stack, Typography } from "@mui/joy"
+import { Box, Button, Divider, Option, Select, Stack, Typography } from "@mui/joy"
 import PageHeaderWithHelpButton from "components/Breadcrumbs/PageHeaderWithHelpButton"
 import Navbar from "components/Navbar/Navbar"
 import StudentsResultUpdateTable from "components/Tables/StudentsResultUpdateTable"
 import LSPage from "components/Utils/LSPage"
-import PageContainer from "components/Utils/PageContainer"
 import { SCHOOL_CLASSES } from "config/schoolConfig"
 import { useFirebase } from "context/firebaseContext"
 import { useNavbar } from "context/NavbarContext"
 import { doc, getDoc } from "firebase/firestore"
 import { enqueueSnackbar } from "notistack"
-import { useEffect, useState } from "react"
+import { useContext, useEffect, useState } from "react"
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { StudentDetailsType } from "types/student"
+import SideBarContext from "context/SidebarContext"
 
-export type examPapers = {
+
+export type ExamPapers = {
   paperId: string,
   paperTitle: string,
-  practicalMarks: number;
+  maxPractical: number;
   scoreType: "number" | "grade";
-  theoryMarks: number;
+  maxTheory: number;
   totalMarks: number;
 }
 type exams = {
@@ -27,12 +28,21 @@ type exams = {
   examTitle: string,
   marksheetDesign: string,
   examSession: string,
-  examPapers: examPapers[],
+  examPapers: ExamPapers[],
 }
 
 type ExamConfig = {
   exams: exams[],
 }
+
+export type ResultsState = {
+  [studentId: string]: {
+    [paperId: string]: {
+      theory: number | string;
+      practical: number | string;
+    };
+  };
+};
 
 function UpdateResultBulk() {
 
@@ -40,11 +50,18 @@ function UpdateResultBulk() {
   const [students, setStudents] = useState<StudentDetailsType[]>([]);
   const [selectedExam, setSelectedExam] = useState<any>(null);
   const [examConfig, setExamConfig] = useState<ExamConfig | null>(null);
-  const [examPapers, setExamPapers] = useState<examPapers[]>([]);
-
+  const [results, setResults] = useState<ResultsState>({});
+  const [selectedExamPapers, setSelectedExamPapers] = useState<ExamPapers[]>([])
+  const [savedStudents, setSavedStudents] = useState<Set<string>>(new Set());
 
   const { db } = useFirebase();
   const { session } = useNavbar();
+  const { setSidebarOpen } = useContext(SideBarContext);
+
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [setSidebarOpen]);
+
 
   useEffect(() => {
     const fetchExamsConfig = async () => {
@@ -54,7 +71,6 @@ function UpdateResultBulk() {
         if (examConfig.exists()) {
           const data = examConfig.data().exams;
           const currentSessionExamConfig = data.filter((exam: any) => exam.examSession === session);
-          console.log("Current session exam config:", currentSessionExamConfig);
           setExamConfig({ exams: currentSessionExamConfig });
         } else {
           console.log("No exams configuration found.");
@@ -64,7 +80,7 @@ function UpdateResultBulk() {
         console.error("Error fetching exams config:", error);
       }
     }
-  
+
     fetchExamsConfig();
   }, [session])
 
@@ -73,9 +89,9 @@ function UpdateResultBulk() {
     if (examConfig && selectedExam) {
       const selectedExamData = examConfig.exams.find(exam => exam.examId === selectedExam);
       if (selectedExamData) {
-        setExamPapers(selectedExamData.examPapers);
+        setSelectedExamPapers(selectedExamData.examPapers);
       } else {
-        setExamPapers([]);
+        setSelectedExamPapers([]);
       }
     }
   }, [examConfig, selectedExam]);
@@ -94,8 +110,33 @@ function UpdateResultBulk() {
           where("class", "==", selectedClass)
         );
         const querySnapshot = await getDocs(studentsQuery);
-        const students = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        setStudents(students as StudentDetailsType[]);
+        const fetchedStudents = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setStudents(fetchedStudents as StudentDetailsType[]);
+
+        // Step 2: Fetch saved results for each student
+        const fetchedResults: ResultsState = {};
+        const savedStudentIds = new Set<string>();
+
+        for (const student of fetchedStudents) {
+          const resultDocRef = doc(db, "STUDENTS", student.id, "PUBLISHED_RESULTS", selectedExam);
+          const resultDocSnap = await getDoc(resultDocRef);
+
+          if (resultDocSnap.exists()) {
+            const data = resultDocSnap.data();
+            if (Array.isArray(data.result)) {
+              fetchedResults[student.id] = {};
+              savedStudentIds.add(student.id);
+              data.result.forEach((entry: any) => {
+                fetchedResults[student.id][entry.paperId] = {
+                  theory: entry.theory ?? '',
+                  practical: entry.practical ?? '',
+                };
+              });
+            }
+          }
+        }
+        setResults(fetchedResults);
+        setSavedStudents(savedStudentIds);
       } catch (error) {
         console.error("Error fetching students:", error);
         enqueueSnackbar("Failed to fetch students.", { variant: "error" });
@@ -104,9 +145,15 @@ function UpdateResultBulk() {
     fetchStudents();
   }
 
-
   return (
-    <PageContainer>
+    <div
+      style={{
+      maxWidth: "95vw",
+      marginLeft: selectedExamPapers.length < 3 ? "80px" : undefined,
+      width: selectedExamPapers.length < 3 ? "100%" : undefined,
+      backgroundColor: "#fff",
+      }}
+    >
       <Navbar />
       <LSPage>
         <PageHeaderWithHelpButton title="Update students result" />
@@ -152,34 +199,11 @@ function UpdateResultBulk() {
             </Stack>
           </Stack>
           <Divider />
-          <Stack direction={"row"} flexWrap={"wrap"} justifyContent={"space-evenly"} gap={1}>
-            <Checkbox
-              label="Select all"
-              variant="soft"
-              defaultChecked
-            />
-            {examPapers?.length === 0 && (
-              <Typography level="body-sm" sx={{ color: "red" }}>
-                No exam papers found for this exam.
-              </Typography>
-            )}
-            {examPapers?.map((item) => {
-              return (
-                <Checkbox
-                  key={item.paperId}
-                  label={item.paperTitle}
-                  variant="soft"
-                />
-              );
-            })}
-          </Stack>
+          <br />
+          <StudentsResultUpdateTable students={students} papers={selectedExamPapers} results={results} setResults={setResults} selectedExam={selectedExam} savedStudents={savedStudents} setSavedStudents={setSavedStudents} />
         </Stack>
-        <br />
-        <Box>
-          <StudentsResultUpdateTable studentData={students} examPapers={examPapers} />
-        </Box>
       </LSPage>
-    </PageContainer >
+    </div >
   )
 }
 

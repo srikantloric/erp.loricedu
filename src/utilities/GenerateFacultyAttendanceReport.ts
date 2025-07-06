@@ -131,7 +131,7 @@ export const generateFacultyAttendanceReport = async (attendanceData: FacultyAtt
     const centerX = (cardWidth - textWidth) / 2;
     doc.text(headerText, x + centerX, y + 33);
 
-    const footerText = "Report generated usign LoricEdu Software" + " | " + new Date().toLocaleString()
+    const footerText = "Report generated usign LoricEdu Software | " + new Date().toLocaleString().toString()
     doc.setTextColor("#000")
     doc.setFontSize(6)
     doc.text(footerText, doc.internal.pageSize.getWidth() / 2, doc.internal.pageSize.getHeight() - 4, { align: "center" });
@@ -311,7 +311,7 @@ export const generateMonthlyFacultyAttendanceReport = async (
     const centerX = (cardWidth - textWidth) / 2;
     doc.text(headerText, x + centerX, y + 39);
 
-    const footerText = "Report generated usign LoricEdu Software" + " | " + new Date().toLocaleString()
+    const footerText = "Report generated usign LoricEdu Software |" + new Date().toLocaleString().toString()
     doc.setTextColor("#000")
     doc.setFontSize(6)
     doc.text(footerText, doc.internal.pageSize.getWidth() / 2, doc.internal.pageSize.getHeight() - 4, { align: "center" });
