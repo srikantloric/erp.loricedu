@@ -1,6 +1,6 @@
 
 import { Done, Save } from '@mui/icons-material';
-import { IconButton, Input, Tooltip } from '@mui/joy';
+import { IconButton, Input, Option, Select, Tooltip } from '@mui/joy';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from 'components/FormsUi/Table/Table';
 import { getFirestoreInstance } from 'context/firebaseUtility';
 import { doc, Timestamp, writeBatch } from 'firebase/firestore';
@@ -20,6 +20,7 @@ interface StudentResultsTableProps {
     selectedExam: string,
     savedStudents: Set<string>;
     setSavedStudents: React.Dispatch<React.SetStateAction<Set<string>>>
+    selectedExamTitle: string
 }
 
 // Inline style objects
@@ -111,7 +112,7 @@ export async function saveResults(results: any[], selectedExam: string): Promise
 }
 
 
-export default function StudentResultsTable({ students, papers, results, setResults, selectedExam, savedStudents, setSavedStudents }: StudentResultsTableProps) {
+export default function StudentResultsTable({ students, papers, results, setResults, selectedExam, selectedExamTitle, savedStudents, setSavedStudents }: StudentResultsTableProps) {
     const [_savingId, setSavingId] = useState<string | null>(null)
     const [isSaving, startSaving] = useTransition();
 
@@ -146,6 +147,26 @@ export default function StudentResultsTable({ students, papers, results, setResu
         }));
     };
 
+    const handleGradeChange = (studentId: string, paperId: string, value: string|null) => {
+        if(!value) return
+        setSavedStudents(prev => {
+            const newSet = new Set(prev);
+            newSet.delete(studentId);
+            return newSet;
+        });
+
+        setResults(prev => ({
+            ...prev,
+            [studentId]: {
+                ...prev[studentId],
+                [paperId]: {
+                    ...prev[studentId]?.[paperId],
+                    grade: value,
+                },
+            },
+        }));
+    };
+
     const handleSave = (studentId?: string) => {
         const id = studentId || 'all';
         setSavingId(id);
@@ -157,14 +178,20 @@ export default function StudentResultsTable({ students, papers, results, setResu
                 const studentResults: any[] = papers.map(paper => ({
                     paperId: paper.paperId,
                     paperTitle: paper.paperTitle,
-                    practical: results[student.id]?.[paper.paperId]?.practical ?? '',
-                    theory: results[student.id]?.[paper.paperId]?.theory ?? '',
+                    ...(
+                        paper.scoreType === "grade"
+                            ? { grade: results[student.id]?.[paper.paperId]?.grade ?? '' }
+                            : {
+                                theory: results[student.id]?.[paper.paperId]?.theory ?? '',
+                                practical: results[student.id]?.[paper.paperId]?.practical ?? '',
+                            }
+                    ),
                 }));
 
                 return {
                     studentId: student.id,
                     examId: selectedExam,
-                    examTitle: "No Title",
+                    examTitle: selectedExamTitle,
                     createdAt: Timestamp.now(),
                     result: studentResults,
                 };
@@ -222,11 +249,19 @@ export default function StudentResultsTable({ students, papers, results, setResu
                         <TableRow>
                             {papers.map(paper => (
                                 <React.Fragment key={`${paper.paperId}-sub`}>
-                                    <TableHead style={{ ...headCellStyle, minWidth: 120 }}>Theory ({paper.maxTheory})</TableHead>
-                                    {paper.maxPractical > 0 && (
-                                        <TableHead style={{ ...headCellStyle, minWidth: 120 }}>Practical ({paper.maxPractical})</TableHead>
+                                    {paper.scoreType === "grade" ? (
+                                        <>
+                                            <TableHead style={{ ...headCellStyle, minWidth: 240 }} colSpan={2}>Grade</TableHead>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <TableHead style={{ ...headCellStyle, minWidth: 120 }}>Theory ({paper.maxTheory})</TableHead>
+                                            {paper.maxPractical > 0 && (
+                                                <TableHead style={{ ...headCellStyle, minWidth: 120 }}>Practical ({paper.maxPractical})</TableHead>
+                                            )}
+                                            <TableHead style={{ ...headCellStyle, minWidth: 100 }}>Total</TableHead>
+                                        </>
                                     )}
-                                    <TableHead style={{ ...headCellStyle, minWidth: 100 }}>Total</TableHead>
                                 </React.Fragment>
                             ))}
                         </TableRow>
@@ -243,33 +278,59 @@ export default function StudentResultsTable({ students, papers, results, setResu
                                     const result = results[student.id]?.[paper.paperId];
                                     const theory = result?.theory ?? '';
                                     const practical = result?.practical ?? '';
-                                    const total = (Number(theory) || 0) + (Number(practical) || 0);
-                                    const theoryExceeds = Number(theory) > paper.maxTheory;
-                                    const practicalExceeds = Number(practical) > paper.maxPractical;
-
+                                    const grade = result?.grade ?? '';
                                     return (
                                         <React.Fragment key={`${student.id}-${paper.paperId}`}>
-                                            <TableCell style={{ borderLeft: "1px solid #e5e7eb" }}>
-                                                <Input
-                                                    type="number"
-                                                    aria-label={`Theory marks for ${student.student_name} in ${paper.paperTitle}`}
-                                                    value={theory}
-                                                    onChange={e => handleInputChange(student.id, paper.paperId, 'theory', e.target.value, paper.maxTheory)}
-                                                    style={theoryExceeds ? errorInputStyle : inputStyle}
-                                                />
-                                            </TableCell>
-                                            {paper.maxPractical > 0 && (
-                                                <TableCell>
-                                                    <Input
-                                                        type="number"
-                                                        aria-label={`Practical marks for ${student.student_name} in ${paper.paperTitle}`}
-                                                        value={practical}
-                                                        onChange={e => handleInputChange(student.id, paper.paperId, 'practical', e.target.value, paper.maxPractical)}
-                                                        style={practicalExceeds ? errorInputStyle : inputStyle}
-                                                    />
-                                                </TableCell>
+                                            {paper.scoreType === "grade" ? (
+                                                <>
+                                                    <TableCell colSpan={2} style={{ textAlign: "center" }}>
+                                                        <Select
+                                                        
+                                                            value={grade}
+                                                            onChange={(e, val) =>
+                                                                handleGradeChange(student.id, paper.paperId, val)
+                                                            }
+                                                        >
+                                                            {paper.grade && paper.grade.map((grade) => {
+                                                                return (
+                                                                    <Option value={grade}>
+                                                                        {grade}
+                                                                    </Option>
+                                                                )
+                                                            })}
+                                                        </Select>
+                                              
+                                                    </TableCell>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <TableCell style={{ borderLeft: "1px solid #e5e7eb" }}>
+                                                        <Input
+                                                            type="number"
+                                                            value={theory}
+                                                            onChange={e =>
+                                                                handleInputChange(student.id, paper.paperId, 'theory', e.target.value, paper.maxTheory)
+                                                            }
+                                                            style={Number(theory) > paper.maxTheory ? errorInputStyle : inputStyle}
+                                                        />
+                                                    </TableCell>
+                                                    {paper.maxPractical > 0 && (
+                                                        <TableCell>
+                                                            <Input
+                                                                type="number"
+                                                                value={practical}
+                                                                onChange={e =>
+                                                                    handleInputChange(student.id, paper.paperId, 'practical', e.target.value, paper.maxPractical)
+                                                                }
+                                                                style={Number(practical) > paper.maxPractical ? errorInputStyle : inputStyle}
+                                                            />
+                                                        </TableCell>
+                                                    )}
+                                                    <TableCell style={totalCellStyle}>
+                                                        {(Number(theory) || 0) + (Number(practical) || 0)}
+                                                    </TableCell>
+                                                </>
                                             )}
-                                            <TableCell style={totalCellStyle}>{total}</TableCell>
                                         </React.Fragment>
                                     );
                                 })}
