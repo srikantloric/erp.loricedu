@@ -58,6 +58,7 @@ import { useFirebase } from "context/firebaseContext";
 import FeeChallanTable from "components/FeeManager/FeeChallanTable";
 import PartPaymentForm from "components/FeeManager/PartPaymentForm";
 import PaymentForm from "components/FeeManager/PaymentForm";
+import ViewChallanDetails from "components/Modals/payments/ViewChallanDetails";
 
 const SearchAnotherButton = () => {
   const historyRef = useNavigate();
@@ -141,6 +142,8 @@ function StudentFeeDetails() {
   const [isGeneratingFeeReciept, setIsGeneratingFeeReciept] = useState(false);
 
   const [challanList, setChallanList] = useState<IChallanNL[]>([]);
+
+  const [showViewChallanDetailsModal, setShowViewChallanDetailsModal] = useState<boolean>(false);
 
   // Calculate total feeConsession and totalPaidAmount
   const calculateTotals = () => {
@@ -488,6 +491,7 @@ function StudentFeeDetails() {
       const paymentsData: IPaymentNL[] = snapshot.docs.map(doc => ({ ...(doc.data() as IPaymentNL) }));
 
       const recieptSnap = await getDoc(recieptConfigRef);
+
       const accountantName = recieptSnap.exists() ? recieptSnap.data()?.accountantName || "" : "";
       const recieptGeneratorServer = recieptSnap.exists() ? recieptSnap.data()?.recieptGeneratorServerUrl || "" : "";
 
@@ -659,6 +663,13 @@ function StudentFeeDetails() {
             Print Reciept
           </MenuItem>
           <Divider />
+          <MenuItem onClick={() => setShowViewChallanDetailsModal(true)}>
+            <ListItemIcon>
+              <PrintIcon fontSize="small" />
+            </ListItemIcon>
+            View Details
+          </MenuItem>
+          <Divider />
           <MenuItem onClick={() => setAddArrearModalopen(true)}>
             <ListItemIcon>
               <PaymentIcon fontSize="small" />
@@ -731,6 +742,10 @@ function StudentFeeDetails() {
             studentId={selectedRow.studentId}
             challanId={selectedRow.challanId}
           />
+        ) : null}
+
+        {selectedRow && showViewChallanDetailsModal ? (
+          <ViewChallanDetails challanId={selectedRow.challanId} studentId={selectedRow.studentId} open={showViewChallanDetailsModal} setOpen={setShowViewChallanDetailsModal} />
         ) : null}
 
         <ModalLoader loading={isGeneratingFeeReciept} />
