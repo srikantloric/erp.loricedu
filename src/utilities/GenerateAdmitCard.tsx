@@ -1,7 +1,7 @@
 import jsPDF from "jspdf";
 import { admitCardType } from "types/admitCard";
 
-import { POPPINS_BOLD, POPPINS_REGULAR, POPPINS_SEMIBOLD, PROFILE_PLACEHOLDER_BASE64, SIGN_ADMIT_BASE64 } from "./Base64Url";
+import { POPPINS_BOLD, POPPINS_REGULAR, POPPINS_SEMIBOLD, PROFILE_PLACEHOLDER_BASE64 } from "./Base64Url";
 
 import { examData } from "components/Exams/ExamPlannerTable";
 import { getAppConfig } from "hooks/getAppConfig";
@@ -147,14 +147,14 @@ export const GenerateAdmitCard = async (
       // Exam Details Box
       doc.setDrawColor(0, 0, 0);
       doc.setFillColor("#ffffcc"); // Light yellow background for exam timing
-      doc.rect(margin + 6, positionY + 62, timeTableX - margin - 12, 10, "F");
+      doc.rect(margin + 6, positionY + 62, timeTableX - margin - 5, 10, "F");
       doc.setFont("Poppins", "semibold");
       doc.setFontSize(10);
       doc.text(
-        `Exam Timing: ${studentData.startTime} to ${studentData.endTime}`,
-        (margin + 6 + timeTableX - margin - 12) / 2,
+        `Exam Timing: ${studentData.startTime} | ${studentData.endTime}`,
+        margin +10,
         positionY + 69,
-        { align: "center" }
+        { align: "left" }
       );
 
       // Time Table
@@ -209,11 +209,11 @@ export const GenerateAdmitCard = async (
       doc.text("(Class Teacher)", margin+20, signatureY+4);
 
 
-      doc.addImage(PRINCIPAL_SIGN, "PNG", 80, signatureY - 10, 25, 13); // Placeholder for signature image
-      doc.text("(Principal)", 85, signatureY+4);
+      // doc.addImage(PRINCIPAL_SIGN, "PNG", 80, signatureY - 10, 25, 13); // Placeholder for signature image
+      // doc.text("(Principal)", 85, signatureY+4);
 
-      doc.text("(Exam Controller)", 150, signatureY + 4);
-      doc.addImage(SIGN_ADMIT_BASE64, "PNG", 150, signatureY - 10, 20, 15); // Placeholder for signature image
+      doc.text("(Principal)", 150, signatureY + 4);
+      doc.addImage(PRINCIPAL_SIGN, "PNG", 150, signatureY - 10, 20, 15); // Placeholder for signature image
     });
     const blob = doc.output("blob");
     const url = URL.createObjectURL(blob);
