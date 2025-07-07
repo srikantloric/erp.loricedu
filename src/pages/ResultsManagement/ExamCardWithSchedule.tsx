@@ -24,7 +24,7 @@ function ExamCardWithSchedule() {
                         <Stack>
                             <Typography level="h4">Term-1 Examination</Typography>
                             <Typography level="body-sm">
-                                Created On :15/06/2025
+                                Created On :07/07/2025
                             </Typography>
                         </Stack>
                     </Stack>

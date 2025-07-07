@@ -54,8 +54,8 @@ const AdmitCard = () => {
         return {
           examTitle: "Term-1 Examination",
           session: "2025-26",
-          startTime: "08:00 AM",
-          endTime: "09:30 AM",
+          startTime: "08:00AM - 10:30AM",
+          endTime: "11:00AM - 01:00PM",
           studentName: student.student_name,
           fatherName: student.father_name,
           rollNumber: student.class_roll,

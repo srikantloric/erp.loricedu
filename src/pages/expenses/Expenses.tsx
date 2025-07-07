@@ -12,6 +12,8 @@ import PageHeaderWithHelpButton from "components/Breadcrumbs/PageHeaderWithHelpB
 import CategoriesTab from "./expense-tabs/CategoriesTab";
 function Expenses() {
   const [selectedTab, setSelectedTab] = useState<number>(0);
+
+ 
   return (
     <PageContainer>
       <Navbar />

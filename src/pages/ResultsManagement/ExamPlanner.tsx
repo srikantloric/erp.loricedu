@@ -1,5 +1,5 @@
 import { Add, Search } from "@mui/icons-material"
-import { Button,Input} from "@mui/joy"
+import { Button, Input } from "@mui/joy"
 import { Stack } from "@mui/material"
 import { IconCalendarEvent } from "@tabler/icons-react"
 import BreadCrumbsV2 from "components/Breadcrumbs/BreadCrumbsV2"
@@ -11,7 +11,7 @@ import ExamCardWithSchedule from "./ExamCardWithSchedule"
 
 
 function ExamPlanner() {
-   
+
     return (
         <PageContainer>
             <Navbar />

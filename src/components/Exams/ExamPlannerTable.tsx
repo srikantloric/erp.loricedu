@@ -14,241 +14,210 @@ export interface ExamData {
 
 
 export const examData: ExamData[] = [
-    
+
     {
-        date: "23/06/2025",
+        date: "16/07/2025",
         sessions: [
             {
                 session: "1st",
                 subjects: {
-                    "Pre-Nursery": "ENGLISH",
-                    "Nursery": "MATHS",
-                    "LKG": "DRAWING",
-                    "UKG": "HINDI",
-
-                    "STD-1": "ENGLISH",
-                    "STD-2": "MATHS",
-                    "STD-3": "SCIENCE",
-                    "STD-4": "SST",
-                    "STD-5": "COMPUTER",
-                    "STD-6": "G.K + CONV.",
-                    "STD-7": "HINDI",
-                },
-            },
-            {
-                session: "2nd",
-                subjects: {
-                    "STD-1": "ORAL",
-                    "STD-2": "ORAL",
-                    "STD-3": "ORAL",
-                    "STD-4": "ORAL",
-                    "STD-5": "ORAL",
-                    "STD-6": "ORAL",
-                    "STD-7": "ORAL",
-                },
-            }
-        ],
-    },
-    {
-        date: "24/06/2025",
-        sessions: [
-            {
-                session: "1st",
-                subjects: {
-                    "Pre-Nursery": "MATHS",
-                    "Nursery": "DRAWING",
-                    "LKG": "HINDI",
-                    "UKG": "ENGLISH",
-
-                    "STD-1": "MATHS",
-                    "STD-2": "SCIENCE",
-                    "STD-3": "SST",
-                    "STD-4": "COMPUTER",
-                    "STD-5": "G.K + CONV.",
-                    "STD-6": "HINDI",
-                    "STD-7": "ENGLISH",
-                },
-            },
-            {
-                session: "2nd",
-                subjects: {
-                    "STD-1": "ORAL",
-                    "STD-2": "ORAL",
-                    "STD-3": "ORAL",
-                    "STD-4": "ORAL",
-                    "STD-5": "ORAL",
-                    "STD-6": "ORAL",
-                    "STD-7": "ORAL",
-                },
-            }
-        ],
-    },
-    {
-        date: "25/06/2025",
-        sessions: [
-            {
-                session: "1st",
-                subjects: {
-                    "Pre-Nursery": "DRAWING",
-                    "Nursery": "HINDI",
-                    "LKG": "ENGLISH",
-                    "UKG": "MATHS",
-
-                    "STD-1": "SCIENCE",
-                    "STD-2": "SST",
-                    "STD-3": "COMPUTER",
-                    "STD-4": "G.K + CONV.",
-                    "STD-5": "HINDI",
-                    "STD-6": "ENGLISH",
+                    "STD-2": "ENGLISH",
+                    "STD-3": "ENGLISH",
+                    "STD-4": "ENGLISH",
+                    "STD-5": "MATHS",
+                    "STD-6": "MATHS",
                     "STD-7": "MATHS",
                 },
             },
             {
                 session: "2nd",
                 subjects: {
-                    "STD-1": "ORAL",
-                    "STD-2": "ORAL",
-                    "STD-3": "ORAL",
-                    "STD-4": "ORAL",
-                    "STD-5": "ORAL",
-                    "STD-6": "ORAL",
-                    "STD-7": "ORAL",
+                    "STD-2": "HINDI",
+                    "STD-3": "HINDI",
+                    "STD-4": "HINDI",
+                    "STD-5": "G.K",
+                    "STD-6": "G.K",
+                    "STD-7": "G.K",
                 },
             }
         ],
     },
     {
-        date: "26/06/2025",
+        date: "17/07/2025",
         sessions: [
             {
                 session: "1st",
                 subjects: {
-                    "Pre-Nursery": "ORAL-HINDI",
-                    "Nursery": "ORAL-ENGLISH",
-                    "LKG": "ORAL-MATHS",
-                    "UKG": "ORAL-HINDI",
-
-                    "STD-1": "SST",
-                    "STD-2": "COMPUTER",
-                    "STD-3": "G.K + CONV.",
-                    "STD-4": "HINDI",
-                    "STD-5": "ENGLISH",
-                    "STD-6": "MATHS",
+                    "Pre-Nursery": "HINDI",
+                    "Nursery": "HINDI",
+                    "LKG": "HINDI",
+                    "UKG": "HINDI",
+                    "STD-1": "HINDI",
+                },
+            },
+            {
+                session: "2nd",
+                subjects: {
+                    "Pre-Nursery": "ORAL",
+                    "Nursery": "ORAL",
+                    "LKG": "ORAL",
+                    "UKG": "ORAL",
+                    "STD-1": "G.K",
+                },
+            }
+        ],
+    },
+    {
+        date: "18/07/2025",
+        sessions: [
+            {
+                session: "1st",
+                subjects: {
+                    "STD-2": "MATHS",
+                    "STD-3": "MATHS",
+                    "STD-4": "MATHS",
+                    "STD-5": "SCIENCE",
+                    "STD-6": "SCIENCE",
                     "STD-7": "SCIENCE",
                 },
             },
             {
                 session: "2nd",
                 subjects: {
-                    "STD-1": "ORAL",
-                    "STD-2": "ORAL",
-                    "STD-3": "ORAL",
-                    "STD-4": "ORAL",
-                    "STD-5": "ORAL",
-                    "STD-6": "ORAL",
-                    "STD-7": "ORAL",
-                },
-            }
-        ],
-    },
-    {
-        date: "27/06/2025",
-        sessions: [
-            {
-                session: "1st",
-                subjects: {
-                    "Pre-Nursery": "ORAL-ENGLISH",
-                    "Nursery": "ORAL-MATHS",
-                    "LKG": "ORAL-HINDI",
-                    "UKG": "ORAL-ENGLISH",
-
-                    "STD-1": "COMPUTER",
-                    "STD-2": "G.K + CONV.",
-                    "STD-3": "HINDI",
-                    "STD-4": "ENGLISH",
-                    "STD-5": "MATHS",
-                    "STD-6": "SCIENCE",
-                    "STD-7": "SST",
-                },
-            },
-            {
-                session: "2nd",
-                subjects: {
-                    "STD-1": "ORAL",
-                    "STD-2": "ORAL",
-                    "STD-3": "ORAL",
-                    "STD-4": "ORAL",
-                    "STD-5": "ORAL",
-                    "STD-6": "ORAL",
-                    "STD-7": "ORAL",
-                },
-            }
-        ],
-    },
-    {
-        date: "28/06/2025",
-        sessions: [
-            {
-                session: "1st",
-                subjects: {
-                    "Pre-Nursery": "ORAL-MATHS",
-                    "Nursery": "ORAL-HINDI",
-                    "LKG": "ORAL-ENGLISH",
-                    "UKG": "ORAL-MATHS",
-
-                    "STD-1": "G.K + CONV.",
-                    "STD-2": "HINDI",
-                    "STD-3": "ENGLISH",
-                    "STD-4": "MATHS",
-                    "STD-5": "SCIENCE",
-                    "STD-6": "SST",
+                    "STD-2": "G.K",
+                    "STD-3": "G.K",
+                    "STD-4": "G.K",
+                    "STD-5": "COMPUTER",
+                    "STD-6": "COMPUTER",
                     "STD-7": "COMPUTER",
                 },
+            }
+        ],
+    },
+    {
+        date: "19/07/2025",
+        sessions: [
+            {
+                session: "1st",
+                subjects: {
+                    "Pre-Nursery": "ENGLISH",
+                    "Nursery": "ENGLISH",
+                    "LKG": "ENGLISH",
+                    "UKG": "ENGLISH",
+                    "STD-1": "MATHS",
+
+                },
             },
             {
                 session: "2nd",
                 subjects: {
-                    "STD-1": "ORAL",
-                    "STD-2": "ORAL",
-                    "STD-3": "ORAL",
-                    "STD-4": "ORAL",
-                    "STD-5": "ORAL",
-                    "STD-6": "ORAL",
-                    "STD-7": "ORAL",
+                    "Pre-Nursery": "ORAL",
+                    "Nursery": "ORAL",
+                    "LKG": "ORAL",
+                    "UKG": "ORAL",
+                    "STD-1": "G.K",
                 },
             }
         ],
     },
     {
-        date: "30/06/2025",
+        date: "21/07/2025",
         sessions: [
             {
                 session: "1st",
                 subjects: {
-                    "Pre-Nursery": "HINDI",
-                    "Nursery": "ENGLISH",
-                    "LKG": "MATH",
-                    "UKG": "DRAWING",
-
-                    "STD-1": "HINDI",
-                    "STD-2": "ENGLISH",
-                    "STD-3": "MATH",
-                    "STD-4": "SCIENCE",
-                    "STD-5": "SST",
-                    "STD-6": "COMPUTER",
-                    "STD-7": "G.K + CONV.",
+                    "STD-2": "S.ST",
+                    "STD-3": "S.ST",
+                    "STD-4": "S.ST",
+                    "STD-5": "ENGLISH",
+                    "STD-6": "ENGLISH",
+                    "STD-7": "ENGLISH",
                 },
             },
             {
                 session: "2nd",
                 subjects: {
-                    "STD-1": "ORAL",
-                    "STD-2": "ORAL",
-                    "STD-3": "ORAL",
-                    "STD-4": "ORAL",
-                    "STD-5": "ORAL",
-                    "STD-6": "ORAL",
-                    "STD-7": "ORAL",
+                    "STD-2": "COMPUTER",
+                    "STD-3": "COMPUTER",
+                    "STD-4": "COMPUTER",
+                    "STD-5": "HINDI",
+                    "STD-6": "HINDI",
+                    "STD-7": "HINDI",
+                },
+            }
+        ],
+    },
+    {
+        date: "22/07/2025",
+        sessions: [
+            {
+                session: "1st",
+                subjects: {
+                    "Pre-Nursery": "MATHS",
+                    "Nursery": "MATHS",
+                    "LKG": "MATHS",
+                    "UKG": "MATHS",
+                    "STD-1": "S.ST",
+
+                },
+            },
+            {
+                session: "2nd",
+                subjects: {
+                    "Pre-Nursery": "ORAL",
+                    "Nursery": "ORAL",
+                    "LKG": "ORAL",
+                    "UKG": "G.K",
+                    "STD-1": "COMPUTER",
+                },
+            }
+        ],
+    },
+    {
+        date: "23/07/2025",
+        sessions: [
+            {
+                session: "1st",
+                subjects: {
+                    "STD-2": "SCIENCE",
+                    "STD-3": "SCIENCE",
+                    "STD-4": "SCIENCE",
+                    "STD-5": "S.ST",
+                    "STD-6": "S.ST",
+                    "STD-7": "S.ST",
+                },
+            },
+            {
+                session: "2nd",
+                subjects: {
+                    "STD-2": "DRAWING",
+                    "STD-3": "DRAWING",
+                    "STD-4": "DRAWING",
+                    "STD-5": "DRAWING",
+                    "STD-6": "DRAWING",
+                    "STD-7": "DRAWING",
+                },
+            }
+        ],
+    },
+    {
+        date: "24/07/2025",
+        sessions: [
+            {
+                session: "1st",
+                subjects: {
+                    "Pre-Nursery": "DRAWING",
+                    "Nursery": "DRAWING",
+                    "LKG": "DRAWING",
+                    "UKG": "DRAWING",
+                    "STD-1": "SCIENCE",
+
+                },
+            },
+            {
+                session: "2nd",
+                subjects: {
+                    "STD-1": "DRAWING",
                 },
             }
         ],
