@@ -115,7 +115,7 @@ export const examData: ExamData[] = [
                     "Nursery": "ORAL",
                     "LKG": "ORAL",
                     "UKG": "ORAL",
-                    "STD-1": "G.K",
+                    "STD-1": "ENGLISH",
                 },
             }
         ],
