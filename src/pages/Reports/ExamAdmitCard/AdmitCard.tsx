@@ -1,14 +1,10 @@
-import BreadCrumbsV2 from "components/Breadcrumbs/BreadCrumbsV2";
-import Navbar from "components/Navbar/Navbar";
-import LSPage from "components/Utils/LSPage";
-import PageContainer from "components/Utils/PageContainer";
-import { IconReport } from "@tabler/icons-react";
+
 import { Paper } from "@mui/material";
 import { Box, Button, Chip, Option, Select, Stack, Typography } from "@mui/joy";
 import { admitCardType } from "types/admitCard";
 import { useState } from "react";
 import { SCHOOL_CLASSES } from "config/schoolConfig";
-import { GenerateAdmitCard } from "../../utilities/GenerateAdmitCard";
+import { GenerateAdmitCard } from "../../../utilities/GenerateAdmitCard";
 import { StudentDetailsType } from "types/student";
 import { getClassNameByValue } from "utilities/UtilitiesFunctions";
 import { collection, getDocs, query, where } from "firebase/firestore";
@@ -84,88 +80,83 @@ const AdmitCard = () => {
   };
 
   return (
-    <PageContainer>
-      <Navbar />
-      <LSPage>
-        <BreadCrumbsV2 Icon={IconReport} Path="Reports/Admit Card" />
+    <>
+      <Paper sx={{ p: "10px", mt: "8px" }}>
+        <Stack
+          direction="row"
+          alignItems="center"
+          justifyContent="space-between"
+        >
+          <Box>
+            <Typography level="title-md">Admit Card</Typography>
+          </Box>
+          <Stack direction="row" alignItems="center" gap={1.5}>
+            <Select
+              placeholder="Choose exam"
+              value={selectedExam}
+              onChange={(e, val) => setSelectedExam(val)}
+            >
+              {/* <Option value="ANNUALT4">
+                  <Stack>
+                  <Typography level="body-sm">Annual Exam (Term-1)</Typography>
+                  <Typography level="body-xs" sx={{ color: "text.tertiary" }}>
+                  2024-25
+                  </Typography>
+                  </Stack>
+                  </Option> */}
+              <Option value="ANNUALT1">
+                <Stack>
+                  <Typography level="body-sm">Term-1 Examination</Typography>
+                  <Typography level="body-xs" sx={{ color: "text.tertiary" }}>
+                    2025-26
+                  </Typography>
+                </Stack>
+              </Option>
 
-        <br />
-        <Paper sx={{ p: "10px", mt: "8px" }}>
-          <Stack
-            direction="row"
-            alignItems="center"
-            justifyContent="space-between"
-          >
-            <Box>
-              <Typography level="title-md">Admit Card</Typography>
-            </Box>
-            <Stack direction="row" alignItems="center" gap={1.5}>
-              <Select
-                placeholder="Choose exam"
-                value={selectedExam}
-                onChange={(e, val) => setSelectedExam(val)}
-              >
-                {/* <Option value="ANNUALT4">
-                  <Stack>
-                    <Typography level="body-sm">Annual Exam (Term-1)</Typography>
-                    <Typography level="body-xs" sx={{ color: "text.tertiary" }}>
-                      2024-25
-                    </Typography>
-                  </Stack>
-                </Option> */}
-                <Option value="ANNUALT1">
-                  <Stack>
-                    <Typography level="body-sm">Term-1 Examination</Typography>
-                    <Typography level="body-xs" sx={{ color: "text.tertiary" }}>
-                      2025-26
-                    </Typography>
-                  </Stack>
+
+            </Select>
+            <Select
+              placeholder="Choose class"
+              value={selectedClass}
+              onChange={(e, val) => setSelectedClass(val)}
+            >
+              {SCHOOL_CLASSES.map((item) => (
+                <Option key={item.value} value={item.value}>
+                  {item.title}
                 </Option>
-
-
-              </Select>
-              <Select
-                placeholder="Choose class"
-                value={selectedClass}
-                onChange={(e, val) => setSelectedClass(val)}
-              >
-                {SCHOOL_CLASSES.map((item) => (
-                  <Option key={item.value} value={item.value}>
-                    {item.title}
-                  </Option>
-                ))}
-              </Select>
+              ))}
+            </Select>
 
 
 
-              <Button
-                sx={{ ml: "8px" }}
-                onClick={handleGenerateAdmitCard}
-                loading={loading}
-              >
-                Generate Admit Card
-              </Button>
-            </Stack>
+            <Button
+              sx={{ ml: "8px" }}
+              onClick={handleGenerateAdmitCard}
+              loading={loading}
+            >
+              Generate Admit Card
+            </Button>
           </Stack>
-        </Paper>
-        {pdfUrl && (
-          <>
-            <Chip sx={{ mt: "8px", mb: "8px" }}>
-              Total admitcard count :{studentData.length}
-            </Chip>
-            <Paper sx={{ height: "100vh" }}>
-              <iframe
-                src={pdfUrl}
-                title="PDF Viewer"
-                width="100%"
-                height="100%"
-                frameBorder={0}
-              />
-            </Paper>
-          </>
-        )}
-      </LSPage>
-    </PageContainer>
+        </Stack>
+      </Paper>
+      {pdfUrl && (
+        <>
+          <Chip sx={{ mt: "8px", mb: "8px" }}>
+            Total admitcard count :{studentData.length}
+          </Chip>
+          <Paper sx={{ height: "100vh" }}>
+            <iframe
+              src={pdfUrl}
+              title="PDF Viewer"
+              width="100%"
+              height="100%"
+              frameBorder={0}
+            />
+          </Paper>
+        </>
+      )}
+
+    </>
   );
 };
 

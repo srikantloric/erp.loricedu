@@ -14,7 +14,7 @@ import AuthProvider from "./context/AuthContext";
 
 // Utility Component for Lazy Loading
 import Loadable from "./components/thirdparty/Loadable";
-import AdmitCard from "pages/Reports/AdmitCard";
+import AdmitCard from "pages/Reports/ExamAdmitCard/AdmitCard";
 import ExamPlanner from "pages/ResultsManagement/ExamPlanner";
 import { FirebaseProvider } from "context/firebaseContext";
 import { auth } from "./firebase";
@@ -32,6 +32,7 @@ import NewFeeCollection from "pages/FeeManager/NewFeeCollection";
 import StudentsList from "pages/Reports/StudentsList";
 import { NavbarProvider } from "context/NavbarContext";
 import IotAttendance from "pages/Attendance/iotAttendanance/IotAttendance";
+import GenerateAdmitCard from "pages/Reports/ExamAdmitCard/GenerateAdmitCard";
 
 // Lazy Loaded Components
 
@@ -245,7 +246,7 @@ function App() {
 
                     <Route path="/reports/due-report" element={<DueReport />} />
                     <Route path="/reports/demand-slip" element={<DemandSlip />} />
-                    <Route path="/reports/admit-card" element={<AdmitCard />} />
+                    <Route path="/reports/admit-card" element={<GenerateAdmitCard />} />
                     <Route path="/reports/students-list" element={<StudentsList />} />
                     <Route path="/reports/faculty-daily-attendance" element={<FacultyDailyAttendanceReport />} />
                     <Route path="/reports/faculty-monthly-attendance" element={<FacultyMonthlyAttendanceReport />} />
