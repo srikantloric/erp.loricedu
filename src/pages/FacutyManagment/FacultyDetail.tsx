@@ -29,7 +29,7 @@ function FacultyDetail() {
   const { db } = useFirebase();
 
   useEffect(() => {
-    if (!id) return; // Ensure 'id' is available
+    if (!id) return; 
 
     const facultyRef = doc(db, "STUDENTS", id);
 

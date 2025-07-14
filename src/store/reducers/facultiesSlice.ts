@@ -25,6 +25,7 @@ export const fetchTeacher = createAsyncThunk<FacultyType[], void>(
     const querySnapshot = await getDocs(facultyQuery);
     const teachers: FacultyType[] = querySnapshot.docs.map((doc: any) => ({
       ...doc.data(),
+      id: doc.id
     })) as FacultyType[];
     return teachers;
   }
