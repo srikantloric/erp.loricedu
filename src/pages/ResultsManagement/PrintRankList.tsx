@@ -19,7 +19,7 @@ import { useEffect, useState } from "react";
 import { enqueueSnackbar } from "notistack";
 import {
   rankType,
-  resultType,
+  resultTypeNew,
 } from "types/results";
 import { StudentDetailsType } from "types/student";
 import { collection, doc, getDoc, getDocs, query, where } from "firebase/firestore";
@@ -54,6 +54,7 @@ const fullMarks = {
   HINDI: 100,
   DRAWINGACTIVITY: 100,
   SOCIALSCIENCE: 100,
+  GKCONV:100
 };
 
 
@@ -61,7 +62,7 @@ type ExtendedRankType = rankType & {
   studentName: string;
   fatherName: string;
   rollNumber: number;
-  subjectMarks: { subject: string; marks: number }[];
+  subjectMarks: { subject: string; marks: number | string }[];
   percentage: number;
 };
 
@@ -171,7 +172,7 @@ function PrintRankList() {
         const resultSnap = await getDocs(resultQuery);
 
         resultSnap.forEach((resDoc) => {
-          const res = resDoc.data() as resultType;
+          const res = resDoc.data() as resultTypeNew;
           if (res.examId === selectedExam) {
 
             if (!Array.isArray(res.result)) {
@@ -185,22 +186,29 @@ function PrintRankList() {
               return total + fullMarkForSubject;
             }, 0);
 
+            console.log("Total Marks:", totalMarks);
             //paper mark obtained
             let marksObtained = res.result.reduce((total, item) => {
 
-              let obtainedMarkCalculated;
-              if (themeExam === "total-pass-design") {
-                obtainedMarkCalculated = Number(item.paperMarkObtained);
+              console.log("Item:", total, item);
 
-              } else {
-                obtainedMarkCalculated =
-                  item.paperId === "DRAWING"
-                    ? 0
-                    : Number(item.paperMarkTheory) + Number(item.paperMarkPractical);
+              let obtainedMarkCalculated = 0;
+
+              if (themeExam === "theory-practical-design") {
+
+                if (item.paperId === "DRAW") {
+                  obtainedMarkCalculated = 0; // Assuming DRAW has no marks
+                } else {
+                  obtainedMarkCalculated = Number(item.theory || 0) + Number(item.practical || 0);
+                }
+
               }
+
 
               return total + obtainedMarkCalculated!;
             }, 0);
+
+
 
             console.log("Marks Obtained:", marksObtained)
             markSheetTempListExtended.push({
@@ -213,9 +221,11 @@ function PrintRankList() {
               rollNumber: Number(student.class_roll),
               subjectMarks: res.result.map((item) => ({
                 subject: item.paperId,
-                marks: themeExam === "total-pass-design" ? Number(item.paperMarkObtained) : Number(item.paperMarkTheory) + Number(item.paperMarkPractical),
-              }),
-              ),
+                marks:
+                  item.paperId === "DRAW"|| item.paperId === "DRAWING"
+                    ? (item.grade ?? "")
+                    : ((Number(item.theory ?? 0) + Number(item.practical ?? 0))),
+              })),
             });
           }
         });
