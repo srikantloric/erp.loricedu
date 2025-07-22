@@ -3,7 +3,7 @@ import { doc, getDoc } from "firebase/firestore";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import { rankDoctype } from "types/reports/marksheet";
-import { marksheetType } from "types/results";
+import { marksheetTypeNew } from "types/results";
 import { POPPINS_BOLD, POPPINS_REGULAR, POPPINS_SEMIBOLD } from "utilities/Base64Url";
 import { getClassNameByValue, GetGradeFromMark, getOrdinal } from "utilities/UtilitiesFunctions";
 
@@ -28,7 +28,7 @@ const getStudentRank = async (classId: string | undefined) => {
 
 
 export const MarksheetDesign1 = {
-  generatePDF: async (resultData: marksheetType[], config: any): Promise<string> => {
+  generatePDF: async (resultData: marksheetTypeNew[], config: any): Promise<string> => {
     const {
       schoolName: SCHOOL_NAME,
       schoolAddress: SCHOOL_ADDRESS,
@@ -106,16 +106,14 @@ export const MarksheetDesign1 = {
       let resDataTable: paperMarksTypeLocal[] = [];
       data.result.forEach((item) => {
         // Calculate obtained marks based on paperId
-        const passingMark = (0.33 * (Number(item.paperMarkTheory) + Number(item.paperMarkPractical))).toFixed(0); // Calculate 33% of total marks
+        const passingMark = (0.33 * (Number(item.theory) + Number(item.practical))).toFixed(0); // Calculate 33% of total marks
         const res: paperMarksTypeLocal = {
           paperTitle: item.paperTitle,
-          paperMarkTotal: Number(item.paperMarkTheory) + Number(item.paperMarkPractical),
+          paperMarkTotal: Number(item.theory) + Number(item.practical),
           paperMarkPassing: passingMark,
           paperMarkObtained:
-            item.paperMarkObtained === 0
-              ? "AB"
-              : item.paperMarkObtained, // Assign numeric value for other subjects
-          paperGradeObtained: GetGradeFromMark(item.paperMarkObtained), // Assign numeric value for other subjects
+            Number(item.theory ?? 0) + Number(item.practical ?? 0), // Assign numeric value for other subjects
+          paperGradeObtained: GetGradeFromMark(Number(item.theory ?? 0) + Number(item.practical ?? 0)), // Assign numeric value for other subjects
         };
         resDataTable.push(res);
       });
@@ -125,16 +123,16 @@ export const MarksheetDesign1 = {
       let totalAllMarks = 0;
 
       const fullMarksObtained = data.result.reduce((total, item) => {
-        const fullMark = Number(item.paperMarkObtained);
+        const fullMark = Number(Number(item.theory ?? 0) + Number(item.practical ?? 0));
         return total + fullMark
       }, 0);
 
       data.result.forEach((item) => {
-        totalAllMarks += Number(item.paperMarkTheory) + Number(item.paperMarkPractical);
+        totalAllMarks += Number(item.theory) + Number(item.practical);
       })
 
       let marksObtained = data.result.reduce((total, item) => {
-        const obtainedMarkCalculated = Number(item.paperMarkObtained)
+        const obtainedMarkCalculated = Number(Number(item.theory ?? 0) + Number(item.practical ?? 0))
         return total + obtainedMarkCalculated;
       }, 0);
 

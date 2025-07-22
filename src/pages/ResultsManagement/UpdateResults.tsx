@@ -36,12 +36,12 @@ import { StudentDetailsType } from "types/student";
 import { enqueueSnackbar } from "notistack";
 
 import { MarksheetReportGenerator } from "components/Reports/MarksheetReport";
-import { paperMarksType, resultType } from "types/results";
 import { collection, deleteDoc, doc, getDoc, getDocs, onSnapshot, orderBy, query, setDoc, Timestamp, updateDoc, where } from "firebase/firestore";
 import { useFirebase } from "context/firebaseContext";
 
 import PageHeaderWithHelpButton from "components/Breadcrumbs/PageHeaderWithHelpButton";
 import { useNavigate } from "react-router-dom";
+import { paperMarksTypeNew, resultTypeNew } from "types/results";
 
 type examType = {
   examId: string;
@@ -76,10 +76,10 @@ function UpdateResults() {
     useState<StudentDetailsType | null>(null);
   const [selectedExam, setSelectedExam] = useState<any | null>(null);
   const [studentSelectedMarkList, setStudentSelectedMarkList] = useState<
-    paperMarksType[]
+    paperMarksTypeNew[]
   >([]);
   const [studentPublishedResults, setStudentPublishedResults] = useState<
-    resultType[] | null
+    resultTypeNew[] | null
   >(null);
   const [fetchingStudentPublishedResult, setFetchingStudentPublishedResult] =
     useState<boolean>(false);
@@ -138,10 +138,10 @@ function UpdateResults() {
 
       const unsubscribe = onSnapshot(studentResultsRef, (results) => {
         if (!results.empty) {
-          const resultListTemp: resultType[] = results.docs.map((result) => ({
+          const resultListTemp: resultTypeNew[] = results.docs.map((result) => ({
             ...result.data(),
             docId: result.id,
-          })) as resultType[];
+          })) as resultTypeNew[];
 
           setStudentPublishedResults(resultListTemp);
         }
@@ -258,13 +258,11 @@ function UpdateResults() {
       const paper = paperList.find((paper) => paper.paperId === selectedPaper);
 
       if (paper) {
-        const paperWithMarks: paperMarksType = {
+        const paperWithMarks: paperMarksTypeNew = {
           paperId: paper.paperId,
           paperTitle: paper.paperTitle,
-          paperMarkObtained: 0,
-          paperMarkTheory: 80,
-          paperMarkPassing: 33,
-          paperMarkPractical: 20,
+          theory: 80,
+          practical: 20,
         };
 
         const isPaperAlreadyExisting = studentSelectedMarkList.some(
@@ -280,13 +278,13 @@ function UpdateResults() {
 
 
 
-  const handlePaperDeleteBtn = (paper: paperMarksType) => {
+  const handlePaperDeleteBtn = (paper: paperMarksTypeNew) => {
     setStudentSelectedMarkList(
       studentSelectedMarkList.filter((item) => item.paperId !== paper.paperId)
     );
   };
 
-  const handleMarkUpdate = (val: string, paper: paperMarksType, type: string) => {
+  const handleMarkUpdate = (val: string, paper: paperMarksTypeNew, type: string) => {
     setStudentSelectedMarkList((prev) =>
       prev.map((item) =>
         item.paperId === paper.paperId
@@ -299,8 +297,8 @@ function UpdateResults() {
             ...(type === "PRAC" && { paperMarkPractical: Number(val) }), // Keep practical as number
             ...(item.paperId !== "DRAWING" && {
               paperMarkObtained:
-                (type === "THEORY" ? Number(val) : Number(item.paperMarkTheory || 0)) +
-                (type === "PRAC" ? Number(val) : Number(item.paperMarkPractical || 0)),
+                (type === "THEORY" ? Number(val) : Number(item.theory || 0)) +
+                (type === "PRAC" ? Number(val) : Number(item.practical || 0)),
             }),
           }
           : item
@@ -327,10 +325,10 @@ function UpdateResults() {
     try {
       const examTitle = examsList.find((exam) => exam.examId === selectedExam)?.examTitle ?? "";
 
-      const resultData: resultType = {
+      const resultData: resultTypeNew = {
         examId: selectedExam,
         examTitle: examTitle,
-        publishedOn: Timestamp.now(),
+        createdAt: Timestamp.now(),
         result: studentSelectedMarkList,
       };
       if (db === null) return;
@@ -387,7 +385,7 @@ function UpdateResults() {
     setStudentSelectedMarkList([]);
   };
 
-  const handleEditPublishedResult = (result: resultType) => {
+  const handleEditPublishedResult = (result: resultTypeNew) => {
     setSelectedExam(result.examId);
     setStudentSelectedMarkList(result.result);
     setResultDocId(result.docId!);
@@ -403,7 +401,7 @@ function UpdateResults() {
     }
   }, [updateResultDialogOpen]);
 
-  const printStudentMarksheet = async (result: resultType) => {
+  const printStudentMarksheet = async (result: resultTypeNew) => {
     if (!examsList) {
       enqueueSnackbar("Failed to load exams configurations!", { variant: "error" });
       return;
@@ -567,7 +565,7 @@ function UpdateResults() {
                                 <Divider />
                                 <Typography level="body-sm" textAlign="center">
                                   Published:
-                                  {result.publishedOn
+                                  {result.createdAt
                                     .toDate()
                                     .toLocaleDateString()}
                                 </Typography>
@@ -740,7 +738,7 @@ function UpdateResults() {
                           <Select
                             sx={{ width: "150px" }}
                             onChange={(e, val) => handleMarkUpdate(val as string, paper, "THEORY")}
-                            value={paper.paperMarkTheory as string}
+                            value={paper.theory as string}
                           >
                             {grades.map((grade) => (
                               <Option key={grade} value={grade}>
@@ -777,7 +775,7 @@ function UpdateResults() {
                             onChange={(e) =>
                               handleMarkUpdate(e.target.value, paper, "THEORY")
                             }
-                            value={paper.paperMarkTheory || 0}
+                            value={paper.theory || 0}
                           />
                           +
                           <Input
@@ -786,14 +784,14 @@ function UpdateResults() {
                             onChange={(e) =>
                               handleMarkUpdate(e.target.value, paper, "PRAC")
                             }
-                            value={paper.paperMarkPractical || 0}
+                            value={paper.practical || 0}
                           />
                           =
                           <Input
                             type="text"
                             sx={{ width: "90px" }}
                             disabled
-                            value={paper.paperMarkObtained || 0}
+                            value={Number(paper.theory ?? 0) + Number(paper.practical ?? 0)}
                           />
                           <Button
                             size="sm"

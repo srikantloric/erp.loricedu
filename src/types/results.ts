@@ -1,29 +1,12 @@
 import { Timestamp } from "firebase/firestore";
 import { StudentDetailsType } from "./student";
 
-export type paperMarksType = {
-  paperId: string;
-  paperTitle: string;
-  paperMarkObtained: number | string;
-  paperMarkPractical: number | string;
-  paperMarkPassing: number | string;
-  paperMarkTheory: number | string;
-};
-
-export type resultType = {
-  examId: string;
-  examTitle: string;
-  publishedOn: Timestamp;
-  result: paperMarksType[];
-  docId?: string;
-};
-
 
 export type paperMarksTypeNew = {
   paperId: string;
   paperTitle: string;
-  practical: string;
-  theory: string;
+  practical: string| number;
+  theory: string| number;
   grade?: string
 }
 
@@ -35,10 +18,11 @@ export type resultTypeNew = {
   docId?: string;
 }
 
-export type marksheetType = {
+
+export type marksheetTypeNew = {
   student: StudentDetailsType;
   examTitle: string;
-  result: paperMarksType[];
+  result: paperMarksTypeNew[];
 };
 
 export type rankType = {

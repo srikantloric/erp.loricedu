@@ -1,11 +1,11 @@
 
-import { marksheetType } from "types/results";
 import { getAppConfig } from "hooks/getAppConfig";
 import { getDesignModule } from "./Marksheets/DesignLoader";
 import { enqueueSnackbar } from "notistack";
+import { marksheetTypeNew } from "types/results";
 
 export const MarksheetReportGenerator = async (
-  resultData: marksheetType[],
+  resultData: marksheetTypeNew[],
   theme?: string
 ): Promise<string> => {
   return new Promise(async (resolve, reject) => {
