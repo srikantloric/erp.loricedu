@@ -74,13 +74,13 @@ export const routesConfig = [
         isHeader: false,
         Component: <AddStudentNew />,
       },
-      , {
-        title: "Update Student Roll",
-        to: "students/update-students-roll",
-        isCollapsable: false,
-        isHeader: false,
-        Component: <RollNoUpdator />,
-      }
+      // , {
+      //   title: "Update Student Roll",
+      //   to: "students/update-students-roll",
+      //   isCollapsable: false,
+      //   isHeader: false,
+      //   Component: <RollNoUpdator />,
+      // }
     ],
   },
   {

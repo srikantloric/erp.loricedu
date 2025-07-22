@@ -22,10 +22,10 @@ import { SCHOOL_CLASSES } from "config/schoolConfig";
 import { useEffect, useState } from "react";
 import { enqueueSnackbar } from "notistack";
 import {
-  marksheetType,
-  paperMarksType,
+  marksheetTypeNew,
+  paperMarksTypeNew,
   rankType,
-  resultType,
+  resultTypeNew,
 } from "types/results";
 import { StudentDetailsType } from "types/student";
 import { MarksheetReportGenerator } from "components/Reports/MarksheetReport";
@@ -64,7 +64,7 @@ function PrintResult() {
   const [selectedClass, setSelectedClass] = useState<any | null>(null);
   const [examsList, setExamList] = useState<examType[]>([]);
   const [selectedExam, setSelectedExam] = useState<any | null>(null);
-  const [marksheetList, setMarksheetList] = useState<marksheetType[]>([]);
+  const [marksheetList, setMarksheetList] = useState<marksheetTypeNew[]>([]);
   const [pdfUrl, setPdfUrl] = useState<string>();
   const [loading, setLoading] = useState(false);
   const [isGeneratingRank, setIsGeneratingRank] = useState<boolean>(false);
@@ -95,7 +95,7 @@ function PrintResult() {
     fetchExamConfig();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  const printMarkSheet = async (marksheetList: marksheetType[]) => {
+  const printMarkSheet = async (marksheetList: marksheetTypeNew[]) => {
     if (!selectedExam || !examsList) {
       enqueueSnackbar("Failed to load exam configuration!", { variant: "error" });
       return
@@ -143,7 +143,7 @@ function PrintResult() {
         studentList.push({ id: doc.id, ...doc.data() } as StudentDetailsType);
       });
 
-      let temMarkSheetList: marksheetType[] = [];
+      let temMarkSheetList: marksheetTypeNew[] = [];
 
       // Fetch results for all students using Promise.all for parallel fetching
       const resultPromises = studentList.map(async (student) => {
@@ -155,7 +155,7 @@ function PrintResult() {
             temMarkSheetList.push({
               student,
               examTitle: result.data().examTitle,
-              result: result.data().result as paperMarksType[],
+              result: result.data().result as paperMarksTypeNew[],
             });
           }
         });
@@ -219,7 +219,7 @@ function PrintResult() {
         const resultSnap = await getDocs(resultQuery);
 
         resultSnap.forEach((resDoc) => {
-          const res = resDoc.data() as resultType;
+          const res = resDoc.data() as resultTypeNew;
           if (res.examId === selectedExam) {
 
             if (!Array.isArray(res.result)) {
@@ -228,19 +228,24 @@ function PrintResult() {
             }
 
 
+            //paper mark obtained
             let marksObtained = res.result.reduce((total, item) => {
-              let obtainedMarkCalculated;
-              if (currentTheme === "total-pass-design") {
-                obtainedMarkCalculated = Number(item.paperMarkObtained)
-              } else {
-                obtainedMarkCalculated =
-                  item.paperId === "DRAWING"
-                    ? 0
-                    : Number(item.paperMarkTheory) + Number(item.paperMarkPractical);
-              }
-              return total + obtainedMarkCalculated;
-            }, 0);
 
+              let obtainedMarkCalculated = 0;
+
+              if (currentTheme === "theory-practical-design") {
+
+                if (item.paperId === "DRAW") {
+                  obtainedMarkCalculated = 0; // Assuming DRAW has no marks
+                } else {
+                  obtainedMarkCalculated = Number(item.theory || 0) + Number(item.practical || 0);
+                }
+
+              }
+
+
+              return total + obtainedMarkCalculated!;
+            }, 0);
 
             markSheetTempList.push({
               studentId: student.id,

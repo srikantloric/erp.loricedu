@@ -156,10 +156,10 @@ function App() {
                       element={<ViewStudents />}
                     />
 
-                    <Route
+                    {/* <Route
                       path="students/update-students-roll"
                       element={<RollNoUpdator />}
-                    />
+                    /> */}
 
 
                     <Route

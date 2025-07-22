@@ -3,7 +3,7 @@ import { doc, getDoc } from "firebase/firestore";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import { rankDoctype } from "types/reports/marksheet";
-import { marksheetType } from "types/results";
+import { marksheetTypeNew } from "types/results";
 import { POPPINS_BOLD, POPPINS_REGULAR, POPPINS_SEMIBOLD } from "utilities/Base64Url";
 import { getClassNameByValue, GetGradeFromMark, getOrdinal } from "utilities/UtilitiesFunctions";
 
@@ -28,7 +28,7 @@ const getStudentRank = async (classId: string | undefined) => {
 
 
 export const MarksheetDesign2 = {
-  generatePDF: async (resultData: marksheetType[], config: any): Promise<string> => {
+  generatePDF: async (resultData: marksheetTypeNew[], config: any): Promise<string> => {
     const {
       schoolName: SCHOOL_NAME,
       schoolAddress: SCHOOL_ADDRESS,
@@ -105,21 +105,22 @@ export const MarksheetDesign2 = {
 
       let resDataTable: paperMarksTypeLocal[] = [];
       data.result.forEach((item) => {
-        const obtainedMarkCaculated = item.paperId === "DRAWING" ? item.paperMarkTheory : Number(item.paperMarkTheory) + Number(item.paperMarkPractical)
+        const obtainedMarkCaculated = item.paperId === "DRAWING" ? 0 : (Number(item.theory ?? 0) + Number(item.practical ?? 0))
 
         const res: paperMarksTypeLocal = {
           paperTitle: item.paperTitle,
-          paperMarkTheory: item.paperId === "DRAWING" ? "-" : Number(item.paperMarkTheory),
-          paperMarkPractical: item.paperId === "DRAWING" ? "-" : Number(item.paperMarkPractical),
+          paperMarkTheory: item.paperId === "DRAWING"? "-" : Number(item.theory ?? 0),
+          paperMarkPractical: item.paperId === "DRAWING" ? "-" : Number(item.practical ?? 0),
 
-          paperMarkObtained: item.paperId === "DRAWING"
-            ? item.paperMarkTheory // Assign grade for DRAWING
+          paperMarkObtained: item.paperId === "DRAWING" 
+            ? item.grade! // Assign grade for DRAWING
             : obtainedMarkCaculated === 0
               ? "AB"
               : obtainedMarkCaculated, // Assign numeric value for other subjects
-          paperMarkPassing: GetGradeFromMark(obtainedMarkCaculated)
+          paperMarkPassing: item.paperId === "DRAWING"  ? item.grade! : GetGradeFromMark(obtainedMarkCaculated)
         };
 
+        console.log("Result Item:", res);
         resDataTable.push(res);
       });
       // const y=cardHeight+margin;
@@ -129,9 +130,9 @@ export const MarksheetDesign2 = {
 
       const fullMarks = data.result.reduce((total, item) => {
         const fullMark =
-          item.paperId === "DRAWING"
+          item.paperId === "DRAWING" 
             ? 0
-            : Number(item.paperMarkTheory) + Number(item.paperMarkPractical);
+            : Number(item.theory) + Number(item.practical);
 
         return total + fullMark;
       }, 0);
@@ -148,9 +149,9 @@ export const MarksheetDesign2 = {
 
       let marksObtained = data.result.reduce((total, item) => {
         const obtainedMarkCalculated =
-          item.paperId === "DRAWING"
+          item.paperId === "DRAWING" || "DRAW"
             ? 0
-            : Number(item.paperMarkTheory) + Number(item.paperMarkPractical);
+            : Number(item.theory) + Number(item.practical);
 
         return total + obtainedMarkCalculated;
       }, 0);
@@ -203,40 +204,7 @@ export const MarksheetDesign2 = {
         ],
       ];
 
-      // const getTextWidth = (text: string, doc: jsPDF): number => {
-      //   return doc.getStringUnitWidth(text) * doc.internal.scaleFactor;
-      // };
-
-      // const wrapText = (
-      //   doc: jsPDF,
-      //   text: string,
-      //   wrapx: number,
-      //   wrapy: number,
-      //   maxWidth: number
-      // ): void => {
-      //   const lines: string[] = [];
-      //   const words = text.split(" ");
-      //   let line = "";
-
-      //   // Wrap text into lines
-      //   for (const word of words) {
-      //     const testLine = line ? `${line} ${word}` : word;
-      //     if (getTextWidth(testLine, doc) < maxWidth) {
-      //       line = testLine;
-      //     } else {
-      //       lines.push(line);
-      //       line = word;
-      //     }
-      //   }
-      //   if (line) {
-      //     lines.push(line);
-      //   }
-
-      //   lines.forEach((line, index) => {
-      //     doc.text(line, wrapx + index * 2, wrapy + index * 5);
-      //   });
-      // };
-
+    
       doc.setTextColor("#000");
 
       // Load fonts

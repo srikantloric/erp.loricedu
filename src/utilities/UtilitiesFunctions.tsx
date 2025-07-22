@@ -215,6 +215,9 @@ export function getOrdinal(number: number): string {
 
 
 export const GetGradeFromMark = (obtainedMark: string | number): string => {
+
+  console.log("Obtained Mark:", obtainedMark);
+
   if (typeof obtainedMark === "string") {
     const validGrades = ["A+", "A", "B+", "B", "C+", "C", "D", "F", "AB"];
     if (validGrades.includes(obtainedMark)) {
@@ -224,6 +227,7 @@ export const GetGradeFromMark = (obtainedMark: string | number): string => {
 
   const mark = Number(obtainedMark);
   if (isNaN(mark) || mark < 0 || mark > 100) {
+    console.log("Invalid mark:", obtainedMark);
     throw new Error("Invalid mark. Must be a number between 0 and 100.");
   }
 

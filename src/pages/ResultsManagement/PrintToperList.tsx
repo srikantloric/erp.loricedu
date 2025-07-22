@@ -9,7 +9,7 @@ import PageContainer from "components/Utils/PageContainer";
 import { SCHOOL_CLASSES } from "config/schoolConfig";
 import { useEffect, useState } from "react";
 import { enqueueSnackbar } from "notistack";
-import { rankType, resultType } from "types/results";
+import { rankType, resultTypeNew } from "types/results";
 import { StudentDetailsType } from "types/student";
 import {
   collection,
@@ -199,7 +199,7 @@ function PrintTopperList() {
         const resultSnap = await getDocs(resultQuery);
 
         resultSnap.forEach((resDoc) => {
-          const res = resDoc.data() as resultType;
+          const res = resDoc.data() as resultTypeNew;
           if (res.examId === selectedExam) {
             if (!Array.isArray(res.result)) {
               console.error("Error: res.result is not an array!", res.result);
@@ -217,8 +217,8 @@ function PrintTopperList() {
               const obtainedMarkCalculated =
                 item.paperId === "DRAWING"
                   ? 0
-                  : Number(item.paperMarkTheory) +
-                    Number(item.paperMarkPractical);
+                  : Number(item.theory) +
+                    Number(item.practical);
 
               return total + obtainedMarkCalculated;
             }, 0);
@@ -234,8 +234,8 @@ function PrintTopperList() {
               subjectMarks: res.result.map((item) => ({
                 subject: item.paperId,
                 marks:
-                  Number(item.paperMarkTheory) +
-                  Number(item.paperMarkPractical),
+                  Number(item.theory) +
+                  Number(item.practical),
               })),
             });
           }
