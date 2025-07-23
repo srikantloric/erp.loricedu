@@ -5,8 +5,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from 'c
 import { getFirestoreInstance } from 'context/firebaseUtility';
 import { doc, Timestamp, writeBatch } from 'firebase/firestore';
 import { enqueueSnackbar } from 'notistack';
-import { ExamPapers, ResultsState } from 'pages/ResultsManagement/UpdateResultBulk';
+import { ResultsState } from 'pages/ResultsManagement/UpdateResultBulk';
 import React, { useState, useTransition } from 'react';
+import { ExamPaper } from 'types/exam';
 import { resultTypeNew } from 'types/results';
 import { StudentDetailsType } from 'types/student';
 
@@ -14,7 +15,7 @@ import { StudentDetailsType } from 'types/student';
 
 interface StudentResultsTableProps {
     students: StudentDetailsType[];
-    papers: ExamPapers[];
+    papers: ExamPaper[];
     results: ResultsState,
     setResults: React.Dispatch<React.SetStateAction<ResultsState>>
     selectedExam: string,

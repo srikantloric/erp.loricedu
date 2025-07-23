@@ -14,7 +14,7 @@ export const RankListDesign1 = {
         examName: string,
         session: string,
         className: string,
-        fullMarks: { [subject: string]: number },
+        fullMarksWithPapers: Record<string, number>,
     ): Promise<string> => {
         const {
             schoolName: SCHOOL_NAME,
@@ -130,9 +130,12 @@ export const RankListDesign1 = {
 
         rankList.sort((a, b) => b.rankObtained - a.rankObtained);
 
-        const allSubjects = Array.from(
-            new Set(rankList.flatMap((rank) => rank.subjectMarks.map((s) => s.subject)))
-        );
+        // const allSubjects = Array.from(
+        //     new Set(rankList.flatMap((rank) => rank.subjectMarks.map((s) => s.subject)))
+        // );
+
+        const allSubjects = Object.keys(fullMarksWithPapers).sort((a, b) => a.localeCompare(b));
+
 
         const totalUnits = 100;
         const subjectUnits = Math.floor((totalUnits * 0.5) / allSubjects.length); // 50% for all subjects
@@ -148,6 +151,7 @@ export const RankListDesign1 = {
         const headerHeight = 45 + 3;
         const firstPageOffset = pageMargin + headerHeight;
         const subsequentPageOffset = pageMargin + 5;
+        console.log("Full Marks with Papers:", fullMarksWithPapers);
 
         autoTable(doc, {
             startY: firstPageOffset,
@@ -157,10 +161,10 @@ export const RankListDesign1 = {
                 [
                     "",
                     "",
-                    ...allSubjects.map((subject) => fullMarks[subject] || "-"),
-                    Object.keys(fullMarks)
+                    ...allSubjects.map((subject) => fullMarksWithPapers[subject] || "-"),
+                    Object.keys(fullMarksWithPapers)
                         .filter((subject) => allSubjects.includes(subject))
-                        .reduce((sum, subject) => sum + (fullMarks[subject] || 0), 0),
+                        .reduce((sum, subject) => sum + (fullMarksWithPapers[subject] || 0), 0),
                     "100%",
                     "",
                 ],
