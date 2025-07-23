@@ -26,36 +26,9 @@ import { collection, doc, getDoc, getDocs, query, where } from "firebase/firesto
 import { useFirebase } from "context/firebaseContext";
 import { ExamRankListGenerator } from "components/Reports/GenerateRankList";
 import { getClassNameByValue } from "utilities/UtilitiesFunctions";
+import { useNavbar } from "context/NavbarContext";
+import { Exam } from "types/exam";
 
-type examType = {
-  examId: string;
-  examTitle: string;
-  marksheetDesign: string
-};
-
-type paperType = {
-  paperId: string;
-  paperTitle: string;
-};
-type examConfig = {
-  examPapers: paperType[];
-  exams: examType[];
-};
-
-const fullMarks = {
-  MATHS: 50,
-  SCIENCE: 50,
-  ENGLISH: 50,
-  SST: 50,
-  COMPUTER: 50,
-  GK: 50,
-  DRAWING: 0,
-  ORAL: 50,
-  HINDI: 50,
-  DRAWINGACTIVITY: 50,
-  SOCIALSCIENCE: 50,
-  GKCONV:50
-};
 
 
 type ExtendedRankType = rankType & {
@@ -68,7 +41,7 @@ type ExtendedRankType = rankType & {
 
 function PrintRankList() {
   const [selectedClass, setSelectedClass] = useState<any | null>(null);
-  const [examsList, setExamList] = useState<examType[]>([]);
+  const [examsList, setExamList] = useState<Exam[]>([]);
   const [selectedExam, setSelectedExam] = useState<any | null>(null);
   const [pdfUrl, setPdfUrl] = useState<string>();
   const [isGeneratingRank, setIsGeneratingRank] = useState<boolean>(false);
@@ -79,6 +52,9 @@ function PrintRankList() {
   //Get Firebase DB instance
   const { db } = useFirebase();
 
+  //use session
+  const { session } = useNavbar();
+
   useEffect(() => {
     const fetchExamConfig = async () => {
       try {
@@ -86,8 +62,9 @@ function PrintRankList() {
         const snap = await getDoc(examConfigRef);
 
         if (snap.exists()) {
-          const data = snap.data() as examConfig;
-          setExamList(data.exams);
+          const data = snap.data();
+          const examData = data.exams.filter((exam: Exam) => exam.examSession === session);
+          setExamList(examData);
         } else {
           console.log("No data retrieved from exam config.");
         }
@@ -96,12 +73,18 @@ function PrintRankList() {
       }
     };
 
+    // Fetch exam config on component mount
+    if (!session) {
+      enqueueSnackbar("Session not found, please select a session!", { variant: "error" });
+      return;
+    }
+
     fetchExamConfig();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [session]);
 
 
-  const printRankList = async (marksheetList: any) => {
+  const printRankList = async (marksheetList: any, fullMarksWithPapers: Record<string, number>) => {
     if (!selectedClass) {
       enqueueSnackbar("Please select class!", { variant: "info" });
       return
@@ -114,11 +97,13 @@ function PrintRankList() {
     const selectedClassA = getClassNameByValue(selectedClass) || "N/A";
     const selectedExamA = examsList.find((item) => item.examId === selectedExam)?.examTitle || "N/A";
 
+
+
     const pdfUrl = await ExamRankListGenerator(marksheetList,
       selectedExamA,
-      "2024-2025",
+      session,
       selectedClassA,
-      fullMarks
+      fullMarksWithPapers
     );
     setPdfUrl(pdfUrl);
   };
@@ -166,6 +151,25 @@ function PrintRankList() {
 
       let markSheetTempListExtended: ExtendedRankType[] = [];
 
+      // Get exam papers for the selected exam and filter by selected class
+      console.log("Selected Exam:", selectedExam);
+      console.log("Selected Class:", selectedClass);
+      const examPapers = examsList.find((item) => item.examId === selectedExam)?.examPapers.filter((paper) =>
+        paper.classes.includes(`${selectedClass}`)
+      ) || [];
+
+ 
+
+      const fullMarks: Record<string, number> = {};
+      examPapers.forEach((paper) => {
+        if (paper.maxTheory !== undefined) {
+          fullMarks[paper.paperId] = paper.maxTheory + (paper.maxPractical || 0);
+        } else {
+          fullMarks[paper.paperId] = 0; // Default to 0 if no marks are defined
+        }
+      });
+
+
       // Fetch all student results in parallel
       const resultPromises = allStudentList.map(async (student) => {
         const resultQuery = collection(db, "STUDENTS", student.id, "PUBLISHED_RESULTS");
@@ -186,17 +190,15 @@ function PrintRankList() {
               return total + fullMarkForSubject;
             }, 0);
 
-            console.log("Total Marks:", totalMarks);
+
             //paper mark obtained
             let marksObtained = res.result.reduce((total, item) => {
-
-              console.log("Item:", total, item);
 
               let obtainedMarkCalculated = 0;
 
               if (themeExam === "theory-practical-design") {
 
-                if (item.paperId === "DRAW") {
+                if (item.paperId === "DRAWING") {
                   obtainedMarkCalculated = 0; // Assuming DRAW has no marks
                 } else {
                   obtainedMarkCalculated = Number(item.theory || 0) + Number(item.practical || 0);
@@ -210,7 +212,6 @@ function PrintRankList() {
 
 
 
-            console.log("Marks Obtained:", marksObtained)
             markSheetTempListExtended.push({
               studentId: student.admission_no,
               studentName: student.student_name,
@@ -222,7 +223,7 @@ function PrintRankList() {
               subjectMarks: res.result.map((item) => ({
                 subject: item.paperId,
                 marks:
-                  item.paperId === "DRAW"|| item.paperId === "DRAWING"
+                  item.paperId === "DRAWING"
                     ? (item.grade ?? "")
                     : ((Number(item.theory ?? 0) + Number(item.practical ?? 0))),
               })),
@@ -249,7 +250,7 @@ function PrintRankList() {
       });
 
       setStudentRankDetails(markSheetTempListExtended);
-      printRankList(markSheetTempListExtended);
+      printRankList(markSheetTempListExtended, fullMarks);
       setIsGeneratingRank(false);
       enqueueSnackbar("Rank List Generated successfully!", { variant: "success" });
 

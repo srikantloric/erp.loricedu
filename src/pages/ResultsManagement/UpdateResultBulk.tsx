@@ -13,27 +13,10 @@ import { useContext, useEffect, useState } from "react"
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { StudentDetailsType } from "types/student"
 import SideBarContext from "context/SidebarContext"
-
-
-export type ExamPapers = {
-  paperId: string,
-  paperTitle: string,
-  maxPractical: number;
-  grade?: string[],
-  scoreType?: string,
-  maxTheory: number;
-  totalMarks: number;
-}
-type exams = {
-  examId: string,
-  examTitle: string,
-  marksheetDesign: string,
-  examSession: string,
-  examPapers: ExamPapers[],
-}
+import { Exam, ExamPaper } from "types/exam"
 
 type ExamConfig = {
-  exams: exams[],
+  exams: Exam[],
 }
 
 export type ResultsState = {
@@ -53,7 +36,7 @@ function UpdateResultBulk() {
   const [selectedExam, setSelectedExam] = useState<any>(null);
   const [examConfig, setExamConfig] = useState<ExamConfig | null>(null);
   const [results, setResults] = useState<ResultsState>({});
-  const [selectedExamPapers, setSelectedExamPapers] = useState<ExamPapers[]>([])
+  const [selectedExamPapers, setSelectedExamPapers] = useState<ExamPaper[]>([])
   const [savedStudents, setSavedStudents] = useState<Set<string>>(new Set());
 
   const { db } = useFirebase();
@@ -91,12 +74,16 @@ function UpdateResultBulk() {
     if (examConfig && selectedExam) {
       const selectedExamData = examConfig.exams.find(exam => exam.examId === selectedExam);
       if (selectedExamData) {
-        setSelectedExamPapers(selectedExamData.examPapers);
+        if (selectedClass) {
+          setSelectedExamPapers(selectedExamData.examPapers.filter(paper => paper.classes.includes(`${selectedClass}`)));
+        } else {
+          setSelectedExamPapers(selectedExamData.examPapers);
+        }
       } else {
         setSelectedExamPapers([]);
       }
     }
-  }, [examConfig, selectedExam]);
+  }, [examConfig, selectedExam,selectedClass]);
 
 
   const handleSearchBtn = () => {

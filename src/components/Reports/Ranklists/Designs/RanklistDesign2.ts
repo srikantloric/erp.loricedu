@@ -16,7 +16,7 @@ export const RankListDesign2 = {
         examName: string,
         session: string,
         className: string,
-        fullMarks: { [subject: string]: number },
+        fullMarksWithPapers: Record<string, number>,
     ): Promise<string> => {
 
         const {
@@ -134,9 +134,7 @@ export const RankListDesign2 = {
 
         rankList.sort((a, b) => a.rollNumber - b.rollNumber);
 
-        const allSubjects = Array.from(
-            new Set(rankList.flatMap((rank) => rank.subjectMarks.map((s) => s.subject)))
-        );
+        const allSubjects = Object.keys(fullMarksWithPapers).sort((a, b) => a.localeCompare(b));
 
         const totalUnits = 100;
         const subjectUnits = Math.floor((totalUnits * 0.5) / allSubjects.length); // 50% for all subjects
@@ -161,10 +159,10 @@ export const RankListDesign2 = {
                 [
                     "",
                     "",
-                    ...allSubjects.map((subject) => fullMarks[subject] || "-"),
-                    Object.keys(fullMarks)
+                    ...allSubjects.map((subject) => fullMarksWithPapers[subject] || "-"),
+                    Object.keys(fullMarksWithPapers)
                         .filter((subject) => allSubjects.includes(subject))
-                        .reduce((sum, subject) => sum + (fullMarks[subject] || 0), 0),
+                        .reduce((sum, subject) => sum + (fullMarksWithPapers[subject] || 0), 0),
                     "100%",
                     "",
                 ],
