@@ -39,15 +39,15 @@ type examConfig = {
 };
 
 const fullMarks = {
-  MATHS: 100,
-  SCIENCE: 100,
-  ENGLISH: 100,
-  SST: 100,
-  COMPUTER: 100,
-  GK: 100,
+  MATHS: 50,
+  SCIENCE: 50,
+  ENGLISH: 50,
+  SST: 50,
+  COMPUTER: 50,
+  GK: 50,
   DRAWING: 0,
-  ORAL: 100,
-  HINDI: 100,
+  ORAL: 50,
+  HINDI: 50,
 };
 
 type ExtendedRankType = rankType & {
