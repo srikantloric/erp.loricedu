@@ -255,7 +255,7 @@ const ProfileTab:React.FC<StudentProfileProps>=({studentData}) =>{
                 <tr>
                   <td>
                     <Typography level="body-sm">Admission Date</Typography>
-                    <Typography level="title-md">{studentData.date_of_addmission}</Typography>
+                    <Typography level="title-md">{studentData.date_of_addmission?.toString()}</Typography>
                   </td>
                   <td colSpan={2}>
                     <Typography level="body-sm">Registration Number/Student Id</Typography>
