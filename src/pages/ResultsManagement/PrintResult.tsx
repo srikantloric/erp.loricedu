@@ -35,20 +35,14 @@ import rank3Img from "../../assets/rank_images/3rd_rank.png";
 import { getOrdinal } from "utilities/UtilitiesFunctions";
 import { collection, doc, getDoc, getDocs, query, setDoc, where } from "firebase/firestore";
 import { useFirebase } from "context/firebaseContext";
+import { Exam, ExamPaper } from "types/exam";
+import { useNavbar } from "context/NavbarContext";
 
-type examType = {
-  examId: string;
-  examTitle: string;
-  marksheetDesign?: string
-};
 
-type paperType = {
-  paperId: string;
-  paperTitle: string;
-};
+
 type examConfig = {
-  examPapers: paperType[];
-  exams: examType[];
+  examPapers: ExamPaper[];
+  exams: Exam[];
 };
 
 type rankTypeExtended = {
@@ -62,7 +56,7 @@ type rankTypeExtended = {
 function PrintResult() {
   const [studentIdInput, setStudentIdInput] = useState<string | null>(null);
   const [selectedClass, setSelectedClass] = useState<any | null>(null);
-  const [examsList, setExamList] = useState<examType[]>([]);
+  const [examsList, setExamList] = useState<Exam[]>([]);
   const [selectedExam, setSelectedExam] = useState<any | null>(null);
   const [marksheetList, setMarksheetList] = useState<marksheetTypeNew[]>([]);
   const [pdfUrl, setPdfUrl] = useState<string>();
@@ -74,6 +68,7 @@ function PrintResult() {
 
   //Get Firebase DB instance
   const { db } = useFirebase();
+  const {session} = useNavbar()
 
   useEffect(() => {
     const fetchExamConfig = async () => {
@@ -83,7 +78,8 @@ function PrintResult() {
 
         if (snap.exists()) {
           const data = snap.data() as examConfig;
-          setExamList(data.exams);
+
+          setExamList(data.exams.filter((exam) => exam.examSession === session));
         } else {
           console.log("No data retrieved from exam config.");
         }
@@ -94,7 +90,10 @@ function PrintResult() {
 
     fetchExamConfig();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [session]);
+
+
+
   const printMarkSheet = async (marksheetList: marksheetTypeNew[]) => {
     if (!selectedExam || !examsList) {
       enqueueSnackbar("Failed to load exam configuration!", { variant: "error" });
@@ -111,8 +110,26 @@ function PrintResult() {
       enqueueSnackbar("No result found for selected options!", { variant: "info" });
     }
 
+    let currentPaperIds: string[] = [];
+    const exam = examsList.find(e => e.examId === selectedExam);
+    const examPapers = exam?.examPapers || [];
+    const currentClassPapers = examPapers.filter((paper) =>
+      paper.classes && paper.classes.includes(`${selectedClass}`)
+    );
+
+    currentPaperIds = currentClassPapers.map(paper => paper.paperId);
+
+
+    // Only keep results for papers that are in currentPaperIds
+    marksheetList.forEach(ms => {
+      ms.result = ms.result.filter(subject => currentPaperIds.includes(`${subject.paperId}`));
+    });
+
+
+
     const pdfUrl = await MarksheetReportGenerator(
       marksheetList,
+      session,
       examTheme
     );
     setPdfUrl(pdfUrl);
@@ -121,8 +138,6 @@ function PrintResult() {
 
   const fetchResults = async () => {
     try {
-      console.log(`Selected Class: ${selectedClass}`);
-      console.log(`Selected Exam: ${selectedExam}`);
 
       setMarksheetList([]);
       setLoading(true);
@@ -293,10 +308,6 @@ function PrintResult() {
         }
       });
 
-
-
-      console.log("Marksheet Temp:", markSheetTempList)
-      console.log("Marksheet Temp Ex:", markSheetTempListExtended)
 
       // Upload rank to Firestore
       const rankData = {

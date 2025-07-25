@@ -28,7 +28,7 @@ const getStudentRank = async (classId: string | undefined) => {
 
 
 export const MarksheetDesign1 = {
-  generatePDF: async (resultData: marksheetTypeNew[], config: any): Promise<string> => {
+  generatePDF: async (resultData: marksheetTypeNew[], config: any,selectedSesssion:string): Promise<string> => {
     const {
       schoolName: SCHOOL_NAME,
       schoolAddress: SCHOOL_ADDRESS,
@@ -113,7 +113,7 @@ export const MarksheetDesign1 = {
           paperMarkPassing: passingMark,
           paperMarkObtained:
             Number(item.theory ?? 0) + Number(item.practical ?? 0), // Assign numeric value for other subjects
-          paperGradeObtained: GetGradeFromMark(Number(item.theory ?? 0) + Number(item.practical ?? 0)), // Assign numeric value for other subjects
+          paperGradeObtained: GetGradeFromMark(Number(item.theory ?? 0) + Number(item.practical ?? 0), 50), // Assign numeric value for other subjects
         };
         resDataTable.push(res);
       });
@@ -273,7 +273,7 @@ export const MarksheetDesign1 = {
         (pageWidth - doc.getTextWidth(classText)) / 2,
         y + 62
       );
-      const sessionText = "Academic Session: 2024-25";
+      const sessionText = "Academic Session: "+ selectedSesssion;
       doc.text(
         sessionText,
         (pageWidth - doc.getTextWidth(sessionText)) / 2,
