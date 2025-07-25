@@ -28,7 +28,7 @@ const getStudentRank = async (classId: string | undefined) => {
 
 
 export const MarksheetDesign2 = {
-  generatePDF: async (resultData: marksheetTypeNew[], config: any): Promise<string> => {
+  generatePDF: async (resultData: marksheetTypeNew[], config: any,selectedSession:string): Promise<string> => {
     const {
       schoolName: SCHOOL_NAME,
       schoolAddress: SCHOOL_ADDRESS,
@@ -82,11 +82,11 @@ export const MarksheetDesign2 = {
             styles: { halign: "center", fillColor: [195, 240, 255] },
           },
           {
-            content: "Theory (80)",
+            content: "Theory (40)",
             styles: { halign: "center", fillColor: [195, 240, 255] },
           },
           {
-            content: "Pract.(20)",
+            content: "Pract.(10)",
             styles: { halign: "center", fillColor: [195, 240, 255] },
           },
           {
@@ -109,15 +109,15 @@ export const MarksheetDesign2 = {
 
         const res: paperMarksTypeLocal = {
           paperTitle: item.paperTitle,
-          paperMarkTheory: item.paperId === "DRAWING"? "-" : Number(item.theory ?? 0),
+          paperMarkTheory: item.paperId === "DRAWING" ? "-" : Number(item.theory ?? 0),
           paperMarkPractical: item.paperId === "DRAWING" ? "-" : Number(item.practical ?? 0),
 
-          paperMarkObtained: item.paperId === "DRAWING" 
+          paperMarkObtained: item.paperId === "DRAWING"
             ? item.grade! // Assign grade for DRAWING
             : obtainedMarkCaculated === 0
               ? "AB"
               : obtainedMarkCaculated, // Assign numeric value for other subjects
-          paperMarkPassing: item.paperId === "DRAWING"  ? item.grade! : GetGradeFromMark(obtainedMarkCaculated)
+          paperMarkPassing: item.paperId === "DRAWING" ? item.grade! : GetGradeFromMark(obtainedMarkCaculated, 50)
         };
 
         console.log("Result Item:", res);
@@ -130,7 +130,7 @@ export const MarksheetDesign2 = {
 
       const fullMarks = data.result.reduce((total, item) => {
         const fullMark =
-          item.paperId === "DRAWING" 
+          item.paperId === "DRAWING"
             ? 0
             : Number(item.theory) + Number(item.practical);
 
@@ -141,7 +141,7 @@ export const MarksheetDesign2 = {
         if (item.paperId === "DRAWING" || item.paperId === "ORAL") {
           //do nothing
         } else {
-          totalAllMarks += 100;
+          totalAllMarks += 50;
         }
       })
 
@@ -204,7 +204,7 @@ export const MarksheetDesign2 = {
         ],
       ];
 
-    
+
       doc.setTextColor("#000");
 
       // Load fonts
@@ -309,7 +309,7 @@ export const MarksheetDesign2 = {
         (pageWidth - doc.getTextWidth(classText)) / 2,
         y + 62
       );
-      const sessionText = "Academic Session - 2024/25";
+      const sessionText = "Academic Session - "+ selectedSession;
       doc.text(
         sessionText,
         (pageWidth - doc.getTextWidth(sessionText)) / 2,
@@ -449,7 +449,7 @@ export const MarksheetDesign2 = {
 
       // Transpose data to make it horizontal
       const body = [["Grade", ...grades]]; // Header row
-      const head = [["Marks Range", ...marks]]; // Data row
+      const head = [["Marks % Range", ...marks]]; // Data row
 
 
       autoTable(doc, {
