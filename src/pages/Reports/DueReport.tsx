@@ -37,7 +37,7 @@ function DueReport() {
         try {
             // Query students based on class
             const studentsRef = collection(db, "STUDENTS");
-            const studentQuery = query(studentsRef, where("class", "==", className));
+            const studentQuery = query(studentsRef, where("class", "==", className),where("is_active", "==", true));
             const studentSnapshot = await getDocs(studentQuery);
 
             if (studentSnapshot.empty) {

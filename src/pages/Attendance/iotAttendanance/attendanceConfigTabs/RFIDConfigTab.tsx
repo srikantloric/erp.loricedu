@@ -33,7 +33,8 @@ export default function RFIDConfigTab() {
             setLoading(true);
             const studentsQuery = query(
                 collection(db, "STUDENTS"),
-                where("class", "==", selectedClass)
+                where("class", "==", selectedClass),
+                where("is_active", "==", true)
             );
             const querySnapshot = await getDocs(studentsQuery);
             const studentsData = querySnapshot.docs.map(doc => ({

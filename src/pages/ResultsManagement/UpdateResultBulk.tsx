@@ -96,7 +96,8 @@ function UpdateResultBulk() {
       try {
         const studentsQuery = query(
           collection(db, "STUDENTS"),
-          where("class", "==", selectedClass)
+          where("class", "==", selectedClass),
+          where("is_active", "==", true)
         );
         const querySnapshot = await getDocs(studentsQuery);
         const fetchedStudents = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));

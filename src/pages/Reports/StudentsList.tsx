@@ -171,18 +171,23 @@ const StudentsList = () => {
       let studentsQuery;
 
       if (selectedClass === -1) {
-        studentsQuery = collection(db, "STUDENTS");
+        studentsQuery = query(
+          collection(db, "STUDENTS"),
+          where("is_active", "==", true)
+        );
       } else {
         studentsQuery =
           selectedSection === -1
             ? query(
                 collection(db, "STUDENTS"),
-                where("class", "==", selectedClass)
+                where("class", "==", selectedClass),
+                where("is_active", "==", true)
               )
             : query(
                 collection(db, "STUDENTS"),
                 where("class", "==", selectedClass),
-                where("section", "==", selectedSection)
+                where("section", "==", selectedSection),
+                where("is_active", "==", true)
               );
       }
 

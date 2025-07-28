@@ -144,7 +144,7 @@ function PrintResult() {
       setPdfUrl("");
 
       // Fetch students for selected class
-      const studentsQuery = query(collection(db, "STUDENTS"), where("class", "==", selectedClass));
+      const studentsQuery = query(collection(db, "STUDENTS"), where("class", "==", selectedClass),where("is_active", "==", true));
       const studentsSnap = await getDocs(studentsQuery);
 
       if (studentsSnap.empty) {
