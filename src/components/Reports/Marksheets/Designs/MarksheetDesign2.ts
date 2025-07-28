@@ -28,7 +28,7 @@ const getStudentRank = async (classId: string | undefined) => {
 
 
 export const MarksheetDesign2 = {
-  generatePDF: async (resultData: marksheetTypeNew[], config: any,selectedSession:string): Promise<string> => {
+  generatePDF: async (resultData: marksheetTypeNew[], config: any, selectedSession: string): Promise<string> => {
     const {
       schoolName: SCHOOL_NAME,
       schoolAddress: SCHOOL_ADDRESS,
@@ -309,7 +309,7 @@ export const MarksheetDesign2 = {
         (pageWidth - doc.getTextWidth(classText)) / 2,
         y + 62
       );
-      const sessionText = "Academic Session - "+ selectedSession;
+      const sessionText = "Academic Session - " + selectedSession;
       doc.text(
         sessionText,
         (pageWidth - doc.getTextWidth(sessionText)) / 2,
@@ -520,6 +520,12 @@ export const MarksheetDesign2 = {
 
       // Uncomment to add Principal's digital signature
       doc.addImage(PRINCIPAL_SIGN, marginSign + sectionWidth * 2.5 - 20, signY - 27, 40, 27);
+
+
+      const footerText = "Report generated usign LoricEdu Software | " + new Date().toLocaleString().toString()
+      doc.setTextColor("#000")
+      doc.setFontSize(6)
+      doc.text(footerText, doc.internal.pageSize.getWidth() / 2, doc.internal.pageSize.getHeight() - 2, { align: "center" });
 
       if (index === resultData.length - 1) {
         const blob = doc.output("blob");

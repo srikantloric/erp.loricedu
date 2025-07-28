@@ -128,7 +128,8 @@ const StudentRollUpdaterModal: React.FC<StudentRollUpdaterModalProps> = ({
                 setLoading(true);
                 const q = query(
                     collection(db, "STUDENTS"),
-                    where("class", "==", selectedStudent.class)
+                    where("class", "==", selectedStudent.class),
+                    where("is_active", "==", true)
                 );
                 const querySnapshot = await getDocs(q);
                 const fetched: StudentDetailsType[] = [];

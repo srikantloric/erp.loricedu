@@ -35,7 +35,7 @@ const AdmitCard = () => {
     try {
       // Query students based on selected class
       const studentsRef = collection(db, "STUDENTS");
-      const studentQuery = query(studentsRef, where("class", "==", selectedClass));
+      const studentQuery = query(studentsRef, where("class", "==", selectedClass),where("is_active", "==", true));
       const studentSnapshot = await getDocs(studentQuery);
 
       if (studentSnapshot.empty) {
