@@ -28,7 +28,7 @@ const getStudentRank = async (classId: string | undefined) => {
 
 
 export const MarksheetDesign1 = {
-  generatePDF: async (resultData: marksheetTypeNew[], config: any,selectedSesssion:string): Promise<string> => {
+  generatePDF: async (resultData: marksheetTypeNew[], config: any, selectedSesssion: string, examPaperWithFullMarks: any[]): Promise<string> => {
     const {
       schoolName: SCHOOL_NAME,
       schoolAddress: SCHOOL_ADDRESS,
@@ -44,7 +44,7 @@ export const MarksheetDesign1 = {
       format: "a4",
     });
 
-
+    console.log("Generating PDF for Marksheet Design 1");
 
     //data manupulation
     const pageWidth = doc.internal.pageSize.getWidth();
@@ -273,7 +273,7 @@ export const MarksheetDesign1 = {
         (pageWidth - doc.getTextWidth(classText)) / 2,
         y + 62
       );
-      const sessionText = "Academic Session: "+ selectedSesssion;
+      const sessionText = "Academic Session: " + selectedSesssion;
       doc.text(
         sessionText,
         (pageWidth - doc.getTextWidth(sessionText)) / 2,

@@ -68,7 +68,7 @@ function PrintResult() {
 
   //Get Firebase DB instance
   const { db } = useFirebase();
-  const {session} = useNavbar()
+  const { session } = useNavbar()
 
   useEffect(() => {
     const fetchExamConfig = async () => {
@@ -125,11 +125,21 @@ function PrintResult() {
       ms.result = ms.result.filter(subject => currentPaperIds.includes(`${subject.paperId}`));
     });
 
+    const examPaperWithFullMarks = currentClassPapers.map(paper => ({
+      paperId: paper.paperId,
+      maxTheory: paper.maxTheory ?? 0, // Default to 0 if maxTheory is not defined
+      maxPractical: paper.maxPractical ?? 0, // Default to 0 if maxPractical is not defined
+      fullMarks: Number(paper.maxTheory ?? 0) + Number(paper.maxPractical ?? 0) || 0, // Default to 0 if fullMarks is not defined
+    }));
+
+
+
 
 
     const pdfUrl = await MarksheetReportGenerator(
       marksheetList,
       session,
+      examPaperWithFullMarks,
       examTheme
     );
     setPdfUrl(pdfUrl);
@@ -144,7 +154,7 @@ function PrintResult() {
       setPdfUrl("");
 
       // Fetch students for selected class
-      const studentsQuery = query(collection(db, "STUDENTS"), where("class", "==", selectedClass),where("is_active", "==", true));
+      const studentsQuery = query(collection(db, "STUDENTS"), where("class", "==", selectedClass), where("is_active", "==", true));
       const studentsSnap = await getDocs(studentsQuery);
 
       if (studentsSnap.empty) {

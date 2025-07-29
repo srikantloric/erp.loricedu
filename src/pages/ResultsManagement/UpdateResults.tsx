@@ -417,7 +417,8 @@ function UpdateResults() {
       [
         { student: currentSelectedStudent!, result: result.result, examTitle: result.examTitle },
       ],
-      examTheme
+      examTheme,
+      []
     );
 
     const createPDFWindow =
