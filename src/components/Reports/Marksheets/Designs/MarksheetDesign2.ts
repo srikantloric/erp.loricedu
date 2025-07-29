@@ -28,7 +28,7 @@ const getStudentRank = async (classId: string | undefined) => {
 
 
 export const MarksheetDesign2 = {
-  generatePDF: async (resultData: marksheetTypeNew[], config: any, selectedSession: string): Promise<string> => {
+  generatePDF: async (resultData: marksheetTypeNew[], config: any, selectedSession: string, examPaperWithFullMarks: any[]): Promise<string> => {
     const {
       schoolName: SCHOOL_NAME,
       schoolAddress: SCHOOL_ADDRESS,
@@ -44,6 +44,7 @@ export const MarksheetDesign2 = {
       format: "a4",
     });
 
+    console.log("Generating Marksheet Design 2 PDF...");
 
 
     //data manupulation
@@ -64,6 +65,9 @@ export const MarksheetDesign2 = {
 
     let PDFBlob: string = "";
 
+
+
+
     resultData.forEach((data, index) => {
 
       const header2 = [
@@ -82,11 +86,11 @@ export const MarksheetDesign2 = {
             styles: { halign: "center", fillColor: [195, 240, 255] },
           },
           {
-            content: "Theory (40)",
+            content: `Theory (${examPaperWithFullMarks[0].maxTheory ?? 0})`,
             styles: { halign: "center", fillColor: [195, 240, 255] },
           },
           {
-            content: "Pract.(10)",
+            content: `Pract.(${examPaperWithFullMarks[0].maxPractical ?? 0})`,
             styles: { halign: "center", fillColor: [195, 240, 255] },
           },
           {
@@ -106,6 +110,10 @@ export const MarksheetDesign2 = {
       let resDataTable: paperMarksTypeLocal[] = [];
       data.result.forEach((item) => {
         const obtainedMarkCaculated = item.paperId === "DRAWING" ? 0 : (Number(item.theory ?? 0) + Number(item.practical ?? 0))
+        //get full marks from examPaperWithFullMarks
+        const fullMarksItem = examPaperWithFullMarks.find((paper) => paper.paperId === item.paperId);
+        const fullMarks = fullMarksItem ? (Number(fullMarksItem.maxTheory ?? 0) + Number(fullMarksItem.maxPractical ?? 0)) : 0;
+
 
         const res: paperMarksTypeLocal = {
           paperTitle: item.paperTitle,
@@ -117,10 +125,9 @@ export const MarksheetDesign2 = {
             : obtainedMarkCaculated === 0
               ? "AB"
               : obtainedMarkCaculated, // Assign numeric value for other subjects
-          paperMarkPassing: item.paperId === "DRAWING" ? item.grade! : GetGradeFromMark(obtainedMarkCaculated, 50)
+          paperMarkPassing: item.paperId === "DRAWING" ? item.grade! : GetGradeFromMark(obtainedMarkCaculated, fullMarks),
         };
 
-        console.log("Result Item:", res);
         resDataTable.push(res);
       });
       // const y=cardHeight+margin;
@@ -128,28 +135,15 @@ export const MarksheetDesign2 = {
 
       let totalAllMarks = 0;
 
-      const fullMarks = data.result.reduce((total, item) => {
-        const fullMark =
-          item.paperId === "DRAWING"
-            ? 0
-            : Number(item.theory) + Number(item.practical);
 
-        return total + fullMark;
-      }, 0);
-
-      data.result.forEach((item) => {
-        if (item.paperId === "DRAWING" || item.paperId === "ORAL") {
-          //do nothing
-        } else {
-          totalAllMarks += 50;
-        }
+      examPaperWithFullMarks.forEach((item) => {
+        totalAllMarks += item.fullMarks;
       })
-
 
 
       let marksObtained = data.result.reduce((total, item) => {
         const obtainedMarkCalculated =
-          item.paperId === "DRAWING" || "DRAW"
+          item.paperId === "DRAWING"
             ? 0
             : Number(item.theory) + Number(item.practical);
 
@@ -157,7 +151,7 @@ export const MarksheetDesign2 = {
       }, 0);
 
 
-      let percentage = (fullMarks / totalAllMarks) * 100;
+      let percentage = (marksObtained / totalAllMarks) * 100;
 
       let calculatedRank = "N/A";
 
@@ -175,7 +169,7 @@ export const MarksheetDesign2 = {
         [
           { content: "Total", styles: { halign: "center" } },
           {
-            content: `${fullMarks}/${totalAllMarks}`,
+            content: `${marksObtained}/${totalAllMarks}`,
             colSpan: 2,
             styles: { halign: "center" },
           },

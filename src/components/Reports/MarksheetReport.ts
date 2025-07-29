@@ -7,6 +7,7 @@ import { marksheetTypeNew } from "types/results";
 export const MarksheetReportGenerator = async (
   resultData: marksheetTypeNew[],
   selectedSession: string,
+  examPaperWithFullMarks: any,
   theme?: string,
 ): Promise<string> => {
   return new Promise(async (resolve, reject) => {
@@ -21,7 +22,7 @@ export const MarksheetReportGenerator = async (
       const selectedTheme = theme || "theory-practical-design";
       const designModule = getDesignModule(selectedTheme);
       // Delegate the PDF generation to the design module
-      const pdfUrl = await designModule.generatePDF(resultData, config, selectedSession);
+      const pdfUrl = await designModule.generatePDF(resultData, config, selectedSession,examPaperWithFullMarks);
 
       resolve(pdfUrl);
     } catch (error) {
