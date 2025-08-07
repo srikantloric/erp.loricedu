@@ -21,7 +21,6 @@ import { auth } from "./firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import FacultyAttendance from "pages/Attendance/FacultyAttendance/facultyAttendance";
 import PrintRankList from "pages/ResultsManagement/PrintRankList";
-import PdfLivePreview from "pages/PdfJsLiveEditor/PdfLivePreview";
 import StudentMigration from "pages/Users/StudentMigration";
 import PrintTopperList from "pages/ResultsManagement/PrintToperList";
 import RollNoUpdator from "pages/StudentManagement/RollNoUpdator";
@@ -96,6 +95,10 @@ const FacultyDailyAttendanceReport = Loadable(
 const FacultyMonthlyAttendanceReport = Loadable(
   lazy(() => import("pages/Reports/FacultyMonthlyAttendanceReport"))
 );
+
+const TriggerFacultyDailyAttendanceReport = Loadable(
+  lazy(()=>import("./unprotected-routed/triggers/TriggerFacultyDailyAttendanceReport"))
+)
 
 function App() {
   const routeItems = routesConfig.map(
@@ -277,7 +280,11 @@ function App() {
                     path="update-student-profile-picture"
                     element={<StudentProfilePictureUpdater />}
                   />
-                  <Route path="livePdfEditor" element={<PdfLivePreview />} />
+                  <Route
+                    path="triggers/daily-faculty-attendance"
+                    element={<TriggerFacultyDailyAttendanceReport />}
+                  />
+                  
                   <Route path="/login" element={<AuthenticationLayout />}>
                     <Route index element={<Login />} />
                   </Route>
