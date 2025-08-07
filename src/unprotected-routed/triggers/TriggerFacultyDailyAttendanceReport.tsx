@@ -1,24 +1,25 @@
-import { Box, Button, FormControl, FormLabel, Input } from "@mui/joy";
-import BreadCrumbsV2 from "components/Breadcrumbs/BreadCrumbsV2";
-import Navbar from "components/Navbar/Navbar";
-import LSPage from "components/Utils/LSPage";
-import PageContainer from "components/Utils/PageContainer";
-import { IconReport } from "@tabler/icons-react";
-import { useState } from "react";
+
+import { useEffect, useState } from "react";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { getFirestoreInstance } from "context/firebaseUtility";
 import { generateFacultyAttendanceReport } from "utilities/GenerateFacultyAttendanceReport";
 import { FacultyType, AttenzyAttendanceType } from "types/facuities";
 import { enqueueSnackbar } from "notistack";
+import { useSearchParams } from "react-router-dom";
+import { CircularProgress } from "@mui/material";
+import { Box } from "@mui/joy";
 
-export default function FacultyDailyAttendanceReport() {
-    const [selectedDate, setSelectedDate] = useState("");
+function TriggerFacultyDailyAttendanceReport() {
     const [loading, setLoading] = useState(false);
+    const [pdfUrl, setPdfUrl] = useState<string | null>(null)
 
-    const handleGenerateReport = async () => {
-        if (!selectedDate) return;
+    const [searchParams] = useSearchParams();
+    const dateId = searchParams.get('date');
 
-        console.log("selected date",selectedDate)
+
+
+    const generateReport = async () => {
+        if (!dateId) return;
 
         setLoading(true);
         const db = await getFirestoreInstance();
@@ -43,7 +44,7 @@ export default function FacultyDailyAttendanceReport() {
             for (const faculty of facultyMembers) {
                 const attendanceQuery = query(
                     collection(db, "STUDENTS", faculty.id!, "MY_ATTENDANCE"),
-                    where("date", "==", selectedDate)
+                    where("date", "==", dateId)
                 );
 
                 const attendanceSnapshot = await getDocs(attendanceQuery);
@@ -73,7 +74,7 @@ export default function FacultyDailyAttendanceReport() {
                         facultyPhone: faculty.facultyPhone,
                         facultyImage: faculty.facultyImage,
                         attendanceStatus: "Absent",
-                        attendanceDate: selectedDate,
+                        attendanceDate: dateId,
                         isSmartAttendance: false,
                         comment: "N/A",
                         createdAt: new Date()
@@ -82,9 +83,9 @@ export default function FacultyDailyAttendanceReport() {
             }
 
             // Generate the report with selected date
-            const pdfResult = await generateFacultyAttendanceReport(attendanceData, selectedDate);
+            const pdfResult = await generateFacultyAttendanceReport(attendanceData, dateId);
             if (pdfResult) {
-                window.open(pdfResult as string, "_blank");
+                setPdfUrl(pdfResult);
                 enqueueSnackbar("PDF generated successfully", { variant: "success" });
             }
         } catch (error) {
@@ -95,35 +96,35 @@ export default function FacultyDailyAttendanceReport() {
         }
     };
 
+    useEffect(() => {
+        generateReport();
+    }, [])
+    if (!dateId) {
+        return <p>Invalid Url</p>
+    }
     return (
-        <PageContainer>
-            <Navbar />
-            <LSPage>
-                <BreadCrumbsV2 Icon={IconReport} Path="Faculty Daily Attendance Report" />
-                <Box sx={{ maxWidth: 400, mt: 4 }}>
-                    <FormControl>
-                        <FormLabel>Select Date</FormLabel>
-                        <Input
-                            type="date"
-                            value={selectedDate}
-                            onChange={(e) => setSelectedDate(e.target.value)}
-                            slotProps={{
-                                input: {
-                                    min: "2020-01-01",
-                                }
-                            }}
+        <>
+            {pdfUrl && (
+                <>
+                    <Box sx={{ height: "100vh", display: "flex", justifyContent: "center", alignItems: "center" }}>
+                        {loading &&
+                            <>
+                                Generating Report
+                                <CircularProgress />
+                            </>}
+                        <iframe
+                            src={pdfUrl}
+                            title="PDF Viewer"
+                            width="100%"
+                            height="100%"
+                            frameBorder={0}
                         />
-                    </FormControl>
-                    <Button
-                        sx={{ mt: 2 }}
-                        onClick={handleGenerateReport}
-                        disabled={!selectedDate || loading}
-                        loading={loading}
-                    >
-                        {loading ? "Generating..." : "Generate Report"}
-                    </Button>
-                </Box>
-            </LSPage>
-        </PageContainer>
-    );
+                    </Box>
+                </>
+            )
+            }
+        </>
+    )
 }
+
+export default TriggerFacultyDailyAttendanceReport
