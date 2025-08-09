@@ -97,7 +97,7 @@ const FacultyMonthlyAttendanceReport = Loadable(
 );
 
 const TriggerFacultyDailyAttendanceReport = Loadable(
-  lazy(()=>import("./unprotected-routed/triggers/TriggerFacultyDailyAttendanceReport"))
+  lazy(() => import("./unprotected-routed/triggers/TriggerFacultyDailyAttendanceReport"))
 )
 
 function App() {
@@ -137,6 +137,17 @@ function App() {
 
   return (
     <FirebaseProvider key={authKey}>
+      <Routes>
+        <Route
+          path="triggers/daily-faculty-attendance"
+          element={<TriggerFacultyDailyAttendanceReport />}
+        />
+        <Route
+          path="update-student-profile-picture"
+          element={<StudentProfilePictureUpdater />}
+        />
+
+      </Routes>
       <AuthProvider>
         <SideBarContext.Provider value={{ isActive, toggle, setSidebarOpen }}>
           <SearchDialogProvider>
@@ -276,15 +287,8 @@ function App() {
                       element={<AllocatedStudents />}
                     />
                   </Route>
-                  <Route
-                    path="update-student-profile-picture"
-                    element={<StudentProfilePictureUpdater />}
-                  />
-                  <Route
-                    path="triggers/daily-faculty-attendance"
-                    element={<TriggerFacultyDailyAttendanceReport />}
-                  />
-                  
+
+
                   <Route path="/login" element={<AuthenticationLayout />}>
                     <Route index element={<Login />} />
                   </Route>
