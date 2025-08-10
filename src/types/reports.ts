@@ -7,7 +7,7 @@ export interface DueReportType {
     contact: string,
     dueAmount: number,
     remark: string,
-    sl:string,
+    sl: string,
 }
 
 
@@ -21,6 +21,7 @@ type StudentDetailsDemandSlip = {
     admissionNo: string;
     section: string;
     address: string;
+    studentId?: string
 }
 
 export type DemandSlipType = {
@@ -29,4 +30,10 @@ export type DemandSlipType = {
     currentSession: string;
     dueMonths: string[];
     feeHeaders: { header: string; amount: number }[];
+}
+
+export type DueListType = {
+    studentDetails: StudentDetailsDemandSlip,
+    dueTotal: number,
+    dueDetails: { header: string; amount: number }[];
 }

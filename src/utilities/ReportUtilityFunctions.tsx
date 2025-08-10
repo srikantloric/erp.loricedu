@@ -3,7 +3,7 @@ import { collection, query, where, getDocs } from "firebase/firestore";
 import { IChallanNL } from "types/payment";
 import { StudentDetailsType } from "types/student";
 import { getClassNameByValue, makeDoubleDigit } from "./UtilitiesFunctions";
-import { DemandSlipType } from "types/reports";
+import { DemandSlipType, DueListType } from "types/reports";
 import { enqueueSnackbar } from "notistack";
 import { SCHOOL_FEE_MONTHS, SCHOOL_SESSIONS } from "config/schoolConfig";
 import { DueReportRow } from "components/Tables/DueReportTable";
@@ -105,6 +105,7 @@ export async function GetDueListByClassAndMonths(className: number, selectedMont
         const studentRows = await Promise.all(studentSnapshot.docs.map(async (studentDoc, idx) => {
             const studentData = studentDoc.data() as StudentDetailsType;
 
+
             const studentId = studentDoc.id;
             let paid = 0;
             let dues = 0;
@@ -126,7 +127,11 @@ export async function GetDueListByClassAndMonths(className: number, selectedMont
             studentAllChallans.forEach((challan) => {
                 const challanData = challan.data();
                 challansArray.push(challanData);
-                const challanDue = (challanData.totalAmount || 0) - (challanData.amountPaid || 0) - (challanData.feeDiscount || 0) - (challanData.feeConsession || 0);
+
+                // Removed unused totalAmount variable and added explicit types if needed elsewhere:
+                const totalAmount = challanData.feeHeaders.reduce((acc: number, item: { amount: number }) => acc + item.amount, 0);
+
+                const challanDue = (totalAmount || 0) - (challanData.amountPaid || 0) - (challanData.feeDiscount || 0) - (challanData.feeConsession || 0);
                 if (challanDue > 0) {
                     duesTotal += challanDue
                 }
@@ -141,14 +146,19 @@ export async function GetDueListByClassAndMonths(className: number, selectedMont
                 } else {
                     challanYear = selectedSession?.split("-")[1] || "";
                 }
+
+                console.log(challanYear)
+                console.log(makeDoubleDigit("" + monthObj.value))
+
                 const constructedChallanId = `CHALLAN${makeDoubleDigit("" + monthObj.value)}${challanYear}`;
                 let monthPaid = 0;
                 let monthDue = 0;
 
+
                 if (studentData?.generatedChallans?.includes(constructedChallanId)) {
-                    // const challanRef = doc(db, `STUDENTS/${studentId}/CHALLANS`, constructedChallanId);
-                    // const challanSnap = await getDoc(challanRef);
-                    // const challanData = challanSnap.data();
+
+
+                    console.log("working..")
                     const challanData = challansArray.find((item) => item.challanId === constructedChallanId)
 
 
@@ -211,6 +221,7 @@ export async function GetDueListByClassAndSessions(className: number, selectedSe
         const studentRows = await Promise.all(studentSnapshot.docs.map(async (studentDoc, idx) => {
             const studentData = studentDoc.data() as StudentDetailsType;
 
+
             const studentId = studentDoc.id;
             let paid = 0;
             let dues = 0;
@@ -230,7 +241,12 @@ export async function GetDueListByClassAndSessions(className: number, selectedSe
             studentAllChallans.forEach((challan) => {
                 const challanData = challan.data();
                 challansArray.push(challanData);
-                const challanDue = (challanData.totalAmount || 0) - (challanData.amountPaid || 0) - (challanData.feeDiscount || 0) - (challanData.feeConsession || 0);
+
+                // Removed unused totalAmount variable and added explicit types if needed elsewhere:
+                const totalAmount = challanData.feeHeaders.reduce((acc: number, item: { amount: number }) => acc + item.amount, 0);
+
+
+                const challanDue = (totalAmount || 0) - (challanData.amountPaid || 0) - (challanData.feeDiscount || 0) - (challanData.feeConsession || 0);
                 if (challanDue > 0) {
                     duesTotal += challanDue
                 }
@@ -294,4 +310,79 @@ export async function GetDueListByClassAndSessions(className: number, selectedSe
         console.error("Error fetching due list:", error);
         return [];
     }
+}
+
+
+export const GetDueListByClass = async (className: number) => {
+    const db = await getFirestoreInstance();
+    // Get all students of selected class
+    const studentCollection = collection(db, "STUDENTS");
+    const studentQuery = query(studentCollection, where("class", "==", className));
+    const studentSnap = await getDocs(studentQuery);
+
+
+    if (studentSnap.empty) {
+        enqueueSnackbar("No student found in the selected class", { variant: "error" })
+        return [];
+    }
+
+    const dueDetailsArray: DueListType[] = [];
+
+    for (const student of studentSnap.docs) {
+        const studentData = student.data() as StudentDetailsType;
+
+        if (!studentData.generatedChallans) continue;
+
+        let totalDueAmount = 0;
+
+        if (studentData.generatedChallans.length > 0) {
+            // Get all challans for the student
+            const challanCollRef = collection(db, `STUDENTS/${studentData.id}/CHALLANS`);
+            const studentAllChallans = await getDocs(challanCollRef);
+
+
+            //No challan found for student
+            if (studentAllChallans.size === 0) return;
+
+            const dueDetails: any[] = []
+
+            //all challans for student
+            studentAllChallans.forEach((challan) => {
+                const challanData = challan.data() as IChallanNL;
+                const totalAmount = challanData.feeHeaders.reduce((acc: number, item: { amount: number }) => acc + item.amount, 0);
+
+                const challanDue = (totalAmount || 0) - (challanData.amountPaid || 0) - (challanData.feeDiscount || 0) - (challanData.feeConsession || 0);
+                if (challanDue > 0) {
+                    totalDueAmount += challanDue
+                    dueDetails.push({
+                        dueMonth: challanData.challanTitle,
+                        dueAmount: challanDue,
+                    })
+                }
+
+            })
+
+            if (totalDueAmount === 0) continue;
+
+            dueDetailsArray.push({
+                dueTotal: totalDueAmount,
+                studentDetails: {
+                    studentName: studentData.student_name,
+                    class: getClassNameByValue(studentData.class!) || "N/A",
+                    fatherName: studentData.father_name,
+                    dob: studentData.dob,
+                    phoneNumber: studentData.contact_number,
+                    rollNumber: studentData.class_roll,
+                    admissionNo: studentData.admission_no,
+                    section: studentData.section,
+                    address: studentData.address,
+                    studentId: studentData.admission_no
+                },
+                dueDetails
+            })
+        } else {
+            continue;
+        }
+    }
+    return dueDetailsArray
 }
