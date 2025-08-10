@@ -7,9 +7,11 @@ export type DueReportRow = {
   name: string;
   fname: string;
   contact: string;
+  duesTotal: number;
   paid: number;
-  due: number;
-  dueMonths: { month: string; value: number }[];
+  dues: number;
+  dueMonths?: { month: string; value: number }[];
+  dueSessions?: { session: string, value: number }[]
 };
 
 type Props = {
@@ -17,9 +19,10 @@ type Props = {
   selectedClass: string; // class name (e.g. '10th Grade')
   selectedSession: string; // session name (e.g. '2023-2024')
   selectedMonths?: string[]; // month names (e.g. ['January', 'February'])
+  selectedSessions?: string[]; // month names (e.g. ['2023-24', '2025-26'])
 };
 
-function DueReportTable({ data = [], selectedMonths = [], selectedClass, selectedSession }: Props) {
+function DueReportTable({ data = [], selectedMonths = [], selectedClass, selectedSession,selectedSessions }: Props) {
   const baseColumns: Column<DueReportRow>[] = [
     {
       title: 'Sl.', field: 'sl',
@@ -105,6 +108,36 @@ function DueReportTable({ data = [], selectedMonths = [], selectedClass, selecte
     }
   }));
 
+  //Session columns
+  const sessionColumns: Column<DueReportRow>[] = (selectedSessions?.reverse() || []).map(sessionName => ({
+    title: sessionName,
+    field: sessionName.toLowerCase(),
+    render: (rowData: DueReportRow) => {
+      const found = rowData.dueSessions?.find(dm => dm.session.toLowerCase() === sessionName.toLowerCase());
+      if (!found) return '-';
+      if (found.value === 0) return '₹0';
+      return `₹${found.value}`;
+    },
+    // Add customExport for export functionality
+    customExport: (rowData: DueReportRow) => {
+      const found = rowData.dueSessions?.find(dm => dm.session.toLowerCase() === sessionName.toLowerCase());
+      if (!found) return '-';
+      return found.value === 0 ? '0' : `${found.value}`;
+    },
+    cellStyle: {
+      maxWidth: "90px",
+      border: '1px solid #ccc',
+      textAlign: 'center',
+    },
+    headerStyle: {
+      backgroundColor: '#FFD55D',
+      color: "#000",
+      maxWidth: "90px",
+      border: '1px solid #ccc',
+      textAlign: 'center',
+    }
+  }));
+
   const summationColumns: Column<DueReportRow>[] = [
     {
       title: "Paid Total", field: "paid", render: (rowData: DueReportRow) => {
@@ -128,10 +161,33 @@ function DueReportTable({ data = [], selectedMonths = [], selectedClass, selecte
         border: '1px solid #ccc'
       }
     },
+
     {
-      title: "Due Total", field: "due", render: (rowData: DueReportRow) => {
-        if (rowData.due === 0) return '₹0';
-        return `₹${rowData.due}`;
+      title: "Dues", field: "dues", render: (rowData: DueReportRow) => {
+        if (rowData.dues === 0) return '₹0';
+        return `₹${rowData.dues}`;
+      },
+      cellStyle: {
+        maxWidth: "90px",
+        position: 'sticky' as any,
+        right: 0,
+        backgroundColor: "#fff",
+        border: '1px solid #ccc'
+      },
+      headerStyle: {
+        backgroundColor: '#FF8377',
+        color: "#000",
+        maxWidth: "90px",
+        position: 'sticky' as any,
+        right: 0,
+        zIndex: 2,
+        border: '1px solid #ccc'
+      }
+    },
+    {
+      title: "Dues Total", field: "duesTotal", render: (rowData: DueReportRow) => {
+        if (rowData.duesTotal === 0) return '₹0';
+        return `₹${rowData.duesTotal}`;
       },
       cellStyle: {
         maxWidth: "90px",
@@ -152,7 +208,11 @@ function DueReportTable({ data = [], selectedMonths = [], selectedClass, selecte
     },
   ];
 
-  const columns = [...baseColumns, ...monthColumns, ...summationColumns];
+  const columns = [
+    ...baseColumns,
+    ...(selectedSessions && selectedSessions.length > 0 ? sessionColumns : monthColumns),
+    ...summationColumns
+  ];
 
   return (
     <MaterialTable
@@ -177,9 +237,16 @@ function DueReportTable({ data = [], selectedMonths = [], selectedClass, selecte
           const totalPaid = data.reduce((sum, row) => sum + (row.paid || 0), 0);
           return { value: `₹${totalPaid}`, style: { fontWeight: 'bold', textAlign: 'center' } };
         }
+
         // Due total
-        if (column.field === 'due') {
-          const totalDue = data.reduce((sum, row) => sum + (row.due || 0), 0);
+        if (column.field === 'dues') {
+          const due = data.reduce((sum, row) => sum + (row.dues || 0), 0);
+          return { value: `₹${due}`, style: { fontWeight: 'bold', textAlign: 'center' } };
+        }
+
+        // Due Toatal 
+        if (column.field === 'dueTotal') {
+          const totalDue = data.reduce((sum, row) => sum + (row.duesTotal || 0), 0);
           return { value: `₹${totalDue}`, style: { fontWeight: 'bold', textAlign: 'center' } };
         }
 

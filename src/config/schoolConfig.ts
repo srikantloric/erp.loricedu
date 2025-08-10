@@ -5,7 +5,7 @@ export interface SchoolClass {
   id: number;
 }
 
-export const SCHOOL_CLASSES:SchoolClass[] = [
+export const SCHOOL_CLASSES: SchoolClass[] = [
   { title: "Pre-Nursery", value: 14, id: 14 },
   { title: "Nursery", value: 1, id: 1 },
   { title: "LKG", value: 2, id: 2 },
@@ -78,7 +78,7 @@ export const SCHOOL_FEE_MONTHS = [
     title: "March",
     value: 3
   },
- 
+
 ];
 
 export const SCHOOL_FEE_YEAR = [
@@ -164,6 +164,6 @@ export const CASTES = [
 
 
 export const SCHOOL_SESSIONS = [
-  { title: "2025-26", value: "2025-2026" },
-  { title: "2024-25", value: "2024-25" },
+  { id: "202526", title: "2025-26", value: "2025-2026" },
+  { id: "202425", title: "2024-25", value: "2024-25" },
 ]
