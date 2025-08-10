@@ -13,7 +13,8 @@ import {
   IconDatabaseCog,
   IconMoneybag,
   IconPhoneIncoming,
-  IconFingerprint
+  IconFingerprint,
+  IconPhoneOutgoing
 } from "@tabler/icons-react";
 import UnderConstruction from "../../pages/Extras/UnderConstruction";
 import FeeManager from "../../pages/FeeManager/FeeManager";
@@ -37,6 +38,7 @@ import AdmissionEnquiry from "pages/Admission/AdmissionEnquiry";
 import Attendance from "pages/Attendance/Attendance";
 import AttendanceConfiguration from "pages/Attendance/AttendanceConfiguration";
 import IotAttendance from "pages/Attendance/iotAttendanance/IotAttendance";
+import FollowUp from "pages/FollowUp/FollowUp";
 
 export const routesConfig = [
   {
@@ -281,6 +283,16 @@ export const routesConfig = [
     isHeader: false,
     Component: Reports,
   },
+  {
+    title: "Follow Up",
+    to: "/follow-up",
+    icon: IconPhoneOutgoing,
+    isCollapsable: false,
+    isHeader: false,
+    Component: FollowUp,
+  },
+  
+
   {
     title: "Controls",
     isHeader: true,

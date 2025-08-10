@@ -7,7 +7,7 @@ import LSPage from "components/Utils/LSPage";
 import PageContainer from "components/Utils/PageContainer";
 import { SCHOOL_CLASSES, SCHOOL_FEE_MONTHS, SCHOOL_SESSIONS } from "config/schoolConfig";
 import { enqueueSnackbar } from 'notistack';
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import { getClassNameByValue } from 'utilities/UtilitiesFunctions';
 import DueReportTable, { DueReportRow } from 'components/Tables/DueReportTable';
 import SideBarContext from 'context/SidebarContext';
@@ -15,6 +15,9 @@ import { GetDueListByClassAndMonths, GetDueListByClassAndSessions } from 'utilit
 
 
 function DueReport() {
+
+    const isFirstRender1 = useRef(true);
+    const isFirstRender2 = useRef(true);
     const [selectedClass, setSelectedClass] = useState<number | null>(null);
     const [selectedSession, setSelectedSession] = useState<string | null>(null);
     const [selectedMonths, setSelectedMonths] = useState<number[]>([])
@@ -23,7 +26,7 @@ function DueReport() {
     const [dueStudentListWithMonths, setDueStudentListWithMonths] = useState<DueReportRow[]>([]);
     const [dueStudentListWithSessions, setDueStudentListWithSessions] = useState<DueReportRow[]>([]);
 
- 
+
     const { setSidebarOpen } = useContext(SideBarContext);
 
     useEffect(() => {
@@ -65,12 +68,20 @@ function DueReport() {
         }
         setLoading(false)
     }
+    // Show snackbar only after initial render
+    useEffect(() => {
+        if (isFirstRender1.current) {
+            isFirstRender1.current = false
+            return
+        }
+        enqueueSnackbar("New Session selected or removed, please click on Generate Report Button! ", { variant: "warning" });
+    }, [selectedSessions]);
 
     useEffect(() => {
-        enqueueSnackbar("New Session selected or removed, please click on Generate Report Button! ", { variant: "warning" })
-    }, [selectedSessions])
-
-    useEffect(() => {
+        if (isFirstRender2.current) {
+            isFirstRender2.current = false
+            return
+        }
         enqueueSnackbar("New month selected or removed, please click on Generate Report Button! ", { variant: "warning" })
     }, [selectedMonths])
 

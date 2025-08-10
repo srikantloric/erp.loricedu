@@ -32,6 +32,8 @@ import StudentsList from "pages/Reports/StudentsList";
 import { NavbarProvider } from "context/NavbarContext";
 import IotAttendance from "pages/Attendance/iotAttendanance/IotAttendance";
 import GenerateAdmitCard from "pages/Reports/ExamAdmitCard/GenerateAdmitCard";
+import FollowUp from "pages/FollowUp/FollowUp";
+import FeeDueFollowUp from "pages/FollowUp/FeeDueFollowUp";
 
 // Lazy Loaded Components
 
@@ -256,6 +258,14 @@ function App() {
                     <Route
                       path="/reports/balance-sheet"
                       element={<BalanceSheet />}
+                    />
+                    <Route
+                      path="/follow-up"
+                      element={<FollowUp />}
+                    />
+                    <Route
+                      path="/follow-up/fee-dues-follow-up"
+                      element={<FeeDueFollowUp />}
                     />
 
                     <Route path="/reports/due-report" element={<DueReport />} />
