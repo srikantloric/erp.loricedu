@@ -119,7 +119,7 @@ export async function GetDueListByClassAndMonths(className: number, selectedMont
             const studentAllChallans = await getDocs(studentChallanRef);
 
             //No challan found for student
-            if (studentAllChallans.size === 0) return;
+            if (studentAllChallans.size === 0) return null;
 
 
             //all challans for student
@@ -190,7 +190,7 @@ export async function GetDueListByClassAndMonths(className: number, selectedMont
 
         dueList.push(...studentRows);
         enqueueSnackbar("Report generated successfully!", { variant: "success" });
-        return dueList;
+        return dueList.filter(Boolean);
 
     } catch (error) {
         enqueueSnackbar("Failed to generate report.", { variant: "error" });
@@ -233,7 +233,7 @@ export async function GetDueListByClassAndSessions(className: number, selectedSe
             const studentAllChallans = await getDocs(studentChallanRef);
 
             //No challan found for student
-            if (studentAllChallans.size === 0) return;
+            if (studentAllChallans.size === 0) return null;
 
 
             //all challans for student
@@ -300,10 +300,12 @@ export async function GetDueListByClassAndSessions(className: number, selectedSe
                 dues,
                 dueSessions,
             };
+
             return row;
 
         }));
-        return studentRows
+
+        return studentRows.filter(Boolean)
 
     } catch (error) {
         enqueueSnackbar("Failed to generate report.", { variant: "error" });

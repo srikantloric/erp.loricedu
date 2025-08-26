@@ -25,7 +25,6 @@ function Sidebar() {
     },
   };
 
-  console.log(appConfig)
 
   return (
     <motion.div
