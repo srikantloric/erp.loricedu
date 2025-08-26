@@ -9,6 +9,7 @@ import {
     Select,
     Stack,
     Table,
+    Typography,
 } from "@mui/joy";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { useEffect, useState } from "react";
@@ -17,12 +18,15 @@ import { StudentDetailsType } from "types/student";
 import RFIDStudentRow from "./RFIDStudentRow";
 import { SCHOOL_CLASSES } from "config/schoolConfig";
 import { Search } from "@mui/icons-material";
-
+import useIotWebSocket from "hooks/useIotWebSocket";
 export default function RFIDConfigTab() {
     const [selectedClass, setSelectedClass] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
     const [students, setStudents] = useState<StudentDetailsType[]>([]);
     const [searchQuery, setSearchQuery] = useState<string>("");
+
+    const {message} = useIotWebSocket("attenzy001")
+
 
     const { db } = useFirebase();
 
@@ -88,6 +92,10 @@ export default function RFIDConfigTab() {
                         ))}
                     </Select>
                 </FormControl>
+                <Stack>
+                    
+                    <Typography level="title-lg" >{message.rfidId}</Typography>
+                </Stack>
             </Stack>
 
             {loading && <LinearProgress />}

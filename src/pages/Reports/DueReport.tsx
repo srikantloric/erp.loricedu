@@ -57,12 +57,14 @@ function DueReport() {
         setLoading(true)
         if (selectedSession === "all") {
             const result = await GetDueListByClassAndSessions(selectedClass, selectedSession, selectedSessions)
+            
             setDueStudentListWithMonths([]);
             console.log(result)
             setDueStudentListWithSessions(result)
 
         } else {
             const result = await GetDueListByClassAndMonths(selectedClass, selectedMonths, selectedSession)
+            console.log(result)
             setDueStudentListWithSessions([])
             setDueStudentListWithMonths(result)
         }
