@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Delete } from "@mui/icons-material";
 import { Button, CircularProgress, Divider, IconButton, Table } from "@mui/joy";
 import { FormControl, FormHelperText, Grid, InputLabel, MenuItem, Paper, Select, TextField } from "@mui/material";
-import { examData } from "components/Exams/ExamPlannerTable";
+import { examData } from "components/Exams/ExamScheduleTable";
 import { SCHOOL_CLASSES } from "config/schoolConfig";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";

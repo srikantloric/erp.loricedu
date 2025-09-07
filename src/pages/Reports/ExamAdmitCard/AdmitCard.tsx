@@ -2,14 +2,15 @@
 import { Paper } from "@mui/material";
 import { Box, Button, Chip, Option, Select, Stack, Typography } from "@mui/joy";
 import { admitCardType } from "types/admitCard";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { SCHOOL_CLASSES } from "config/schoolConfig";
 import { GenerateAdmitCard } from "../../../utilities/GenerateAdmitCard";
 import { StudentDetailsType } from "types/student";
 import { getClassNameByValue } from "utilities/UtilitiesFunctions";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { collection, getDocs, limit, orderBy, query, where } from "firebase/firestore";
 import { useFirebase } from "context/firebaseContext";
-import { examData } from "components/Exams/ExamPlannerTable";
+import { ExamData } from "components/Exams/ExamScheduleTable";
+import { enqueueSnackbar } from "notistack";
 
 
 
@@ -20,6 +21,9 @@ const AdmitCard = () => {
   const [studentData, setStudentData] = useState<admitCardType[]>([]);
   const [pdfUrl, setPdfUrl] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
+  const [examSchedule, setExamSchedule] = useState<ExamData[]>([]);
+
+  const [exams, setExams] = useState<any[]>([]);
 
   //Get Firebase DB instance
   const { db } = useFirebase();
@@ -35,7 +39,7 @@ const AdmitCard = () => {
     try {
       // Query students based on selected class
       const studentsRef = collection(db, "STUDENTS");
-      const studentQuery = query(studentsRef, where("class", "==", selectedClass),where("is_active", "==", true));
+      const studentQuery = query(studentsRef, where("class", "==", selectedClass), where("is_active", "==", true));
       const studentSnapshot = await getDocs(studentQuery);
 
       if (studentSnapshot.empty) {
@@ -61,7 +65,7 @@ const AdmitCard = () => {
           studentMob: student.contact_number,
           className: student.class ? getClassNameByValue(student.class) || "N/A" : "N/A",
           profile_url: student.profil_url,
-          timeTabel: examData
+          timeTabel: examSchedule
         };
       });
 
@@ -79,6 +83,60 @@ const AdmitCard = () => {
     setLoading(false);
   };
 
+  useEffect(() => {
+    const fetchExams = async () => {
+      try {
+        const examQuery = query(
+          collection(db, "EXAMS"),
+          orderBy("createdAt", "desc")
+        );
+
+        const examSnap = await getDocs(examQuery);
+
+        const examsData = examSnap.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
+        setExams(examsData);
+      } catch (error) {
+        console.error("Error fetching exams:", error);
+      }
+    };
+    fetchExams()
+  }, [])
+
+  useEffect(() => {
+    const fetchExamSchedule = async () => {
+      if (!selectedExam) {
+        enqueueSnackbar("Please select exam!", { variant: "error" });
+        return;
+      }
+
+      try {
+        const examQuery = query(
+          collection(db, "EXAM_SCHEDULES"),
+          where("examId", "==", selectedExam),
+          limit(1)
+        );
+
+        const examScheduleSnap = await getDocs(examQuery); // getDocs for query
+
+        if (!examScheduleSnap.empty) {
+          // Use the first document from the query result
+          const examData = examScheduleSnap.docs[0].data().papers as ExamData[];
+          setExamSchedule(examData);
+        } else {
+          enqueueSnackbar("No schedule found for this exam.", { variant: "warning" });
+        }
+      } catch (error) {
+        console.error("Error fetching exams:", error);
+        enqueueSnackbar("Error fetching exam schedule.", { variant: "error" });
+      }
+    };
+
+    fetchExamSchedule();
+  }, [selectedExam, db]);
   return (
     <>
       <Paper sx={{ p: "10px", mt: "8px" }}>
@@ -96,24 +154,20 @@ const AdmitCard = () => {
               value={selectedExam}
               onChange={(e, val) => setSelectedExam(val)}
             >
-              {/* <Option value="ANNUALT4">
-                  <Stack>
-                  <Typography level="body-sm">Annual Exam (Term-1)</Typography>
-                  <Typography level="body-xs" sx={{ color: "text.tertiary" }}>
-                  2024-25
-                  </Typography>
-                  </Stack>
-                  </Option> */}
-              <Option value="ANNUALT1">
-                <Stack>
-                  <Typography level="body-sm">Term-1 Examination</Typography>
-                  <Typography level="body-xs" sx={{ color: "text.tertiary" }}>
-                    2025-26
-                  </Typography>
-                </Stack>
-              </Option>
-
-
+              {
+                exams && exams.map((exam) => {
+                  return (
+                    <Option value={exam.examId}>
+                      <Stack>
+                        <Typography level="body-sm">{exam.examTitle}</Typography>
+                        <Typography level="body-xs" sx={{ color: "text.tertiary" }}>
+                          {exam.examSession}
+                        </Typography>
+                      </Stack>
+                    </Option>
+                  )
+                })
+              }
             </Select>
             <Select
               placeholder="Choose class"

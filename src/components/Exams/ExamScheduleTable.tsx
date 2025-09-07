@@ -1,5 +1,8 @@
+import { Edit, Print } from "@mui/icons-material";
+import { IconButton, Stack, Typography } from "@mui/joy";
 import { styled } from "@mui/material/styles";
-import { SCHOOL_CLASSES, SchoolClass } from "config/schoolConfig";
+import { enqueueSnackbar } from "notistack";
+import { useNavigate } from "react-router-dom";
 
 
 export interface ExamSession {
@@ -11,7 +14,13 @@ export interface ExamData {
     date: string;
     sessions: ExamSession[];
 }
-
+interface ExamPlannerTableProps {
+    examTitle?: string;
+    examDescription?: string;
+    schedule: any,
+    examId: string,
+    classList: string[]
+}
 
 export const examData: ExamData[] = [
 
@@ -225,73 +234,164 @@ export const examData: ExamData[] = [
 
 ];
 
-
-
-
-
 const Table = styled("table")({
     width: "100%",
     borderCollapse: "collapse",
     textAlign: "left",
+    fontSize: "12px",
 });
 
 const Th = styled("th")({
-    padding: "10px",
+    padding: "4px 6px",
     border: "1px solid #ddd",
     backgroundColor: "#f4f4f4",
     textAlign: "center",
+    fontSize: "12px",
 });
 
 const Td = styled("td")({
-    padding: "10px",
+    padding: "4px 6px",
     border: "1px solid #ddd",
     textAlign: "center",
+    fontSize: "12px",
 });
 
-const Tr = styled("tr")(({ theme }) => ({
+const Tr = styled("tr")({
     "&:nth-of-type(even)": {
         backgroundColor: "#fafafa",
     },
     "&:hover": {
         backgroundColor: "#f1f1f1",
     },
-}));
+});
 
-const ExamPlannerTable: React.FC = () => {
+
+const printTable = (examTitle?: string, examDescription?: string) => {
+    const printContent = document.getElementById("exam-table");
+    if (!printContent) return;
+
+    const newWindow = window.open("", "", "width=900,height=700");
+    if (!newWindow) return;
+
+    newWindow.document.write(`
+    <html>
+      <head>
+        <title>Print Exam Planner</title>
+        <style>
+          @media print {
+            @page { size: landscape; }
+          }
+        footer {
+              position: fixed;
+              bottom: 0;
+              width: 100%;
+              text-align: center;
+              font-weight: bold;
+            }
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+          }
+          th, td {
+            border: 1px solid #ddd;
+            padding: 4px 6px;
+            text-align: center;
+          }
+          th {
+            background-color: #f4f4f4;
+          }
+          .header{
+            text-align:center
+          }  
+        </style>
+      </head>
+      <body>
+       <h1 class="header">Examination Schedule</h1>
+       ${examTitle ? `<h3 class="header">${examTitle}</h3>` : ""}
+        ${printContent.outerHTML}
+        <br/>
+        <footer>Powered by LoricEdu</footer>
+      </body>
+    </html>
+  `);
+
+    newWindow.document.close();
+    newWindow.focus();
+    newWindow.print();
+    newWindow.close();
+};
+
+
+
+const ExamScheduleTable: React.FC<ExamPlannerTableProps> = ({ examTitle, examId, examDescription, schedule, classList }) => {
+
+
+    const navigate = useNavigate()
+
+    const handleEditSchedule = () => {
+
+        if (examId) {
+
+            navigate({
+                pathname: "/schoolResults/add-exam",
+                search: `?examId=${examId}`
+            });
+        } else {
+            enqueueSnackbar("Unable to edit,please check with admin!", { variant: "error" })
+        }
+
+    }
+
     return (
-
-        <Table >
-            <thead>
-                <Tr>
-                    <Th>Sl</Th>
-                    <Th rowSpan={2}>Date</Th>
-                    <Th rowSpan={2}>Seating</Th>
-                    {SCHOOL_CLASSES.map((item: SchoolClass) => (
-                        <Th key={item.id}>{item.title}</Th>
-                    ))}
-                </Tr>
-            </thead>
-            <tbody>
-                {examData.map((exam: ExamData, index: number) =>
-                    exam.sessions.map((session: ExamSession, sIndex: number) => (
-                        <Tr key={`${index}-${sIndex}`}>
-                            {sIndex === 0 && (
-                                <Td rowSpan={exam.sessions.length}>{index + 1}</Td>
-                            )}
-                            {sIndex === 0 && <Td rowSpan={exam.sessions.length}>{exam.date}</Td>}
-                            <Td>{session.session}</Td>
-
-                            {SCHOOL_CLASSES.map((item: SchoolClass) => (
-                                <Td key={`${index}-${sIndex}-${item.id}`}>
-                                    {session.subjects[item.title] || "-"}
-                                </Td>
+        <div>
+            <Stack direction={"row"} justifyContent={"space-between"} alignItems={"center"}>
+                <Typography level="title-md" mb={1}>Exam Schedule</Typography>
+                <Stack direction={"row"} spacing={2} alignItems={"center"}>
+                    <IconButton
+                        onClick={() => printTable(examTitle, examDescription)}
+                    >
+                        <Print />
+                    </IconButton>
+                    <IconButton
+                        onClick={handleEditSchedule}
+                    >
+                        <Edit />
+                    </IconButton>
+                </Stack>
+            </Stack>
+            <div id="exam-table">
+                <Table>
+                    <thead>
+                        <Tr>
+                            <Th>Sl</Th>
+                            <Th rowSpan={2}>Date</Th>
+                            <Th rowSpan={2}>Seating</Th>
+                            {classList.map((item) => (
+                                <Th key={item}>{item}</Th>
                             ))}
                         </Tr>
-                    ))
-                )}
-            </tbody>
-        </Table>
-
+                    </thead>
+                    <tbody>
+                        {schedule && schedule.papers?.map((exam: any, index: number) =>
+                            exam.sessions.map((session: any, sIndex: number) => (
+                                <Tr key={`${index}-${sIndex}`}>
+                                    {sIndex === 0 && <Td rowSpan={exam.sessions.length}>{index + 1}</Td>}
+                                    {sIndex === 0 && <Td rowSpan={exam.sessions.length}>{exam.date}</Td>}
+                                    <Td>{session.session}</Td>
+                                    {classList.map((item) => (
+                                        <Td key={`${index}-${sIndex}-${item}`}>
+                                            {session.subjects[item] || "-"}
+                                        </Td>
+                                    ))}
+                                </Tr>
+                            ))
+                        )}
+                    </tbody>
+                </Table>
+            </div>
+        </div>
     );
 };
-export default ExamPlannerTable;
+
+export default ExamScheduleTable;

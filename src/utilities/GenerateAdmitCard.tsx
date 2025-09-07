@@ -3,10 +3,11 @@ import { admitCardType } from "types/admitCard";
 
 import { POPPINS_BOLD, POPPINS_REGULAR, POPPINS_SEMIBOLD, PROFILE_PLACEHOLDER_BASE64 } from "./Base64Url";
 
-import { examData } from "components/Exams/ExamPlannerTable";
+// import { examData } from "components/Exams/ExamScheduleTable";
 import { getAppConfig } from "hooks/getAppConfig";
-export const getScheduleForClassAndSession = (className: string, sessionName: string) => {
-  return examData
+import { ExamData } from "components/Exams/ExamScheduleTable";
+export const getScheduleForClassAndSession = (timeTable: ExamData[], className: string, sessionName: string) => {
+  return timeTable
     .map((exam) => ({
       date: exam.date,
       sessions: exam.sessions
@@ -152,7 +153,7 @@ export const GenerateAdmitCard = async (
       doc.setFontSize(10);
       doc.text(
         `Exam Timing: ${studentData.startTime} | ${studentData.endTime}`,
-        margin +10,
+        margin + 10,
         positionY + 69,
         { align: "left" }
       );
@@ -171,7 +172,7 @@ export const GenerateAdmitCard = async (
 
       // Table Rows
       doc.setFont("Poppins", "normal");
-      const classSessionSchedule = getScheduleForClassAndSession(studentData.className, "1st");
+      const classSessionSchedule = getScheduleForClassAndSession(studentData.timeTabel, studentData.className, "1st");
       console.log(classSessionSchedule);
 
       classSessionSchedule.forEach((item, index) => {
@@ -188,7 +189,7 @@ export const GenerateAdmitCard = async (
           align: "center",
         });
       });
-      const classSessionSchedule2 = getScheduleForClassAndSession(studentData.className, "2nd");
+      const classSessionSchedule2 = getScheduleForClassAndSession(studentData.timeTabel, studentData.className, "2nd");
       console.log(classSessionSchedule);
       if (classSessionSchedule2.length !== 0) {
         doc.text("2nd Seating", timeTableX + 60, startY - 2, { align: "center" });
@@ -206,7 +207,7 @@ export const GenerateAdmitCard = async (
       doc.setFont("Poppins", "normal");
       doc.setFontSize(8);
 
-      doc.text("(Class Teacher)", margin+20, signatureY+4);
+      doc.text("(Class Teacher)", margin + 20, signatureY + 4);
 
 
       // doc.addImage(PRINCIPAL_SIGN, "PNG", 80, signatureY - 10, 25, 13); // Placeholder for signature image

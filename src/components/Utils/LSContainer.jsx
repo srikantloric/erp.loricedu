@@ -1,10 +1,10 @@
 import React from 'react'
 
-function LSContainer({children}) {
+function LSContainer({ children }) {
   return (
     <div className="main-container">
-         {children}
-        </div>
+      {children}
+    </div>
   )
 }
 
