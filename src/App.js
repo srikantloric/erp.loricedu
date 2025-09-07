@@ -34,6 +34,9 @@ import IotAttendance from "pages/Attendance/iotAttendanance/IotAttendance";
 import GenerateAdmitCard from "pages/Reports/ExamAdmitCard/GenerateAdmitCard";
 import FollowUp from "pages/FollowUp/FollowUp";
 import FeeDueFollowUp from "pages/FollowUp/FeeDueFollowUp";
+import AddExamPlan from "pages/ResultsManagement/ExamSetup/SetExamDetails";
+import ExamSetup from "pages/ResultsManagement/ExamSetup/ExamSetup";
+
 
 // Lazy Loaded Components
 
@@ -239,6 +242,11 @@ function App() {
                     <Route
                       path="/schoolResults/exam-planner"
                       element={<ExamPlanner />}
+                    />
+                   
+                    <Route
+                      path="/schoolResults/add-exam/:examId?"
+                      element={<ExamSetup />}
                     />
                     <Route
                       path="/schoolResults/print-results"

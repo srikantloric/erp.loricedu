@@ -8,9 +8,42 @@ import LSPage from "components/Utils/LSPage"
 import PageContainer from "components/Utils/PageContainer"
 // import { useState } from "react"
 import ExamCardWithSchedule from "./ExamCardWithSchedule"
+import { useNavigate } from "react-router-dom"
+import { useEffect, useState } from "react"
+import { collection, getDocs, orderBy, query } from "firebase/firestore"
+import { useFirebase } from "context/firebaseContext"
 
 
 function ExamPlanner() {
+
+    const [exams, setExams] = useState<any[]>([]);
+    const { db } = useFirebase()
+
+    const navigate = useNavigate()
+
+    useEffect(() => {
+        const fetchExams = async () => {
+            try {
+                const examQuery = query(
+                    collection(db, "EXAMS"),
+                    orderBy("createdAt", "desc")
+                );
+
+                const examSnap = await getDocs(examQuery);
+
+                const examsData = examSnap.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data(),
+                }));
+
+                setExams(examsData);
+            } catch (error) {
+                console.error("Error fetching exams:", error);
+            }
+        };
+        fetchExams()
+    }, [])
+
 
     return (
         <PageContainer>
@@ -30,10 +63,22 @@ function ExamPlanner() {
                         }}
                         placeholder="Search for exams..."
                     ></Input>
-                    <Button startDecorator={<Add />}>Add New Exam</Button>
+                    <Button startDecorator={<Add />} onClick={() => navigate("/schoolResults/add-exam")}>Add New Exam</Button>
                 </Stack>
-                <Stack mt={2}>
-                    <ExamCardWithSchedule />
+                <Stack mt={2} spacing={2}>
+                    {
+                        exams && exams.map((exam, index) => {
+                            return (
+                                <ExamCardWithSchedule
+                                    index={index}
+                                    key={exam.examId}
+                                    examId={exam.examId}
+                                    examDescription={exam.examDescription}
+                                    examTitle={exam.examTitle}
+                                    createdAt={exam.createdAt} />
+                            )
+                        })
+                    }
                 </Stack>
 
             </LSPage>
