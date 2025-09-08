@@ -145,6 +145,7 @@ function StudentFeeDetails() {
 
   const [showViewChallanDetailsModal, setShowViewChallanDetailsModal] = useState<boolean>(false);
 
+
   // Calculate total feeConsession and totalPaidAmount
   const calculateTotals = () => {
     const totals = challanList.reduce(
@@ -245,6 +246,8 @@ function StudentFeeDetails() {
     // Initialize fee collection date
     setFeeCollectionDate(getCurrentDate());
     setLoading(true);
+
+    
 
     if (!location.state?.[0]) {
       enqueueSnackbar("Failed to load student master data!", { variant: "warning" });
