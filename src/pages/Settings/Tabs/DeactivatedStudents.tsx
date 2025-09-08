@@ -1,13 +1,14 @@
 import MaterialTable from "@material-table/core"
-import { Avatar, Card, LinearProgress } from "@mui/joy"
-import { Chip } from "@mui/material";
+import { Avatar, Card, IconButton, LinearProgress, Stack } from "@mui/joy"
+import { Chip, Tooltip } from "@mui/material";
 import { useFirebase } from "context/firebaseContext";
-import { collection, doc, getDocs, orderBy, query, setDoc,  } from "firebase/firestore";
+import { collection, doc, getDocs, orderBy, query, setDoc, } from "firebase/firestore";
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { StudentDetailsType } from "types/student";
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import { enqueueSnackbar } from "notistack";
+import { CurrencyRupee} from "@mui/icons-material";
 const classLookup = {
     1: "Nursery",
     2: "LKG",
@@ -35,6 +36,9 @@ function DeactivatedStudents() {
 
     const { db } = useFirebase()
 
+    const navigate = useNavigate();
+
+
 
     //fetch deactivated students
     const fetchDeactivatedStudents = async () => {
@@ -51,7 +55,7 @@ function DeactivatedStudents() {
             // Map over the snapshot to return the student data
             const students = snap.docs
                 .map((doc) => ({ ...doc.data() }))
-                .filter((student) => student.is_active === false || student.is_active === undefined); // 🔥
+                .filter((student) => student.is_active === false || student.is_active === undefined);
 
             setStudents(students as StudentDetailsType[]);
             console.log(students)
@@ -153,6 +157,32 @@ function DeactivatedStudents() {
                 return <Chip label="Inactive" color="error" variant="outlined" />;
             },
         },
+
+        {
+            field: "action", title: "Actions", render: (rowData: StudentDetailsType) => {
+                return (
+                    <Stack>
+                        <Tooltip title="View fee details">
+                            <IconButton variant="outlined" onClick={() => {
+                                if (rowData) {
+                                    const studentDataArr:StudentDetailsType[] =[]
+                                    studentDataArr.push(rowData) 
+                                    navigate(`/FeeManagement/FeeDetails/${rowData.id}`, { state: studentDataArr });
+
+                                } else {
+                                    enqueueSnackbar("Error : Please enter student id or admission number !", {
+                                        variant: "error",
+                                    });
+                                }
+                            }}>
+                                <CurrencyRupee />
+                            </IconButton>
+                        </Tooltip>
+                    </Stack>
+                )
+            }
+        },
+
     ];
     return (
         <Card variant="outlined">
