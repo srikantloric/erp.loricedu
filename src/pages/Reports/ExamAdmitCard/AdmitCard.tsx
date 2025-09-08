@@ -48,14 +48,15 @@ const AdmitCard = () => {
         return;
       }
 
+      const selectedExamData = exams.filter((item) => item.examId === selectedExam)[0];
+
       // Map student data
       const studentData: admitCardType[] = studentSnapshot.docs.map((doc) => {
         const student = doc.data() as StudentDetailsType;
         return {
-          examTitle: "Term-1 Examination",
-          session: "2025-26",
-          startTime: "08:00AM - 10:30AM",
-          endTime: "11:00AM - 01:00PM",
+          examTitle: selectedExamData.examTitle,
+          session: selectedExamData.examSession,
+          examTimings: selectedExamData.examTimings,
           studentName: student.student_name,
           fatherName: student.father_name,
           rollNumber: student.class_roll,
@@ -109,7 +110,6 @@ const AdmitCard = () => {
   useEffect(() => {
     const fetchExamSchedule = async () => {
       if (!selectedExam) {
-        enqueueSnackbar("Please select exam!", { variant: "error" });
         return;
       }
 

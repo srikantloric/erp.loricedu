@@ -55,7 +55,7 @@ function ManualAdmitCard() {
 
     const handleGenerateAdmitCard = async () => {
 
-        if (students.length == 0) {
+        if (students.length === 0) {
             enqueueSnackbar("No student selected to generate admit card.", { variant: "error" })
             return
         }
@@ -67,8 +67,7 @@ function ManualAdmitCard() {
             return {
                 examTitle: "Term-1 Examination",
                 session: "2025-26",
-                startTime: "08:00AM - 10:30AM",
-                endTime: "11:00AM - 01:00PM",
+                examTimings: "08:00AM - 10:30AM",
                 studentName: student.student_name || "N/A",
                 fatherName: student.father_name || "N/A",
                 rollNumber: student.class_roll || "N/A",
@@ -191,7 +190,7 @@ function ManualAdmitCard() {
                         <Button variant="solid" color="primary" type="submit">
                             Add Student To List
                         </Button>
-                        <Button disabled={students.length == 0} sx={{ ml: 2 }} color="success" onClick={handleGenerateAdmitCard}>Click To Generate Admit Card For Below Students</Button>
+                        <Button disabled={students.length === 0} sx={{ ml: 2 }} color="success" onClick={handleGenerateAdmitCard}>Click To Generate Admit Card For Below Students</Button>
                     </Grid>
                 </Grid>
                 <br></br>

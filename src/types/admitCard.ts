@@ -12,7 +12,6 @@ export interface admitCardType {
     profile_url: string;
     examTitle: string;
     session: string;
-    startTime: string;
-    endTime: string;
+    examTimings: string;
     timeTabel:ExamData[]
 }

@@ -1,4 +1,4 @@
-import { Delete } from "@mui/icons-material";
+import { AutoFixHigh, Delete } from "@mui/icons-material";
 import { Box, Button, IconButton, LinearProgress, Option, Select, Stack } from "@mui/joy";
 import { IconPlus } from "@tabler/icons-react";
 import { useContext, useEffect, useState } from "react";
@@ -11,7 +11,7 @@ import { enqueueSnackbar } from "notistack";
 import { useSearchParams } from "react-router-dom";
 import { PaperType } from "pages/MasterData/AddSubjects";
 import { ClassType } from "pages/MasterData/AddClasses";
-
+import axios from "axios"
 
 
 // --- table style ---
@@ -50,6 +50,17 @@ const headCellStyle = {
   padding: "8px 12px",
 };
 
+export type ExamSchedule = {
+  schedule: {
+    date: string; // formatted as yyyy-mm-dd
+    sessions: {
+      session: string;
+      subjects: Record<string, string>; // dynamic keys like "STD-2": "ENGLISH"
+    }[];
+  }[];
+  notes: string;
+};
+
 function CreateExamSchedule() {
   const [examData, setExamData] = useState<ExamData[]>([]);
   const [openDialog, setOpenDialog] = useState(false);
@@ -57,6 +68,8 @@ function CreateExamSchedule() {
   const [loading, setLoading] = useState(false);
   const [papers, setPapers] = useState<string[]>([]);
   const [classList, setClassList] = useState<string[]>([]);
+  const [isAiGenerating, setIsAiGenerating] = useState(false);
+  // const [aiExamSchedule, setAiExamSchedule] = useState<ExamSchedule | null>(null)
 
   const [confiLoading, setConfigLoading] = useState<boolean>(false);
 
@@ -134,8 +147,7 @@ function CreateExamSchedule() {
     );
 
     if (isDuplicate) {
-      alert(`❌ ${className} already has subject "${value}" on another date!`);
-      return;
+      enqueueSnackbar(`❌ ${className} already has subject "${value}" on another date!`, { variant: "warning" });
     }
 
     newExamData[dateIndex].sessions[sessionIndex].subjects[className] = value;
@@ -195,12 +207,61 @@ function CreateExamSchedule() {
     }
   };
 
+
+
+  //Generate AI exam schedule
+
+  const generateAiExamSchedule = async () => {
+    try {
+
+      if (!classList || !papers) {
+        enqueueSnackbar("Erorr", { variant: "error" })
+        return
+      }
+      setIsAiGenerating(true)
+      const response = await axios.post("http://localhost:5000/generate-schedule", {
+        examId: "MID_TERM_2025",
+        classes: classList,
+        subjects: papers,
+        startDate: "2025-09-15",
+        endDate: "2025-09-25",
+        sessionsPerDay: 2,
+        holidays: ["2025-09-20"],
+        avoidDaysOfWeek: ["Sunday"],
+        maxExamsPerDayPerClass: 1,
+        minGapDaysForHardPairs: [
+          ["Math", "Science", 2]
+        ],
+        pinned: [
+          {
+            date: "2025-09-15",
+            session: "1st",
+            className: "Class 10",
+            subject: "Math"
+          }
+        ]
+      });
+      
+
+      setIsAiGenerating(false)
+      console.log("✅ Exam schedule created:", response.data);
+      setExamData(response.data.schedule)
+    } catch (error: any) {
+      setIsAiGenerating(false)
+      console.error("❌ Error creating exam schedule:", error.response?.data || error.message);
+    }
+  }
+
+
+
   return (
     <>
+      <Stack justifyContent={"end"} direction={"row"}>
+        <Button onClick={generateAiExamSchedule} startDecorator={<AutoFixHigh />} loading={isAiGenerating} variant="plain" >Auto Generate</Button>
+      </Stack>
       <div style={tableContainerStyle}>
         {confiLoading &&
           <LinearProgress />}
-
 
         <table style={{ borderCollapse: "collapse", width: "100%" }}>
           <thead>
@@ -248,6 +309,8 @@ function CreateExamSchedule() {
                         placeholder="-"
                         sx={{ minWidth: 120 }}
                       >
+                        <Option value={"-"}>-</Option>
+                        <Option value="oral">Oral</Option>
                         {papers.map((subj) => (
                           <Option key={subj} value={subj}>{subj}</Option>
                         ))}
