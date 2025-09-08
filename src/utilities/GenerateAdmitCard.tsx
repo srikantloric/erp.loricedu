@@ -152,7 +152,7 @@ export const GenerateAdmitCard = async (
       doc.setFont("Poppins", "semibold");
       doc.setFontSize(10);
       doc.text(
-        `Exam Timing: ${studentData.startTime} | ${studentData.endTime}`,
+        `Exam Timing: ${studentData.examTimings}`,
         margin + 10,
         positionY + 69,
         { align: "left" }

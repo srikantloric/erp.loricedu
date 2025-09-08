@@ -93,13 +93,14 @@ function ExamSetup() {
                                 </Stepper>
                             </Box>
                             <br />
-                            <Stack direction={"row"} justifyContent={"start"}>
+                            <Stack direction={"row"} justifyContent={"space-between"}>
                                 <Button variant="plain" startDecorator={<ArrowLeft />} onClick={() => {
                                     setActiveStep(prev => prev - 1)
                                     navigate(
                                         "/schoolResults/add-exam"
                                     );
                                 }}>Prevous</Button>
+
                             </Stack>
 
                             <Box sx={{ p: "14px", mt: "6px", border: "1px solid #ccc", borderRadius: "10px" }}>
