@@ -425,7 +425,8 @@ const ExamScheduleTable: React.FC<ExamPlannerTableProps> = ({ examTitle, examId,
                             exam.sessions.map((session: any, sIndex: number) => (
                                 <Tr key={`${index}-${sIndex}`}>
                                     {sIndex === 0 && <Td rowSpan={exam.sessions.length}>{index + 1}</Td>}
-                                    {sIndex === 0 && <Td rowSpan={exam.sessions.length}>{exam.date}</Td>}
+
+                                    {sIndex === 0 && <Td rowSpan={exam.sessions.length}> {exam.date && exam.date.split("-").reverse().join("/")}</Td>}
                                     <Td>{session.session}</Td>
                                     {classList.map((item) => (
                                         <Td key={`${index}-${sIndex}-${item}`}>

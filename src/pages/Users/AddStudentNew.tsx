@@ -27,7 +27,7 @@ import { addstudent } from "store/reducers/studentSlice";
 import { useDispatch } from "store";
 import { enqueueSnackbar } from "notistack";
 import LoadingButtonWrapper from "components/FormsUi/LoadingButton";
-import { doc, getDoc } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, limit, orderBy, query, where } from "firebase/firestore";
 import { useFirebase } from "context/firebaseContext";
 import { Box } from "@mui/joy";
 
@@ -61,7 +61,7 @@ const FormValidationSchema = Yup.object().shape({
     student_name: Yup.string().required("required"),
     class: Yup.number().nullable().required("required"),
     section: Yup.string().nullable().required("required"),
-    class_roll: Yup.number().nullable().required("required"),
+    class_roll: Yup.number().optional(),
     dob: Yup.date().nullable().required("required"),
     date_of_addmission: Yup.date().nullable().required("required"),
     gender: Yup.string().required("required"),
@@ -113,7 +113,6 @@ function AddStudentNew() {
     const dispatch = useDispatch();
 
 
-
     const InitialFormState = {
         student_name: "",
         class: "",
@@ -148,6 +147,31 @@ function AddStudentNew() {
         , is_active: true
 
     }
+    const fetchLastRollNumber = async (classId: string, sectionId: string) => {
+        try {
+            const studentsRef = collection(db, "STUDENTS"); // adjust collection name
+            const q = query(
+                studentsRef,
+                where("class", "==", classId),
+                where("section", "==", sectionId),
+                orderBy
+                    ("class_roll", "desc"),
+                limit(1)
+            );
+
+            const snapshot = await getDocs(q);
+            if (!snapshot.empty) {
+                const lastRollStr = snapshot.docs[0].data().class_roll || "000";
+                const lastRollNum = parseInt(lastRollStr, 10) || 0;
+                return String(lastRollNum + 1).padStart(3, "0"); // e.g. "013"
+            } else {
+                return "001"; // First roll number
+            }
+        } catch (error) {
+            console.error("Error fetching last roll number:", error);
+            return "001";
+        }
+    };
 
     useEffect(() => {
         const fetchTransportData = async () => {
@@ -236,12 +260,20 @@ function AddStudentNew() {
                     <Formik
                         initialValues={{ ...InitialFormState }}
                         validationSchema={FormValidationSchema}
-                        onSubmit={(values, { resetForm }) => {
+                        onSubmit={async (values, { resetForm, setFieldValue }) => {
                             setLoading(true);
                             values.monthly_fee = Number(values.monthly_fee || 0);
                             values.transport_fee = Number(values.transport_fee || 0);
                             values.computer_fee = Number(values.computer_fee || 0);
                             values.admission_fee = Number(values.admission_fee || 0);
+
+                            const nextRoll = await fetchLastRollNumber(values.class, values.section);
+
+                            if (!nextRoll) {
+                                enqueueSnackbar("Some issue occured while auto-generating roll number", { variant: "error" })
+                            }
+
+                            setFieldValue("class_roll", nextRoll); // autofill roll
 
                             console.log("called..")
                             dispatch(
@@ -260,331 +292,334 @@ function AddStudentNew() {
                                 });
                         }}
                     >
-                        {({ values, setFieldValue }) => (
-                            <Form>
-                                <SeperatorHeader>Personal Details</SeperatorHeader>
-                                <Grid container spacing={2}>
-                                    <Grid item xs={12} md={4}>
-                                        <Textfield
-                                            name="student_name"
-                                            label="Student Name"
-                                        />
-                                    </Grid>
-                                    <Grid item xs={12} md={4}>
-                                        <Select
-                                            name="class"
-                                            options={SCHOOL_CLASSES}
-                                            label="Class"
-                                        />
-                                    </Grid>
-                                    <Grid item xs={12} md={4}>
-                                        <Select
-                                            name="section"
-                                            label="Section"
-                                            options={SCHOOL_SECTIONS}
-                                        />
-                                    </Grid>
-                                    <Grid item xs={12} md={4}>
+                        {({ values, setFieldValue, errors }) => {
+                            console.log(errors)
+                            return (
+                                <Form>
+                                    <SeperatorHeader>Personal Details</SeperatorHeader>
+                                    <Grid container spacing={2}>
+                                        <Grid item xs={12} md={4}>
+                                            <Textfield
+                                                name="student_name"
+                                                label="Student Name"
+                                            />
+                                        </Grid>
+                                        <Grid item xs={12} md={4}>
+                                            <Select
+                                                name="class"
+                                                options={SCHOOL_CLASSES}
+                                                label="Class"
+                                            />
+                                        </Grid>
+                                        <Grid item xs={12} md={4}>
+                                            <Select
+                                                name="section"
+                                                label="Section"
+                                                options={SCHOOL_SECTIONS}
+                                            />
+                                        </Grid>
+                                        {/* <Grid item xs={12} md={4}>
                                         <Textfield
                                             label="Class Roll"
                                             name="class_roll"
                                         />
-                                    </Grid>
-                                    <Grid item xs={12} md={4}>
-                                        <DateTimePicker
-                                            name="dob"
-                                            label="DOB"
-                                        />
-                                    </Grid>
-                                    <Grid item xs={12} md={4}>
-                                        <DateTimePicker
-                                            name="date_of_addmission"
-                                            label="Admission Date"
-                                        />
-                                    </Grid>
-                                    <Grid item xs={12} md={4}>
-                                        <Select
-                                            name="gender"
-                                            label="Gender"
-                                            options={SCHOOL_GENDERS}
-                                        />
-                                    </Grid>
+                                    </Grid> */}
+                                        <Grid item xs={12} md={4}>
+                                            <DateTimePicker
+                                                name="dob"
+                                                label="DOB"
+                                            />
+                                        </Grid>
+                                        <Grid item xs={12} md={4}>
+                                            <DateTimePicker
+                                                name="date_of_addmission"
+                                                label="Admission Date"
+                                            />
+                                        </Grid>
+                                        <Grid item xs={12} md={4}>
+                                            <Select
+                                                name="gender"
+                                                label="Gender"
+                                                options={SCHOOL_GENDERS}
+                                            />
+                                        </Grid>
 
-                                    <Grid item xs={12} md={4}>
-                                        <Select
-                                            name="blood_group"
-                                            label="Blood Group"
-                                            options={BLOOD_GROUPS}
-                                        />
+                                        <Grid item xs={12} md={4}>
+                                            <Select
+                                                name="blood_group"
+                                                label="Blood Group"
+                                                options={BLOOD_GROUPS}
+                                            />
+                                        </Grid>
+                                        <Grid item xs={12} md={4}>
+                                            <Select
+                                                name="religion"
+                                                label="Religion"
+                                                options={RELIGIONS}
+                                            />
+                                        </Grid>
+                                        <Grid item xs={12} md={4}>
+                                            <Select
+                                                name="caste"
+                                                label="Caste"
+                                                options={CASTES}
+                                            />
+                                        </Grid>
+                                        <Grid item xs={12} md={4}>
+                                            <Textfield
+                                                label="Aadhar Number"
+                                                name="aadhar_number"
+                                            />
+                                        </Grid>
                                     </Grid>
-                                    <Grid item xs={12} md={4}>
-                                        <Select
-                                            name="religion"
-                                            label="Religion"
-                                            options={RELIGIONS}
-                                        />
+                                    {/* Family Details */}
+                                    <br />
+                                    <br />
+                                    <SeperatorHeader>Family Details</SeperatorHeader>
+                                    <Grid container spacing={2}>
+                                        <Grid item xs={12} md={4}>
+                                            <Textfield
+                                                label="Father Name"
+                                                name="father_name"
+                                            />
+                                        </Grid>
+                                        <Grid item xs={12} md={4}>
+                                            <Textfield
+                                                label="Father Occupation"
+                                                name="father_occupation"
+                                            />
+                                        </Grid>
+                                        <Grid item xs={12} md={4}>
+                                            <Textfield
+                                                label="Father Qualification"
+                                                name="father_qualification"
+                                            />
+                                        </Grid>
+                                        <Grid item xs={12} md={4}>
+                                            <Textfield
+                                                label="Mother Name"
+                                                name="mother_name"
+                                            />
+                                        </Grid>
+                                        <Grid item xs={12} md={4}>
+                                            <Textfield
+                                                label="Mother Occupation"
+                                                name="mother_occupation"
+                                            />
+                                        </Grid>
+                                        <Grid item xs={12} md={4}>
+                                            <Textfield
+                                                label="Mother Qualification"
+                                                name="mother_qualification"
+                                            />
+                                        </Grid>
                                     </Grid>
-                                    <Grid item xs={12} md={4}>
-                                        <Select
-                                            name="caste"
-                                            label="Caste"
-                                            options={CASTES}
-                                        />
-                                    </Grid>
-                                    <Grid item xs={12} md={4}>
-                                        <Textfield
-                                            label="Aadhar Number"
-                                            name="aadhar_number"
-                                        />
-                                    </Grid>
-                                </Grid>
-                                {/* Family Details */}
-                                <br />
-                                <br />
-                                <SeperatorHeader>Family Details</SeperatorHeader>
-                                <Grid container spacing={2}>
-                                    <Grid item xs={12} md={4}>
-                                        <Textfield
-                                            label="Father Name"
-                                            name="father_name"
-                                        />
-                                    </Grid>
-                                    <Grid item xs={12} md={4}>
-                                        <Textfield
-                                            label="Father Occupation"
-                                            name="father_occupation"
-                                        />
-                                    </Grid>
-                                    <Grid item xs={12} md={4}>
-                                        <Textfield
-                                            label="Father Qualification"
-                                            name="father_qualification"
-                                        />
-                                    </Grid>
-                                    <Grid item xs={12} md={4}>
-                                        <Textfield
-                                            label="Mother Name"
-                                            name="mother_name"
-                                        />
-                                    </Grid>
-                                    <Grid item xs={12} md={4}>
-                                        <Textfield
-                                            label="Mother Occupation"
-                                            name="mother_occupation"
-                                        />
-                                    </Grid>
-                                    <Grid item xs={12} md={4}>
-                                        <Textfield
-                                            label="Mother Qualification"
-                                            name="mother_qualification"
-                                        />
-                                    </Grid>
-                                </Grid>
-                                {/* Correspondance */}
-                                <br />
-                                <br />
-                                <SeperatorHeader>Contact Details</SeperatorHeader>
+                                    {/* Correspondance */}
+                                    <br />
+                                    <br />
+                                    <SeperatorHeader>Contact Details</SeperatorHeader>
 
-                                <Grid container spacing={2}>
-                                    <Grid item xs={12} md={4}>
-                                        <Textfield
-                                            label="Contact Number"
-                                            name="contact_number"
-                                        />
+                                    <Grid container spacing={2}>
+                                        <Grid item xs={12} md={4}>
+                                            <Textfield
+                                                label="Contact Number"
+                                                name="contact_number"
+                                            />
+                                        </Grid>
+                                        <Grid item xs={12} md={8}>
+                                            <Textfield
+                                                label="Alternate Number"
+                                                name="alternate_number"
+                                            />
+                                        </Grid>
+                                        <Grid item xs={12} md={12}>
+                                            <Textfield
+                                                label="Email Id"
+                                                name="email"
+                                            />
+                                        </Grid>
+                                        <Grid item xs={12} md={12}>
+                                            <Textfield
+                                                label="Address Full"
+                                                name="address"
+                                            />
+                                        </Grid>
+                                        <Grid item xs={12} md={4}>
+                                            <Textfield
+                                                label="City"
+                                                name="city"
+                                            />
+                                        </Grid>
+                                        <Grid item xs={12} md={4}>
+                                            <Textfield
+                                                label="State"
+                                                name="state"
+                                            />
+                                        </Grid>
+                                        <Grid item xs={12} md={4}>
+                                            <Textfield
+                                                label="Postal Code"
+                                                name="postal_code"
+                                            />
+                                        </Grid>
                                     </Grid>
-                                    <Grid item xs={12} md={8}>
-                                        <Textfield
-                                            label="Alternate Number"
-                                            name="alternate_number"
-                                        />
+                                    <br />
+                                    <br />
+                                    <SeperatorHeader>Transport</SeperatorHeader>
+                                    <Grid container spacing={2}>
+                                        <Grid item xs={12} md={6}>
+                                            <SelectCustom
+                                                name="transport_location"
+                                                label="Transport Pick Up Location"
+                                            >
+                                                <MenuItem value="000000">--No Transport--</MenuItem>
+                                                {
+                                                    transportLocations && transportLocations.map((item, pos) => {
+                                                        return (
+                                                            <MenuItem key={pos} value={item.locationId}>{item.pickupPointName}</MenuItem>
+                                                        )
+                                                    })
+                                                }
+                                            </SelectCustom>
+                                        </Grid>
+                                        <Grid item xs={12} md={6}>
+                                            <SelectCustom
+                                                name="transport_vehicle"
+                                                label="Transport Vehicle"
+                                            >
+                                                <MenuItem value="000000">--No Vehicle--</MenuItem>
+                                                {
+                                                    transportVehicle && transportVehicle.map((item, pos) => {
+                                                        return (
+                                                            <MenuItem key={pos} value={item.vehicleId}>{item.vehicleName}</MenuItem>
+                                                        )
+                                                    })
+                                                }
+                                            </SelectCustom>
+
+                                        </Grid>
                                     </Grid>
-                                    <Grid item xs={12} md={12}>
-                                        <Textfield
-                                            label="Email Id"
-                                            name="email"
-                                        />
-                                    </Grid>
-                                    <Grid item xs={12} md={12}>
-                                        <Textfield
-                                            label="Address Full"
-                                            name="address"
-                                        />
-                                    </Grid>
-                                    <Grid item xs={12} md={4}>
-                                        <Textfield
-                                            label="City"
-                                            name="city"
-                                        />
-                                    </Grid>
-                                    <Grid item xs={12} md={4}>
-                                        <Textfield
-                                            label="State"
-                                            name="state"
-                                        />
-                                    </Grid>
-                                    <Grid item xs={12} md={4}>
-                                        <Textfield
-                                            label="Postal Code"
-                                            name="postal_code"
-                                        />
-                                    </Grid>
-                                </Grid>
-                                <br />
-                                <br />
-                                <SeperatorHeader>Transport</SeperatorHeader>
-                                <Grid container spacing={2}>
-                                    <Grid item xs={12} md={6}>
-                                        <SelectCustom
-                                            name="transport_location"
-                                            label="Transport Pick Up Location"
+                                    <br />
+                                    <SeperatorHeader>Fee Details</SeperatorHeader>
+
+                                    <Grid
+                                        container
+                                        spacing={2}
+                                        sx={{ display: "flex", alignItems: "center" }}
+                                    >
+                                        <Grid item xs={12} md={4}>
+                                            <FormLabel>Monthly/Computer/Transportation Fee</FormLabel>
+                                            <FormHelperText sx={{ mt: 0 }}>
+                                                Adjust fee or use default.
+                                            </FormHelperText>
+
+                                        </Grid>
+                                        <Grid
+                                            item
+                                            xs={12}
+                                            md={2}
+                                            sx={{ display: "flex", alignItems: "center", gap: "2px" }}
                                         >
-                                            <MenuItem value="000000">--No Transport--</MenuItem>
-                                            {
-                                                transportLocations && transportLocations.map((item, pos) => {
-                                                    return (
-                                                        <MenuItem key={pos} value={item.locationId}>{item.pickupPointName}</MenuItem>
-                                                    )
-                                                })
+                                            {defaultFee &&
+                                                (
+                                                    <>
+                                                        <MonthlyFeeField
+                                                            defaultFee={defaultFee}
+                                                            disabled={isMonthlyFeeEditable}
+                                                            type="number"
+                                                        />
+
+                                                        <IconEdit
+                                                            stroke={2}
+                                                            style={iconStyle}
+                                                            onClick={() => setIsMonthlyFeeEditable(!isMonthlyFeeEditable)}
+                                                        />
+                                                    </>
+                                                )
                                             }
-                                        </SelectCustom>
-                                    </Grid>
-                                    <Grid item xs={12} md={6}>
-                                        <SelectCustom
-                                            name="transport_vehicle"
-                                            label="Transport Vehicle"
+                                        </Grid>
+                                        <Grid
+                                            item
+                                            xs={12}
+                                            md={2}
+                                            sx={{ display: "flex", alignItems: "center", gap: "2px" }}
                                         >
-                                            <MenuItem value="000000">--No Vehicle--</MenuItem>
-                                            {
-                                                transportVehicle && transportVehicle.map((item, pos) => {
-                                                    return (
-                                                        <MenuItem key={pos} value={item.vehicleId}>{item.vehicleName}</MenuItem>
-                                                    )
-                                                })
-                                            }
-                                        </SelectCustom>
-
+                                            <Textfield
+                                                label="Computer Fee"
+                                                name="computer_fee"
+                                                disabled={isComputerFeeEditable}
+                                            />
+                                            <IconEdit
+                                                stroke={2}
+                                                style={iconStyle}
+                                                onClick={() =>
+                                                    setIsComputerFeeEditable(!isComputerFeeEditable)
+                                                }
+                                            />
+                                        </Grid>
+                                        <Grid
+                                            item
+                                            xs={12}
+                                            md={2}
+                                            sx={{ display: "flex", alignItems: "center", gap: "2px" }}
+                                        >
+                                            <TransportFeeField
+                                                transportLocations={transportLocations}
+                                                disabled={isTransportationFeeEditable}
+                                                type="number"
+                                            />
+                                            <IconEdit
+                                                stroke={2}
+                                                style={iconStyle}
+                                                onClick={() =>
+                                                    setIsTransportationFeeEditable(!isTransportationFeeEditable)
+                                                }
+                                            />
+                                        </Grid>
+                                        <Grid
+                                            item
+                                            xs={12}
+                                            md={2}
+                                            sx={{ display: "flex", alignItems: "center", gap: "2px" }}
+                                        >
+                                            <Textfield
+                                                label="Admission Fee"
+                                                name="admission_fee"
+                                                type="number"
+                                                disabled={isAdmissionFeeEditable}
+                                            />
+                                            <IconEdit
+                                                stroke={2}
+                                                style={iconStyle}
+                                                onClick={() =>
+                                                    setIsAdmissionFeeEditable(!isAdmissionFeeEditable)
+                                                }
+                                            />
+                                        </Grid>
                                     </Grid>
-                                </Grid>
-                                <br />
-                                <SeperatorHeader>Fee Details</SeperatorHeader>
-
-                                <Grid
-                                    container
-                                    spacing={2}
-                                    sx={{ display: "flex", alignItems: "center" }}
-                                >
-                                    <Grid item xs={12} md={4}>
-                                        <FormLabel>Monthly/Computer/Transportation Fee</FormLabel>
-                                        <FormHelperText sx={{ mt: 0 }}>
-                                            Adjust fee or use default.
-                                        </FormHelperText>
-
+                                    <br />
+                                    <br />
+                                    <Grid container sx={{ display: "flex", justifyContent: "end" }} spacing={2}>
+                                        <Grid
+                                            item
+                                        >
+                                            <LoadingButtonWrapper variant="solid" color="danger" >
+                                                Reset
+                                            </LoadingButtonWrapper>
+                                        </Grid>
+                                        <Grid
+                                            item
+                                        >
+                                            <LoadingButtonWrapper variant="solid" loading={loading} color="primary" >
+                                                Submit
+                                            </LoadingButtonWrapper>
+                                        </Grid>
                                     </Grid>
-                                    <Grid
-                                        item
-                                        xs={12}
-                                        md={2}
-                                        sx={{ display: "flex", alignItems: "center", gap: "2px" }}
-                                    >
-                                        {defaultFee &&
-                                            (
-                                                <>
-                                                    <MonthlyFeeField
-                                                        defaultFee={defaultFee}
-                                                        disabled={isMonthlyFeeEditable}
-                                                        type="number"
-                                                    />
-
-                                                    <IconEdit
-                                                        stroke={2}
-                                                        style={iconStyle}
-                                                        onClick={() => setIsMonthlyFeeEditable(!isMonthlyFeeEditable)}
-                                                    />
-                                                </>
-                                            )
-                                        }
-                                    </Grid>
-                                    <Grid
-                                        item
-                                        xs={12}
-                                        md={2}
-                                        sx={{ display: "flex", alignItems: "center", gap: "2px" }}
-                                    >
-                                        <Textfield
-                                            label="Computer Fee"
-                                            name="computer_fee"
-                                            disabled={isComputerFeeEditable}
-                                        />
-                                        <IconEdit
-                                            stroke={2}
-                                            style={iconStyle}
-                                            onClick={() =>
-                                                setIsComputerFeeEditable(!isComputerFeeEditable)
-                                            }
-                                        />
-                                    </Grid>
-                                    <Grid
-                                        item
-                                        xs={12}
-                                        md={2}
-                                        sx={{ display: "flex", alignItems: "center", gap: "2px" }}
-                                    >
-                                        <TransportFeeField
-                                            transportLocations={transportLocations}
-                                            disabled={isTransportationFeeEditable}
-                                            type="number"
-                                        />
-                                        <IconEdit
-                                            stroke={2}
-                                            style={iconStyle}
-                                            onClick={() =>
-                                                setIsTransportationFeeEditable(!isTransportationFeeEditable)
-                                            }
-                                        />
-                                    </Grid>
-                                    <Grid
-                                        item
-                                        xs={12}
-                                        md={2}
-                                        sx={{ display: "flex", alignItems: "center", gap: "2px" }}
-                                    >
-                                        <Textfield
-                                            label="Admission Fee"
-                                            name="admission_fee"
-                                            type="number"
-                                            disabled={isAdmissionFeeEditable}
-                                        />
-                                        <IconEdit
-                                            stroke={2}
-                                            style={iconStyle}
-                                            onClick={() =>
-                                                setIsAdmissionFeeEditable(!isAdmissionFeeEditable)
-                                            }
-                                        />
-                                    </Grid>
-                                </Grid>
-                                <br />
-                                <br />
-                                <Grid container sx={{ display: "flex", justifyContent: "end" }} spacing={2}>
-                                    <Grid
-                                        item
-                                    >
-                                        <LoadingButtonWrapper variant="solid" color="danger" >
-                                            Reset
-                                        </LoadingButtonWrapper>
-                                    </Grid>
-                                    <Grid
-                                        item
-                                    >
-                                        <LoadingButtonWrapper variant="solid" loading={loading} color="primary" >
-                                            Submit
-                                        </LoadingButtonWrapper>
-                                    </Grid>
-                                </Grid>
-                                <br />
-                                <br />
-                            </Form>
-                        )}
+                                    <br />
+                                    <br />
+                                </Form>
+                            )
+                        }}
                     </Formik>
                 </Box>
             </LSPage>
