@@ -1,6 +1,7 @@
 import { Edit, Print } from "@mui/icons-material";
 import { IconButton, Stack, Typography } from "@mui/joy";
 import { styled } from "@mui/material/styles";
+import { getAppConfig } from "hooks/getAppConfig";
 import { enqueueSnackbar } from "notistack";
 import { useNavigate } from "react-router-dom";
 
@@ -273,6 +274,19 @@ const printTable = (examTitle?: string, examDescription?: string) => {
     const newWindow = window.open("", "", "width=900,height=700");
     if (!newWindow) return;
 
+    const config = getAppConfig();
+    if (!config) {
+        console.error("Error: App config not found.");
+        return;
+    }
+    const {
+        schoolName: SCHOOL_NAME,
+        schoolAddress: SCHOOL_ADDRESS,
+        schoolWebsite: SCHOOL_WEBSITE,
+        schoolLogo: SCHOOL_LOGO
+    } = config;
+
+
     newWindow.document.write(`
     <html>
       <head>
@@ -304,9 +318,41 @@ const printTable = (examTitle?: string, examDescription?: string) => {
           .header{
             text-align:center
           }  
+             .school-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+          }
+          .school-logo {
+            height: 60px;
+            margin-right: 15px;
+          }
+          .school-info {
+            text-align: center;
+          }
+          .school-name {
+            font-size: 20px;
+            font-weight: bold;
+          }
+          .school-address {
+            font-size: 12px;
+          }
+          .school-website {
+            font-size: 12px;
+            color: #555;
+          }
         </style>
       </head>
       <body>
+      <div class="school-header">
+          ${SCHOOL_LOGO ? `<img class="school-logo" src="${SCHOOL_LOGO}" alt="School Logo"/>` : ""}
+          <div class="school-info">
+            <div class="school-name">${SCHOOL_NAME || ""}</div>
+            <div class="school-address">${SCHOOL_ADDRESS || ""}</div>
+            <div class="school-website">${SCHOOL_WEBSITE || ""}</div>
+          </div>
+        </div>
        <h1 class="header">Examination Schedule</h1>
        ${examTitle ? `<h3 class="header">${examTitle}</h3>` : ""}
         ${printContent.outerHTML}
@@ -317,9 +363,11 @@ const printTable = (examTitle?: string, examDescription?: string) => {
   `);
 
     newWindow.document.close();
-    newWindow.focus();
-    newWindow.print();
-    newWindow.close();
+    newWindow.onload = () => {
+        newWindow.focus();
+        newWindow.print();
+        newWindow.close();
+    };
 };
 
 

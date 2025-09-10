@@ -173,7 +173,7 @@ export const GenerateAdmitCard = async (
       // Table Rows
       doc.setFont("Poppins", "normal");
       const classSessionSchedule = getScheduleForClassAndSession(studentData.timeTabel, studentData.className, "1st");
-      console.log(classSessionSchedule);
+
 
       classSessionSchedule.forEach((item, index) => {
         const rowY = startY + (index + 1) * 6;
@@ -182,21 +182,26 @@ export const GenerateAdmitCard = async (
         doc.rect(timeTableX - 4, rowY - 6, 90, 6, "F");
         doc.setDrawColor(0, 0, 0);
         doc.rect(timeTableX - 4, rowY - 6, 90, 6);
-        doc.text(item.date, timeTableX + 7, rowY - 2, {
+        const [year, month, day] = item.date.split("-");
+        const formattedDate = `${day}/${month}/${year}`;
+
+        doc.text(formattedDate, timeTableX + 7, rowY - 2, {
           align: "center",
         });
+    
         doc.text(item.sessions[0].subject, timeTableX + 35, rowY - 2, {
           align: "center",
         });
       });
       const classSessionSchedule2 = getScheduleForClassAndSession(studentData.timeTabel, studentData.className, "2nd");
-      console.log(classSessionSchedule);
+
       if (classSessionSchedule2.length !== 0) {
         doc.text("2nd Seating", timeTableX + 60, startY - 2, { align: "center" });
       }
 
       classSessionSchedule2.forEach((item, index) => {
         const rowY = startY + (index + 1) * 6;
+        
         doc.text(item.sessions[0].subject, timeTableX + 60, rowY - 2, {
           align: "center",
         });
