@@ -260,22 +260,18 @@ function AddStudentNew() {
                     <Formik
                         initialValues={{ ...InitialFormState }}
                         validationSchema={FormValidationSchema}
-                        onSubmit={async (values, { resetForm, setFieldValue }) => {
+                        onSubmit={async (values, { resetForm }) => {
                             setLoading(true);
                             values.monthly_fee = Number(values.monthly_fee || 0);
                             values.transport_fee = Number(values.transport_fee || 0);
                             values.computer_fee = Number(values.computer_fee || 0);
                             values.admission_fee = Number(values.admission_fee || 0);
-
                             const nextRoll = await fetchLastRollNumber(values.class, values.section);
-
                             if (!nextRoll) {
                                 enqueueSnackbar("Some issue occured while auto-generating roll number", { variant: "error" })
+                                return
                             }
-
-                            setFieldValue("class_roll", nextRoll); // autofill roll
-
-                            console.log("called..")
+                            values.class_roll = nextRoll;         
                             dispatch(
                                 // @ts-ignore
                                 addstudent({ studentData: values })
