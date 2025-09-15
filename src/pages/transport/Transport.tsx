@@ -3,9 +3,7 @@ import { Add, Edit } from "@mui/icons-material"
 import { Box, Button, Chip, IconButton, LinearProgress, Stack, Typography } from "@mui/joy"
 import { IconBus } from "@tabler/icons-react"
 import BreadCrumbsV2 from "components/Breadcrumbs/BreadCrumbsV2"
-import Navbar from "components/Navbar/Navbar"
-import LSPage from "components/Utils/LSPage"
-import PageContainer from "components/Utils/PageContainer"
+
 import { useCallback, useEffect, useState } from "react"
 import AddPickupPointModal from "components/Modals/transport/AddPickupPointModal"
 import EditPickupPointModal from "components/Modals/transport/EditPickupPointModal"
@@ -127,74 +125,73 @@ function Transport() {
     ]
 
     return (
-        <PageContainer>
-            <Navbar />
-            <LSPage>
-                <BreadCrumbsV2
-                    Icon={IconBus}
-                    Path="Transport Management/Transport"
-                />
-                <br />
-                <br />
-                <Stack direction="row" justifyContent="end">
-                    <Button
-                        startDecorator={<Add />}
-                        color="primary"
-                        onClick={() => setOpen(true)}
-                    >
-                        Add Pickup Point
-                    </Button>
-                </Stack>
-                <br />
-                {loading &&
-                    <LinearProgress sx={{ mb: 1, mt: 1 }} />
-                }
-                <Box sx={{ border: "1px solid oklch(.900 .013 255.508)", borderRadius: "10px", padding: "2px", }}>
-                    <MaterialTable
-                        style={{ display: "grid", overflow: "hidden", border: "none", boxShadow: "none", }}
-                        columns={columnMat}
-                        data={transportData}
-                        title={`Transport Pickup Points List (${transportData.length})`}
-                        options={{
-                            padding: 'dense',
-                            headerStyle: {
-                                backgroundColor: "#5d87ff",
-                                color: "#FFF",
-                                paddingLeft: "1rem",
-                                paddingRight: "1rem",
-                            },
-                            actionsColumnIndex: -1,
-                            exportAllData: true,
-                            exportMenu: [
-                                {
-                                    label: 'Export PDF',
-                                    exportFunc: (cols, data) => {
-                                        const currentDate = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
-                                        ExportPdf(cols, data, `Transport Locations (${transportData.length}) - ${currentDate}`);
-                                    }
-                                },
-                                {
-                                    label: 'Export CSV',
-                                    exportFunc: (cols, data) => {
-                                        const currentDate = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
-                                        ExportCsv(cols, data, `Transport Locations (${transportData.length}) - ${currentDate}`);
-                                    }
-                                }
-                            ]
-                        }}
-                        actions={[
+        <>
+
+            <BreadCrumbsV2
+                Icon={IconBus}
+                Path="Transport Management/Transport"
+            />
+            <br />
+            <br />
+            <Stack direction="row" justifyContent="end">
+                <Button
+                    startDecorator={<Add />}
+                    color="primary"
+                    onClick={() => setOpen(true)}
+                >
+                    Add Pickup Point
+                </Button>
+            </Stack>
+            <br />
+            {loading &&
+                <LinearProgress sx={{ mb: 1, mt: 1 }} />
+            }
+            <Box sx={{ border: "1px solid oklch(.900 .013 255.508)", borderRadius: "10px", padding: "2px", }}>
+                <MaterialTable
+                    style={{ display: "grid", overflow: "hidden", border: "none", boxShadow: "none", }}
+                    columns={columnMat}
+                    data={transportData}
+                    title={`Transport Pickup Points List (${transportData.length})`}
+                    options={{
+                        padding: 'dense',
+                        headerStyle: {
+                            backgroundColor: "#5d87ff",
+                            color: "#FFF",
+                            paddingLeft: "1rem",
+                            paddingRight: "1rem",
+                        },
+                        actionsColumnIndex: -1,
+                        exportAllData: true,
+                        exportMenu: [
                             {
-                                icon: () => <Edit sx={{ color: "var(--bs-primary)" }} />,
-                                tooltip: "Edit Row",
-                                onClick: (event, rowData) => {
-                                    setSelectedLocation(rowData as TransportLocationType);
-                                    setOpen(true);
-                                },
+                                label: 'Export PDF',
+                                exportFunc: (cols, data) => {
+                                    const currentDate = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
+                                    ExportPdf(cols, data, `Transport Locations (${transportData.length}) - ${currentDate}`);
+                                }
                             },
-                        ]}
-                    />
-                </Box>
-            </LSPage>
+                            {
+                                label: 'Export CSV',
+                                exportFunc: (cols, data) => {
+                                    const currentDate = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
+                                    ExportCsv(cols, data, `Transport Locations (${transportData.length}) - ${currentDate}`);
+                                }
+                            }
+                        ]
+                    }}
+                    actions={[
+                        {
+                            icon: () => <Edit sx={{ color: "var(--bs-primary)" }} />,
+                            tooltip: "Edit Row",
+                            onClick: (event, rowData) => {
+                                setSelectedLocation(rowData as TransportLocationType);
+                                setOpen(true);
+                            },
+                        },
+                    ]}
+                />
+            </Box>
+
             <AddPickupPointModal
                 open={open}
                 onClose={handleAddPickupPointModalClose}
@@ -209,7 +206,7 @@ function Transport() {
                     fetchTransportData={fetchTransportData}
                 />
             }
-        </PageContainer>
+        </>
     )
 }
 

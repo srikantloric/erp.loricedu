@@ -15,9 +15,7 @@ import {
 import { Paper } from "@mui/material";
 import { IconBrandTinder } from "@tabler/icons-react";
 import BreadCrumbsV2 from "components/Breadcrumbs/BreadCrumbsV2";
-import Navbar from "components/Navbar/Navbar";
-import LSPage from "components/Utils/LSPage";
-import PageContainer from "components/Utils/PageContainer";
+
 import { SCHOOL_CLASSES } from "config/schoolConfig";
 import { useEffect, useState } from "react";
 import { enqueueSnackbar } from "notistack";
@@ -345,208 +343,206 @@ function PrintResult() {
   };
 
   return (
-    <PageContainer>
-      <Navbar />
-      <LSPage>
-        <BreadCrumbsV2
-          Icon={IconBrandTinder}
-          Path="School Results/Print Results"
-        />
-        <Paper sx={{ p: "10px", mt: "8px" }}>
+    <>
+
+      <BreadCrumbsV2
+        Icon={IconBrandTinder}
+        Path="School Results/Print Results"
+      />
+      <Paper sx={{ p: "10px", mt: "8px" }}>
+        <Stack
+          direction="row"
+          alignItems="center"
+          justifyContent="space-between"
+        >
+          <Box>
+            <Typography level="title-md">Print Marksheet</Typography>
+          </Box>
+          <Stack direction="row" alignItems="center" gap={1.5}>
+            <Input
+              placeholder="Search by student id.."
+              value={studentIdInput!}
+              onChange={(e) => setStudentIdInput(e.target.value)}
+            ></Input>
+            <Typography>Or</Typography>
+            <Select
+              placeholder="choose class"
+              onChange={(e, val) => setSelectedClass(val)}
+            >
+              {SCHOOL_CLASSES.map((item) => {
+                return <Option value={item.value}>{item.title}</Option>;
+              })}
+            </Select>
+            <Select
+              placeholder="choose exam"
+              value={selectedExam}
+              onChange={(e, val) => setSelectedExam(val)}
+            >
+              {examsList &&
+                examsList.map((item, key) => {
+                  return (
+                    <Option value={item.examId}>{item.examTitle}</Option>
+                  );
+                })}
+            </Select>
+            <Button
+              sx={{ ml: "8px" }}
+              startDecorator={<Print />}
+              loading={loading}
+              onClick={fetchResults}
+            ></Button>
+            <Button
+              sx={{ ml: "8px" }}
+              startDecorator={<RefreshIcon />}
+              loading={isGeneratingRank}
+              onClick={generateStudentRank}
+            >
+              Re-Generate Rank
+            </Button>
+          </Stack>
+        </Stack>
+      </Paper>
+
+      {pdfUrl && (
+        <>
+          <Chip sx={{ mt: "8px", mb: "8px" }}>
+            Total marksheet count :{marksheetList.length}
+          </Chip>
+          <Paper sx={{ height: "100vh" }}>
+            <iframe
+              src={pdfUrl}
+              title="PDF Viewer"
+              width="100%"
+              height="100%"
+              frameBorder={0}
+            />
+          </Paper>
+        </>
+      )}
+
+      <br />
+      {studentRankDetails.length > 0 && (
+        <Sheet variant="outlined" sx={{ borderRadius: "10px" }}>
           <Stack
             direction="row"
+            minHeight="200px"
+            justifyContent="space-evenly"
             alignItems="center"
-            justifyContent="space-between"
           >
-            <Box>
-              <Typography level="title-md">Print Marksheet</Typography>
-            </Box>
-            <Stack direction="row" alignItems="center" gap={1.5}>
-              <Input
-                placeholder="Search by student id.."
-                value={studentIdInput!}
-                onChange={(e) => setStudentIdInput(e.target.value)}
-              ></Input>
-              <Typography>Or</Typography>
-              <Select
-                placeholder="choose class"
-                onChange={(e, val) => setSelectedClass(val)}
+            <Stack alignItems="center">
+              <img
+                src={rank1Img}
+                alt="1st_rank"
+                style={{ height: "120px" }}
+              />
+              <Typography
+                level="title-md"
+                sx={{
+                  bgcolor: "var(--bs-primary)",
+                  borderRadius: "16px",
+                  pl: "8px",
+                  pr: "8px",
+                  pt: "3px",
+                  pb: "3px",
+                  color: "#fff",
+                }}
               >
-                {SCHOOL_CLASSES.map((item) => {
-                  return <Option value={item.value}>{item.title}</Option>;
-                })}
-              </Select>
-              <Select
-                placeholder="choose exam"
-                value={selectedExam}
-                onChange={(e, val) => setSelectedExam(val)}
+                {studentRankDetails.at(0)?.studentName}
+              </Typography>
+              <Typography level="body-sm">
+                {" "}
+                {studentRankDetails.at(0)?.studentId}
+              </Typography>
+            </Stack>
+            <Stack alignItems="center">
+              <img
+                src={rank2Img}
+                alt="1st_rank"
+                style={{ height: "120px" }}
+              />
+              <Typography
+                level="title-md"
+                sx={{
+                  bgcolor: "var(--bs-primary)",
+                  borderRadius: "16px",
+                  pl: "8px",
+                  pr: "8px",
+                  pt: "3px",
+                  pb: "3px",
+                  color: "#fff",
+                }}
               >
-                {examsList &&
-                  examsList.map((item, key) => {
-                    return (
-                      <Option value={item.examId}>{item.examTitle}</Option>
-                    );
-                  })}
-              </Select>
-              <Button
-                sx={{ ml: "8px" }}
-                startDecorator={<Print />}
-                loading={loading}
-                onClick={fetchResults}
-              ></Button>
-              <Button
-                sx={{ ml: "8px" }}
-                startDecorator={<RefreshIcon />}
-                loading={isGeneratingRank}
-                onClick={generateStudentRank}
+                {studentRankDetails.at(1)?.studentName}
+              </Typography>
+              <Typography level="body-sm">
+                {" "}
+                {studentRankDetails.at(1)?.studentId}
+              </Typography>
+            </Stack>
+            <Stack alignItems="center">
+              <img
+                src={rank3Img}
+                alt="1st_rank"
+                style={{ height: "120px" }}
+              />
+              <Typography
+                level="title-md"
+                sx={{
+                  bgcolor: "var(--bs-primary)",
+                  borderRadius: "16px",
+                  pl: "8px",
+                  pr: "8px",
+                  pt: "3px",
+                  pb: "3px",
+                  color: "#fff",
+                }}
               >
-                Re-Generate Rank
-              </Button>
+                {studentRankDetails.at(2)?.studentName}
+              </Typography>
+              <Typography level="body-sm">
+                {studentRankDetails.at(2)?.studentId}
+              </Typography>
             </Stack>
           </Stack>
-        </Paper>
 
-        {pdfUrl && (
-          <>
-            <Chip sx={{ mt: "8px", mb: "8px" }}>
-              Total marksheet count :{marksheetList.length}
-            </Chip>
-            <Paper sx={{ height: "100vh" }}>
-              <iframe
-                src={pdfUrl}
-                title="PDF Viewer"
-                width="100%"
-                height="100%"
-                frameBorder={0}
-              />
-            </Paper>
-          </>
-        )}
+          <br />
 
-        <br />
-        {studentRankDetails.length > 0 && (
-          <Sheet variant="outlined" sx={{ borderRadius: "10px" }}>
-            <Stack
-              direction="row"
-              minHeight="200px"
-              justifyContent="space-evenly"
-              alignItems="center"
+          <Sheet variant="outlined" sx={{ m: "10px", p: "10px" }}>
+            <Table
+              hoverRow
+              stripe="even"
+              sx={{ "& tr > *": { textAlign: "center" } }}
             >
-              <Stack alignItems="center">
-                <img
-                  src={rank1Img}
-                  alt="1st_rank"
-                  style={{ height: "120px" }}
-                />
-                <Typography
-                  level="title-md"
-                  sx={{
-                    bgcolor: "var(--bs-primary)",
-                    borderRadius: "16px",
-                    pl: "8px",
-                    pr: "8px",
-                    pt: "3px",
-                    pb: "3px",
-                    color: "#fff",
-                  }}
-                >
-                  {studentRankDetails.at(0)?.studentName}
-                </Typography>
-                <Typography level="body-sm">
-                  {" "}
-                  {studentRankDetails.at(0)?.studentId}
-                </Typography>
-              </Stack>
-              <Stack alignItems="center">
-                <img
-                  src={rank2Img}
-                  alt="1st_rank"
-                  style={{ height: "120px" }}
-                />
-                <Typography
-                  level="title-md"
-                  sx={{
-                    bgcolor: "var(--bs-primary)",
-                    borderRadius: "16px",
-                    pl: "8px",
-                    pr: "8px",
-                    pt: "3px",
-                    pb: "3px",
-                    color: "#fff",
-                  }}
-                >
-                  {studentRankDetails.at(1)?.studentName}
-                </Typography>
-                <Typography level="body-sm">
-                  {" "}
-                  {studentRankDetails.at(1)?.studentId}
-                </Typography>
-              </Stack>
-              <Stack alignItems="center">
-                <img
-                  src={rank3Img}
-                  alt="1st_rank"
-                  style={{ height: "120px" }}
-                />
-                <Typography
-                  level="title-md"
-                  sx={{
-                    bgcolor: "var(--bs-primary)",
-                    borderRadius: "16px",
-                    pl: "8px",
-                    pr: "8px",
-                    pt: "3px",
-                    pb: "3px",
-                    color: "#fff",
-                  }}
-                >
-                  {studentRankDetails.at(2)?.studentName}
-                </Typography>
-                <Typography level="body-sm">
-                  {studentRankDetails.at(2)?.studentId}
-                </Typography>
-              </Stack>
-            </Stack>
-
-            <br />
-
-            <Sheet variant="outlined" sx={{ m: "10px", p: "10px" }}>
-              <Table
-                hoverRow
-                stripe="even"
-                sx={{ "& tr > *": { textAlign: "center" } }}
-              >
-                <thead>
-                  <tr>
-                    <th>Rank</th>
-                    <th>Marks Obtained</th>
-                    <th>Student ID</th>
-                    <th>Student Name</th>
-                    <th>Fathers Name</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {studentRankDetails &&
-                    studentRankDetails.map((studentRank) => (
-                      <tr>
-                        <td>
-                          <Typography level="title-md" sx={{ color: "#000" }}>
-                            {getOrdinal(studentRank.rankObtained)}
-                          </Typography>
-                        </td>
-                        <td>{studentRank.marksObtained}</td>
-                        <td>{studentRank.studentId}</td>
-                        <td>{studentRank.studentName}</td>
-                        <td>{studentRank.studentFather}</td>
-                      </tr>
-                    ))}
-                </tbody>
-              </Table>
-            </Sheet>
+              <thead>
+                <tr>
+                  <th>Rank</th>
+                  <th>Marks Obtained</th>
+                  <th>Student ID</th>
+                  <th>Student Name</th>
+                  <th>Fathers Name</th>
+                </tr>
+              </thead>
+              <tbody>
+                {studentRankDetails &&
+                  studentRankDetails.map((studentRank) => (
+                    <tr>
+                      <td>
+                        <Typography level="title-md" sx={{ color: "#000" }}>
+                          {getOrdinal(studentRank.rankObtained)}
+                        </Typography>
+                      </td>
+                      <td>{studentRank.marksObtained}</td>
+                      <td>{studentRank.studentId}</td>
+                      <td>{studentRank.studentName}</td>
+                      <td>{studentRank.studentFather}</td>
+                    </tr>
+                  ))}
+              </tbody>
+            </Table>
           </Sheet>
-        )}
-      </LSPage>
-    </PageContainer>
+        </Sheet>
+      )}
+    </>
   );
 }
 

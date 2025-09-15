@@ -1,6 +1,4 @@
-import PageContainer from "../../components/Utils/PageContainer";
-import Navbar from "../../components/Navbar/Navbar";
-import LSPage from "../../components/Utils/LSPage";
+
 import {
   Box,
   Breadcrumbs,
@@ -265,259 +263,255 @@ function ViewStudents() {
   }
 
   return (
-    <PageContainer>
-      <Navbar />
-      <LSPage>
-        <ConfirmationModal
-          open={confirmationModal}
-          setModalOpen={setConfirmationModal}
-          handleStudentDelete={handleStudentDelete}
-          deleteLoading={deleteLoading}
-        />
-        <Box sx={{ padding: "10px 10px", mt: "8px", border: "1px solid oklch(.905 .013 255.508)", borderRadius: "10px", display: "flex", alignItems: "center", justifyContent: "space-between", overflow: "hidden" }}>
-          <Breadcrumbs aria-label="breadcrumb">
-            <a
-              style={{
-                textDecoration: "none",
-                color: "#343a40",
-                display: "flex",
-                alignItems: "center",
-              }}
-              href="/"
-            >
-              <PersonIcon sx={{ mr: 0.3 }} fontSize="inherit" />
-              Students
-            </a>
+    <>
+      <ConfirmationModal
+        open={confirmationModal}
+        setModalOpen={setConfirmationModal}
+        handleStudentDelete={handleStudentDelete}
+        deleteLoading={deleteLoading}
+      />
+      <Box sx={{ padding: "10px 10px", mt: "8px", border: "1px solid oklch(.905 .013 255.508)", borderRadius: "10px", display: "flex", alignItems: "center", justifyContent: "space-between", overflow: "hidden" }}>
+        <Breadcrumbs aria-label="breadcrumb">
+          <a
+            style={{
+              textDecoration: "none",
+              color: "#343a40",
+              display: "flex",
+              alignItems: "center",
+            }}
+            href="/"
+          >
+            <PersonIcon sx={{ mr: 0.3 }} fontSize="inherit" />
+            Students
+          </a>
 
-            <Typography
-              sx={{ display: "flex", alignItems: "center" }}
-              color="text.secondary"
+          <Typography
+            sx={{ display: "flex", alignItems: "center" }}
+            color="text.secondary"
+          >
+            <GrainIcon sx={{ mr: 0.3 }} fontSize="inherit" />
+            View Students
+          </Typography>
+        </Breadcrumbs>
+        <div style={{ display: "flex", alignItems: "center" }}>
+          <FormControl
+            variant="standard"
+            sx={{ mr: 2, padding: 0, minWidth: 150, background: "#fff" }}
+          >
+            <InputLabel id="demo-simple-select-standard-label">
+              Select session
+            </InputLabel>
+            <Select
+              labelId="demo-simple-select-standard-label"
+              id="demo-simple-select-standard"
+              label="session"
+              value={session}
             >
-              <GrainIcon sx={{ mr: 0.3 }} fontSize="inherit" />
-              View Students
-            </Typography>
-          </Breadcrumbs>
-          <div style={{ display: "flex", alignItems: "center" }}>
-            <FormControl
-              variant="standard"
-              sx={{ mr: 2, padding: 0, minWidth: 150, background: "#fff" }}
-            >
-              <InputLabel id="demo-simple-select-standard-label">
-                Select session
-              </InputLabel>
-              <Select
-                labelId="demo-simple-select-standard-label"
-                id="demo-simple-select-standard"
-                label="session"
-                value={session}
-              >
-                <MenuItem value={1}>
-                  <em>Select</em>
-                </MenuItem>
-                <MenuItem value="2025/26">2025/26</MenuItem>
-              </Select>
-            </FormControl>
+              <MenuItem value={1}>
+                <em>Select</em>
+              </MenuItem>
+              <MenuItem value="2025/26">2025/26</MenuItem>
+            </Select>
+          </FormControl>
 
-            <FormControl
-              variant="standard"
-              sx={{ mr: 2, padding: 0, minWidth: 150, background: "#fff" }}
+          <FormControl
+            variant="standard"
+            sx={{ mr: 2, padding: 0, minWidth: 150, background: "#fff" }}
+          >
+            <InputLabel id="demo-simple-select-standard-label">
+              Select class
+            </InputLabel>
+            <Select
+              labelId="demo-simple-select-standard-label"
+              id="demo-simple-select-standard"
+              label="select class"
+              value={selectedClass}
+              onChange={(e) => setSelectedClass(e.target.value)}
             >
-              <InputLabel id="demo-simple-select-standard-label">
-                Select class
-              </InputLabel>
-              <Select
-                labelId="demo-simple-select-standard-label"
-                id="demo-simple-select-standard"
-                label="select class"
-                value={selectedClass}
-                onChange={(e) => setSelectedClass(e.target.value)}
-              >
-                <MenuItem value={-1}>
-                  <em>Select</em>
-                </MenuItem>
-                <MenuItem value={14}>Pre-Nursery</MenuItem>
-                <MenuItem value={1}>Nursery</MenuItem>
-                <MenuItem value={2}>LKG</MenuItem>
-                <MenuItem value={3}>UKG</MenuItem>
-                <MenuItem value={4}>STD-1</MenuItem>
-                <MenuItem value={5}>STD-2</MenuItem>
-                <MenuItem value={6}>STD-3</MenuItem>
-                <MenuItem value={7}>STD-4</MenuItem>
-                <MenuItem value={8}>STD-5</MenuItem>
-                <MenuItem value={9}>STD-6</MenuItem>
-                <MenuItem value={10}>STD-7</MenuItem>
-                <MenuItem value={11}>STD-8</MenuItem>
-                <MenuItem value={12}>STD-9</MenuItem>
-                <MenuItem value={13}>STD-10</MenuItem>
-              </Select>
-            </FormControl>
+              <MenuItem value={-1}>
+                <em>Select</em>
+              </MenuItem>
+              <MenuItem value={14}>Pre-Nursery</MenuItem>
+              <MenuItem value={1}>Nursery</MenuItem>
+              <MenuItem value={2}>LKG</MenuItem>
+              <MenuItem value={3}>UKG</MenuItem>
+              <MenuItem value={4}>STD-1</MenuItem>
+              <MenuItem value={5}>STD-2</MenuItem>
+              <MenuItem value={6}>STD-3</MenuItem>
+              <MenuItem value={7}>STD-4</MenuItem>
+              <MenuItem value={8}>STD-5</MenuItem>
+              <MenuItem value={9}>STD-6</MenuItem>
+              <MenuItem value={10}>STD-7</MenuItem>
+              <MenuItem value={11}>STD-8</MenuItem>
+              <MenuItem value={12}>STD-9</MenuItem>
+              <MenuItem value={13}>STD-10</MenuItem>
+            </Select>
+          </FormControl>
 
-            <FormControl variant="standard" sx={{ m: 0, minWidth: 150 }}>
-              <InputLabel id="demo-simple-select-standard-label">
-                Select section
-              </InputLabel>
-              <Select
-                labelId="demo-simple-select-standard-label"
-                id="demo-simple-select-standard"
-                label="Class"
-                value={selectedSection}
-                onChange={(e) => setSelectedSection(e.target.value)}
-              >
-                <MenuItem value={-1}>
-                  <em>Select</em>
-                </MenuItem>
-                <MenuItem value={"A"}>SEC-A</MenuItem>
-                <MenuItem value={"B"}>SEC-B</MenuItem>
-                <MenuItem value={"C"}>SEC-C</MenuItem>
-                <MenuItem value={"D"}>SEC-D</MenuItem>
-              </Select>
-            </FormControl>
-            <IconButton
-              sx={{ ml: 2, mr: 2, background: "var(--bs-gray-300)" }}
-              onClick={handleFilterButton}
+          <FormControl variant="standard" sx={{ m: 0, minWidth: 150 }}>
+            <InputLabel id="demo-simple-select-standard-label">
+              Select section
+            </InputLabel>
+            <Select
+              labelId="demo-simple-select-standard-label"
+              id="demo-simple-select-standard"
+              label="Class"
+              value={selectedSection}
+              onChange={(e) => setSelectedSection(e.target.value)}
             >
-              <SearchIcon />
-            </IconButton>
-          </div>
-          {/* </Paper> */}
-        </Box>
-        <br />
-        <div
-          style={{
-            display: "flex",
-            width: "100%",
-            alignItems: "end",
-            alignContent: "end",
-          }}
-        >
-          {filterChip ? (
-            <Chip
-              label={filterChipLabel}
-              variant="filled"
-              sx={{ mb: 1 }}
-              // onClick={handleClick}
-              onDelete={handleDelete}
-            />
-          ) : null}
+              <MenuItem value={-1}>
+                <em>Select</em>
+              </MenuItem>
+              <MenuItem value={"A"}>SEC-A</MenuItem>
+              <MenuItem value={"B"}>SEC-B</MenuItem>
+              <MenuItem value={"C"}>SEC-C</MenuItem>
+              <MenuItem value={"D"}>SEC-D</MenuItem>
+            </Select>
+          </FormControl>
+          <IconButton
+            sx={{ ml: 2, mr: 2, background: "var(--bs-gray-300)" }}
+            onClick={handleFilterButton}
+          >
+            <SearchIcon />
+          </IconButton>
         </div>
-        <Box sx={{ width: "100%" }}>
-          {/* <LinearProgress /> */}
-          {isDataLoading ? <LinearProgress /> : null}
-        </Box>
+        {/* </Paper> */}
+      </Box>
+      <br />
+      <div
+        style={{
+          display: "flex",
+          width: "100%",
+          alignItems: "end",
+          alignContent: "end",
+        }}
+      >
+        {filterChip ? (
+          <Chip
+            label={filterChipLabel}
+            variant="filled"
+            sx={{ mb: 1 }}
+            // onClick={handleClick}
+            onDelete={handleDelete}
+          />
+        ) : null}
+      </div>
+      <Box sx={{ width: "100%" }}>
+        {/* <LinearProgress /> */}
+        {isDataLoading ? <LinearProgress /> : null}
+      </Box>
 
-        <MaterialTable
-          style={{ display: "grid", overflow: "hidden", border: "1px solid oklch(.905 .013 255.508)", borderRadius: "10px", boxShadow: "none" }}
-          columns={columnMat}
-          data={filteredData}
-          title="Students Data"
+      <MaterialTable
+        style={{ display: "grid", overflow: "hidden", border: "1px solid oklch(.905 .013 255.508)", borderRadius: "10px", boxShadow: "none" }}
+        columns={columnMat}
+        data={filteredData}
+        title="Students Data"
 
-          options={{
-            grouping: true,
-            pageSizeOptions: [5, 10, 20, 50, 100],
-            pageSize: 10,
-            headerStyle: {
-              backgroundColor: "#5d87ff",
-              color: "#FFF",
-            },
-            exportMenu: [
-              {
-                label: "Export PDF",
-                exportFunc: () => handleNewWindowOpen(),
-              },
-              {
-                label: "Export Excel",
-                exportFunc: () => ExportToExcel({ data: filteredData }),
-              },
-            ],
-            actionsColumnIndex: -1,
-          }}
-          actions={[
+        options={{
+          grouping: true,
+          pageSizeOptions: [5, 10, 20, 50, 100],
+          pageSize: 10,
+          headerStyle: {
+            backgroundColor: "#5d87ff",
+            color: "#FFF",
+          },
+          exportMenu: [
             {
-              icon: () => <EditIcon sx={{ color: "var(--bs-primary)" }} />,
-              tooltip: "Edit Row",
-              onClick: (event, rowData: any) => {
-                updatestudent(rowData);
-              },
-            },
-
-            {
-              icon: () => (
-                <DeleteForeverIcon sx={{ color: "var(--bs-danger2)" }} />
-              ),
-              tooltip: "Delete Student",
-              onClick: (event, rowData: any) => {
-                deletestudent(rowData);
-              },
+              label: "Export PDF",
+              exportFunc: () => handleNewWindowOpen(),
             },
             {
-              icon: () => (
-                <MoreVert
-                  aria-controls={menuOpen ? "account-menu" : undefined}
-                  aria-haspopup="true"
-                  aria-expanded={menuOpen ? "true" : undefined}
-                />
-              ),
-              tooltip: "More options",
-              onClick: (event, rowData: any) => {
-
-                handleMenuClick(event, rowData);
-              },
+              label: "Export Excel",
+              exportFunc: () => ExportToExcel({ data: filteredData }),
             },
-          ]}
-        />
-        <Menu
-          anchorEl={anchorEl}
-          id="account-menu"
-          open={menuOpen}
-          onClose={handleMenuClose}
-          onClick={handleMenuClose}
-          PaperProps={{
-            elevation: 0,
-            sx: {
-              overflow: "visible",
-              filter: "drop-shadow(0px 2px 8px rgba(0,0,0,0.32))",
-              mt: 1.5,
-              "& .MuiAvatar-root": {
-                width: 32,
-                height: 32,
-                ml: -0.5,
-                mr: 1,
-              },
-              "&:before": {
-                content: '""',
-                display: "block",
-                position: "absolute",
-                top: 0,
-                right: 14,
-                width: 10,
-                height: 10,
-                bgcolor: "background.paper",
-                transform: "translateY(-50%) rotate(45deg)",
-                zIndex: 0,
-              },
+          ],
+          actionsColumnIndex: -1,
+        }}
+        actions={[
+          {
+            icon: () => <EditIcon sx={{ color: "var(--bs-primary)" }} />,
+            tooltip: "Edit Row",
+            onClick: (event, rowData: any) => {
+              updatestudent(rowData);
             },
-          }}
-          transformOrigin={{ horizontal: "right", vertical: "top" }}
-          anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
-        >
-          <MenuItem onClick={() => updatestudent(selectedRowData!)}>
-            <ListItemIcon>
-              <PersonIcon fontSize="small" />
-            </ListItemIcon>
-            View Profile
-          </MenuItem>
-          <Divider />
+          },
 
-          <MenuItem onClick={() => deactivateUser(selectedRowData!)}>
-            <ListItemIcon>
-              <BlockIcon fontSize="small" />
-            </ListItemIcon>
-            De-activate User
-          </MenuItem>
-        </Menu>
+          {
+            icon: () => (
+              <DeleteForeverIcon sx={{ color: "var(--bs-danger2)" }} />
+            ),
+            tooltip: "Delete Student",
+            onClick: (event, rowData: any) => {
+              deletestudent(rowData);
+            },
+          },
+          {
+            icon: () => (
+              <MoreVert
+                aria-controls={menuOpen ? "account-menu" : undefined}
+                aria-haspopup="true"
+                aria-expanded={menuOpen ? "true" : undefined}
+              />
+            ),
+            tooltip: "More options",
+            onClick: (event, rowData: any) => {
 
-      </LSPage>
-    </PageContainer>
+              handleMenuClick(event, rowData);
+            },
+          },
+        ]}
+      />
+      <Menu
+        anchorEl={anchorEl}
+        id="account-menu"
+        open={menuOpen}
+        onClose={handleMenuClose}
+        onClick={handleMenuClose}
+        PaperProps={{
+          elevation: 0,
+          sx: {
+            overflow: "visible",
+            filter: "drop-shadow(0px 2px 8px rgba(0,0,0,0.32))",
+            mt: 1.5,
+            "& .MuiAvatar-root": {
+              width: 32,
+              height: 32,
+              ml: -0.5,
+              mr: 1,
+            },
+            "&:before": {
+              content: '""',
+              display: "block",
+              position: "absolute",
+              top: 0,
+              right: 14,
+              width: 10,
+              height: 10,
+              bgcolor: "background.paper",
+              transform: "translateY(-50%) rotate(45deg)",
+              zIndex: 0,
+            },
+          },
+        }}
+        transformOrigin={{ horizontal: "right", vertical: "top" }}
+        anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+      >
+        <MenuItem onClick={() => updatestudent(selectedRowData!)}>
+          <ListItemIcon>
+            <PersonIcon fontSize="small" />
+          </ListItemIcon>
+          View Profile
+        </MenuItem>
+        <Divider />
+
+        <MenuItem onClick={() => deactivateUser(selectedRowData!)}>
+          <ListItemIcon>
+            <BlockIcon fontSize="small" />
+          </ListItemIcon>
+          De-activate User
+        </MenuItem>
+      </Menu>
+    </>
   );
 }
 export default ViewStudents;

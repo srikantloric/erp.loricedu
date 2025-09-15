@@ -3,9 +3,6 @@ import TabList from "@mui/joy/TabList";
 import Tab from "@mui/joy/Tab";
 import ListItemDecorator from "@mui/joy/ListItemDecorator";
 
-import PageContainer from "components/Utils/PageContainer";
-import Navbar from "components/Navbar/Navbar";
-import LSPage from "components/Utils/LSPage";
 import { Book, Bus, Profile, Setting4, UserEdit } from "iconsax-react";
 import { Box, TabPanel } from "@mui/joy";
 import ProfileTab from "./Tabs/ProfileTab";
@@ -80,75 +77,73 @@ function ViewStudentProfile() {
   }, [studentDocId, studentStateData, db]);
 
   return (
-    <PageContainer>
-      <Navbar />
-      <LSPage>
-        <PageHeaderWithHelpButton title="Student Profile" />
-        <Box
-          mt="12px"
-          sx={{
-            backgroundColor: "#fff",
-            padding: "14px",
-            border: "1px solid var(--bs-gray-300)",
-            borderRadius: "12px",
-          }}
+    <>
+
+      <PageHeaderWithHelpButton title="Student Profile" />
+      <Box
+        mt="12px"
+        sx={{
+          backgroundColor: "#fff",
+          padding: "14px",
+          border: "1px solid var(--bs-gray-300)",
+          borderRadius: "12px",
+        }}
+      >
+        <Tabs
+          aria-label="Icon tabs"
+          defaultValue={0}
+          sx={{ backgroundColor: "#fff", mt: "1rem" }}
         >
-          <Tabs
-            aria-label="Icon tabs"
-            defaultValue={0}
-            sx={{ backgroundColor: "#fff", mt: "1rem" }}
-          >
-            <TabList>
-              <Tab>
-                <ListItemDecorator>
-                  <Profile size="18" />
-                </ListItemDecorator>
-                Profile
-              </Tab>
-              <Tab>
-                <ListItemDecorator>
-                  <UserEdit size="18" />
-                </ListItemDecorator>
-                Personal
-              </Tab>
-              <Tab>
-                <ListItemDecorator>
-                  <Bus size="18" />
-                </ListItemDecorator>
-                Transport
-              </Tab>
-              <Tab>
-                <ListItemDecorator>
-                  <Book size="18" />
-                </ListItemDecorator>
-                Attendance
-              </Tab>
-              <Tab>
-                <ListItemDecorator>
-                  <Setting4 size="18" />
-                </ListItemDecorator>
-                Settings
-              </Tab>
-            </TabList>
-            <TabPanel value={0}>
-              {studentData ? <ProfileTab studentData={studentData!} /> : null}
-            </TabPanel>
-            <TabPanel value={1}>
-              {studentData ? <PersonalTab studentData={studentData!} /> : null}
-            </TabPanel>
-            <TabPanel value={2}>
-              {studentData ? <TransportTab studentData={studentData!} /> : null}
-            </TabPanel>
-            <TabPanel value={3}>
-              {studentData ? <AttendanceTab studentData={studentData} /> : null}
-            </TabPanel>
-            <TabPanel value={4}>
+          <TabList>
+            <Tab>
+              <ListItemDecorator>
+                <Profile size="18" />
+              </ListItemDecorator>
+              Profile
+            </Tab>
+            <Tab>
+              <ListItemDecorator>
+                <UserEdit size="18" />
+              </ListItemDecorator>
+              Personal
+            </Tab>
+            <Tab>
+              <ListItemDecorator>
+                <Bus size="18" />
+              </ListItemDecorator>
+              Transport
+            </Tab>
+            <Tab>
+              <ListItemDecorator>
+                <Book size="18" />
+              </ListItemDecorator>
+              Attendance
+            </Tab>
+            <Tab>
+              <ListItemDecorator>
+                <Setting4 size="18" />
+              </ListItemDecorator>
               Settings
-            </TabPanel>
-          </Tabs>
-        </Box>
-      </LSPage>
-    </PageContainer>
+            </Tab>
+          </TabList>
+          <TabPanel value={0}>
+            {studentData ? <ProfileTab studentData={studentData!} /> : null}
+          </TabPanel>
+          <TabPanel value={1}>
+            {studentData ? <PersonalTab studentData={studentData!} /> : null}
+          </TabPanel>
+          <TabPanel value={2}>
+            {studentData ? <TransportTab studentData={studentData!} /> : null}
+          </TabPanel>
+          <TabPanel value={3}>
+            {studentData ? <AttendanceTab studentData={studentData} /> : null}
+          </TabPanel>
+          <TabPanel value={4}>
+            Settings
+          </TabPanel>
+        </Tabs>
+      </Box>
+    </>
   );
 }
 

@@ -19,9 +19,7 @@ import {
 import FingerprintIcon from "@mui/icons-material/Fingerprint";
 import BreadCrumbsV2 from "components/Breadcrumbs/BreadCrumbsV2";
 import HeaderTitleCard from "components/Card/HeaderTitleCard";
-import Navbar from "components/Navbar/Navbar";
-import LSPage from "components/Utils/LSPage";
-import PageContainer from "components/Utils/PageContainer";
+
 import jsPDF from "jspdf";
 // import jsPDF from "jspdf"
 import { useState } from "react";
@@ -40,14 +38,14 @@ type studentQrObjType = {
 };
 
 function GenerateQrSticker() {
-  const [previewUrl, setPreviewUrl] = useState<string|null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [isFetchingDataOfUser, setIsFetchingDataOfUser] = useState(false);
   const [studentSearchInput, setStudentSearchInput] = useState<string>("");
   const [searchInput, setSearchInput] = useState<string>("");
 
-    //Get Firebase DB instance
-    const {db} = useFirebase();
+  //Get Firebase DB instance
+  const { db } = useFirebase();
 
 
   ///Generate by class
@@ -88,9 +86,9 @@ function GenerateQrSticker() {
   // Function to generate PDF from QR codes
   const generatePDF = (qrCodeArray: studentQrObjType[]) => {
     if (qrCodeArray) {
-      console.log("Before Null",previewUrl)
+      console.log("Before Null", previewUrl)
       setPreviewUrl("null")
-      console.log("after Null",previewUrl)
+      console.log("after Null", previewUrl)
       console.log("Generating PDF....", qrCodeArray);
       const doc = new jsPDF();
       // Calculate number of pages required based on number of QR codes
@@ -143,11 +141,11 @@ function GenerateQrSticker() {
       setSelectedStudentArrayForClass([]);
       setPreviewUrl(null);
       setIndividualStudentData(undefined);
-  
+
       // Create a query to get the student by admission_no
       const studentsRef = collection(db, "STUDENTS");
       const q = query(studentsRef, where("admission_no", "==", searchInput));
-  
+
       // Fetch the documents matching the query
       getDocs(q).then((documentSnap) => {
         if (documentSnap.size > 0) {
@@ -158,16 +156,16 @@ function GenerateQrSticker() {
     }
   }
 
-  const handleGeneratePdf = async (props:string) => {
-    
-    if (props==="individual" && individualStudentData) {
+  const handleGeneratePdf = async (props: string) => {
+
+    if (props === "individual" && individualStudentData) {
       console.log("qr for individual")
       setPreviewUrl(null)
       const tempArr: StudentDetailsType[] = [];
       tempArr.push(individualStudentData);
       const result = await generateQRCodes(tempArr);
       generatePDF(result!);
-    } else if (props==="bulk" && selectedStudentArray.length > 0) {
+    } else if (props === "bulk" && selectedStudentArray.length > 0) {
       console.log("qr for bulk")
       setPreviewUrl(null)
       const result = await generateQRCodes(selectedStudentArray);
@@ -190,18 +188,18 @@ function GenerateQrSticker() {
       setSelectedStudentArrayForClass([]);
       setIsFetchingDataOfUser(true);
       setPreviewUrl(null);
-  
+
       // Create a query to get the student by admission_no
       const studentsRef = collection(db, "STUDENTS");
       const q = query(studentsRef, where("admission_no", "==", studentSearchInput));
-  
+
       // Fetch the documents matching the query
       getDocs(q).then((documentSnap) => {
         if (documentSnap.size > 0) {
           const newStudents: StudentDetailsType[] = [];
           const docData = documentSnap.docs[0].data() as StudentDetailsType;
           newStudents.push(docData);
-  
+
           setSelectedStudentArray((prevStudents) => [
             ...prevStudents,
             ...newStudents,
@@ -243,11 +241,11 @@ function GenerateQrSticker() {
       setSelectedStudentArrayForClass([]); // You can remove this duplicate line
       setPreviewUrl(null);
       setIsFetchingDataOfClass(true);
-  
+
       // Create a query to get students by class
       const studentsRef = collection(db, "STUDENTS");
       const q = query(studentsRef, where("class", "==", selectedClass));
-  
+
       // Fetch the documents matching the query
       getDocs(q).then((docSnap) => {
         if (docSnap.size > 0) {
@@ -267,33 +265,158 @@ function GenerateQrSticker() {
   };
 
   return (
-    <PageContainer>
-      <Navbar />
-      <LSPage>
-        <BreadCrumbsV2
-          Icon={FingerprintIcon}
-          Path="Attendance/Generate QR Sticker"
-        />
-        <HeaderTitleCard Title="Generate QR Code Sticker" />
-        <Tabs aria-label="Basic tabs" defaultValue={0}>
-          <TabList>
-            <Tab>Individual Student</Tab>
-            <Tab>Bulk Generation</Tab>
-            <Tab>Entire Class</Tab>
-          </TabList>
-          <TabPanel value={0} sx={{ minHeight: "60vh" }}>
-            <b>Generate</b> sticker for single student
-            <Grid container spacing={2} marginTop={2}>
-              <Grid xs={3}>
-                <Paper
-                  sx={{
-                    padding: "8px",
-                    height: "100%",
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "space-between",
-                  }}
+    <>
+
+      <BreadCrumbsV2
+        Icon={FingerprintIcon}
+        Path="Attendance/Generate QR Sticker"
+      />
+      <HeaderTitleCard Title="Generate QR Code Sticker" />
+      <Tabs aria-label="Basic tabs" defaultValue={0}>
+        <TabList>
+          <Tab>Individual Student</Tab>
+          <Tab>Bulk Generation</Tab>
+          <Tab>Entire Class</Tab>
+        </TabList>
+        <TabPanel value={0} sx={{ minHeight: "60vh" }}>
+          <b>Generate</b> sticker for single student
+          <Grid container spacing={2} marginTop={2}>
+            <Grid xs={3}>
+              <Paper
+                sx={{
+                  padding: "8px",
+                  height: "100%",
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "space-between",
+                }}
+              >
+                <Stack
+                  direction={"row"}
+                  spacing={2}
+                  marginBottom={1.5}
+                  marginTop={1}
+                  marginLeft={0.5}
+                  marginRight={0.5}
                 >
+                  <Input
+                    placeholder="Student ID"
+                    value={searchInput}
+                    onChange={(e) => setSearchInput(e.target.value)}
+                  />
+                  <Button
+                    startDecorator={<Search />}
+                    variant="soft"
+                    onClick={handleSearch}
+                  />
+                </Stack>
+
+                {individualStudentData ? (
+                  <>
+                    <img
+                      src={
+                        individualStudentData &&
+                        individualStudentData.profil_url
+                      }
+                      alt="Student Profile"
+                      width="100%"
+                      height={150}
+                      style={{
+                        objectFit: "contain",
+                        background: "var(--bs-gray-400)",
+                      }}
+                    />
+                    <br />
+                    <table style={{ marginBottom: "5px" }}>
+                      <td>
+                        <tr>
+                          <Typography>Name:</Typography>
+                        </tr>
+                        <tr>
+                          <Typography>ID:</Typography>
+                        </tr>
+                        <tr>
+                          <Typography>Class:</Typography>
+                        </tr>
+                        <tr>
+                          <Typography>Roll No:</Typography>
+                        </tr>
+                      </td>
+                      <td>
+                        <tr>
+                          <Typography fontWeight="700">
+                            {individualStudentData &&
+                              individualStudentData.student_name}
+                          </Typography>
+                        </tr>
+                        <tr>
+                          <Typography>
+                            {individualStudentData &&
+                              individualStudentData.admission_no}
+                          </Typography>
+                        </tr>
+                        <tr>
+                          <Typography>
+                            {individualStudentData &&
+                              individualStudentData.class}
+                          </Typography>
+                        </tr>
+                        <tr>
+                          <Typography>
+                            {individualStudentData &&
+                              individualStudentData.class_roll}
+                          </Typography>
+                        </tr>
+                      </td>
+                    </table>
+
+                    <Button
+                      sx={{ width: "100%", mb: "5px" }}
+                      color="neutral"
+                      onClick={() => handleGeneratePdf("individual")}
+                      loading={loading}
+                    >
+                      Generate Sticker
+                    </Button>
+                  </>
+                ) : null}
+              </Paper>
+            </Grid>
+            <Grid
+              xs={9}
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              {previewUrl && individualStudentData ? (
+                <iframe
+                  src={previewUrl}
+                  title="PDF viewwer"
+                  style={{ height: "52vh", width: "100%" }}
+                ></iframe>
+              ) : (
+                <p>Your Generated PDF will be shown here</p>
+              )}
+            </Grid>
+          </Grid>
+        </TabPanel>
+        <TabPanel value={1}>
+          <b>Generate</b> Sticker In Bulk
+          <Grid container spacing={2} marginTop={2}>
+            <Grid xs={3}>
+              <Paper
+                sx={{
+                  padding: "12px",
+                  height: "60vh",
+
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "space-between",
+                }}
+              >
+                <Box>
                   <Stack
                     direction={"row"}
                     spacing={2}
@@ -304,299 +427,172 @@ function GenerateQrSticker() {
                   >
                     <Input
                       placeholder="Student ID"
-                      value={searchInput}
-                      onChange={(e) => setSearchInput(e.target.value)}
+                      value={studentSearchInput}
+                      onChange={(e) => setStudentSearchInput(e.target.value)}
                     />
                     <Button
-                      startDecorator={<Search />}
+                      startDecorator={<Add />}
                       variant="soft"
-                      onClick={handleSearch}
+                      loading={isFetchingDataOfUser}
+                      onClick={handleStudentAdd}
+                    />
+                  </Stack>
+                  <Divider />
+                </Box>
+                <Stack direction="column" gap={1.5}>
+                  {selectedStudentArray &&
+                    selectedStudentArray.map((student, index) => {
+                      return (
+                        <Chip
+                          key={index}
+                          startDecorator={<Avatar src={student.profil_url} />}
+                          endDecorator={
+                            <ChipDelete
+                              onDelete={() => handleRemoveStudent(student)}
+                            />
+                          }
+                          sx={{
+                            "--Chip-decoratorChildHeight": "28px",
+                          }}
+                        >
+                          {student.student_name + "-" + student.admission_no}
+                        </Chip>
+                      );
+                    })}
+                </Stack>
+                <br />
+                <Button
+                  sx={{ width: "100%", mb: "5px" }}
+                  color="neutral"
+                  onClick={() => handleGeneratePdf("bulk")}
+                  loading={loading}
+                >
+                  Generate Sticker
+                </Button>
+              </Paper>
+            </Grid>
+            <Grid
+              xs={9}
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              {previewUrl && selectedStudentArray.length > 0 ? (
+                <iframe
+                  src={previewUrl}
+                  title="PDF viewwer"
+                  style={{ height: "52vh", width: "100%" }}
+                ></iframe>
+              ) : (
+                <p>Your Generated PDF will be shown here</p>
+              )}
+            </Grid>
+          </Grid>
+        </TabPanel>
+        <TabPanel value={2}>
+          <b>Generate</b> Sticker For Whole Class In
+          <Grid container spacing={2} marginTop={2}>
+            <Grid xs={3}>
+              <Paper
+                sx={{
+                  padding: "12px",
+                  height: "60vh",
+
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "space-between",
+                }}
+              >
+                <Box>
+                  <Typography>Select Class</Typography>
+                  <Stack direction="row" gap={1}>
+                    <Select
+                      value={selectedClass}
+                      onChange={(e, val) => setSelectedClass(val)}
+                      sx={{ width: "100%" }}
+                    >
+                      <Option value={1}>Nursery</Option>
+                      <Option value={2}>LKG</Option>
+                      <Option value={3}>UKG</Option>
+                      <Option value={4}>STD-1</Option>
+                      <Option value={5}>STD-2</Option>
+                      <Option value={6}>STD-3</Option>
+                      <Option value={7}>STD-4</Option>
+                      <Option value={8}>STD-5</Option>
+                      <Option value={9}>STD-6</Option>
+                      <Option value={10}>STD-7</Option>
+                      <Option value={11}>STD-8</Option>
+                      <Option value={12}>STD-9</Option>
+                      <Option value={13}>STD-10</Option>
+                    </Select>
+
+                    <Button
+                      startDecorator={<Search />}
+                      size="sm"
+                      variant="soft"
+                      loading={isFetchingDataOfClass}
+                      onClick={handleSectionSearchBtn}
                     />
                   </Stack>
 
-                  {individualStudentData ? (
-                    <>
-                      <img
-                        src={
-                          individualStudentData &&
-                          individualStudentData.profil_url
-                        }
-                        alt="Student Profile"
-                        width="100%"
-                        height={150}
-                        style={{
-                          objectFit: "contain",
-                          background: "var(--bs-gray-400)",
-                        }}
-                      />
-                      <br />
-                      <table style={{ marginBottom: "5px" }}>
-                        <td>
-                          <tr>
-                            <Typography>Name:</Typography>
-                          </tr>
-                          <tr>
-                            <Typography>ID:</Typography>
-                          </tr>
-                          <tr>
-                            <Typography>Class:</Typography>
-                          </tr>
-                          <tr>
-                            <Typography>Roll No:</Typography>
-                          </tr>
-                        </td>
-                        <td>
-                          <tr>
-                            <Typography fontWeight="700">
-                              {individualStudentData &&
-                                individualStudentData.student_name}
-                            </Typography>
-                          </tr>
-                          <tr>
-                            <Typography>
-                              {individualStudentData &&
-                                individualStudentData.admission_no}
-                            </Typography>
-                          </tr>
-                          <tr>
-                            <Typography>
-                              {individualStudentData &&
-                                individualStudentData.class}
-                            </Typography>
-                          </tr>
-                          <tr>
-                            <Typography>
-                              {individualStudentData &&
-                                individualStudentData.class_roll}
-                            </Typography>
-                          </tr>
-                        </td>
-                      </table>
-
-                      <Button
-                        sx={{ width: "100%", mb: "5px" }}
-                        color="neutral"
-                        onClick={()=>handleGeneratePdf("individual")}
-                        loading={loading}
-                      >
-                        Generate Sticker
-                      </Button>
-                    </>
-                  ) : null}
-                </Paper>
-              </Grid>
-              <Grid
-                xs={9}
-                sx={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                {previewUrl && individualStudentData ? (
-                  <iframe
-                    src={previewUrl}
-                    title="PDF viewwer"
-                    style={{ height: "52vh", width: "100%" }}
-                  ></iframe>
-                ) : (
-                  <p>Your Generated PDF will be shown here</p>
-                )}
-              </Grid>
-            </Grid>
-          </TabPanel>
-          <TabPanel value={1}>
-            <b>Generate</b> Sticker In Bulk
-            <Grid container spacing={2} marginTop={2}>
-              <Grid xs={3}>
-                <Paper
-                  sx={{
-                    padding: "12px",
-                    height: "60vh",
-
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "space-between",
-                  }}
+                  <Divider sx={{ mt: "8px" }} />
+                </Box>
+                <Stack direction="column" gap={1.5}>
+                  {selectedStudentArrayForClass &&
+                    selectedStudentArrayForClass.map((student, index) => {
+                      return (
+                        <Chip
+                          key={index}
+                          startDecorator={<Avatar src={student.profil_url} />}
+                          endDecorator={
+                            <ChipDelete
+                              onDelete={() => handleRemoveStudent(student)}
+                            />
+                          }
+                          sx={{
+                            "--Chip-decoratorChildHeight": "28px",
+                          }}
+                        >
+                          {student.student_name + "-" + student.admission_no}
+                        </Chip>
+                      );
+                    })}
+                </Stack>
+                <br />
+                <Button
+                  sx={{ width: "100%", mb: "5px" }}
+                  color="neutral"
+                  onClick={() => handleGeneratePdf("byClass")}
+                  loading={loading}
                 >
-                  <Box>
-                    <Stack
-                      direction={"row"}
-                      spacing={2}
-                      marginBottom={1.5}
-                      marginTop={1}
-                      marginLeft={0.5}
-                      marginRight={0.5}
-                    >
-                      <Input
-                        placeholder="Student ID"
-                        value={studentSearchInput}
-                        onChange={(e) => setStudentSearchInput(e.target.value)}
-                      />
-                      <Button
-                        startDecorator={<Add />}
-                        variant="soft"
-                        loading={isFetchingDataOfUser}
-                        onClick={handleStudentAdd}
-                      />
-                    </Stack>
-                    <Divider />
-                  </Box>
-                  <Stack direction="column" gap={1.5}>
-                    {selectedStudentArray &&
-                      selectedStudentArray.map((student, index) => {
-                        return (
-                          <Chip
-                            key={index}
-                            startDecorator={<Avatar src={student.profil_url} />}
-                            endDecorator={
-                              <ChipDelete
-                                onDelete={() => handleRemoveStudent(student)}
-                              />
-                            }
-                            sx={{
-                              "--Chip-decoratorChildHeight": "28px",
-                            }}
-                          >
-                            {student.student_name + "-" + student.admission_no}
-                          </Chip>
-                        );
-                      })}
-                  </Stack>
-                  <br />
-                  <Button
-                    sx={{ width: "100%", mb: "5px" }}
-                    color="neutral"
-                    onClick={()=>handleGeneratePdf("bulk")}
-                    loading={loading}
-                  >
-                    Generate Sticker
-                  </Button>
-                </Paper>
-              </Grid>
-              <Grid
-                xs={9}
-                sx={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                {previewUrl && selectedStudentArray.length > 0 ? (
-                  <iframe
-                    src={previewUrl}
-                    title="PDF viewwer"
-                    style={{ height: "52vh", width: "100%" }}
-                  ></iframe>
-                ) : (
-                  <p>Your Generated PDF will be shown here</p>
-                )}
-              </Grid>
+                  Generate Sticker
+                </Button>
+              </Paper>
             </Grid>
-          </TabPanel>
-          <TabPanel value={2}>
-            <b>Generate</b> Sticker For Whole Class In
-            <Grid container spacing={2} marginTop={2}>
-              <Grid xs={3}>
-                <Paper
-                  sx={{
-                    padding: "12px",
-                    height: "60vh",
-
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "space-between",
-                  }}
-                >
-                  <Box>
-                    <Typography>Select Class</Typography>
-                    <Stack direction="row" gap={1}>
-                      <Select
-                        value={selectedClass}
-                        onChange={(e, val) => setSelectedClass(val)}
-                        sx={{ width: "100%" }}
-                      >
-                        <Option value={1}>Nursery</Option>
-                        <Option value={2}>LKG</Option>
-                        <Option value={3}>UKG</Option>
-                        <Option value={4}>STD-1</Option>
-                        <Option value={5}>STD-2</Option>
-                        <Option value={6}>STD-3</Option>
-                        <Option value={7}>STD-4</Option>
-                        <Option value={8}>STD-5</Option>
-                        <Option value={9}>STD-6</Option>
-                        <Option value={10}>STD-7</Option>
-                        <Option value={11}>STD-8</Option>
-                        <Option value={12}>STD-9</Option>
-                        <Option value={13}>STD-10</Option>
-                      </Select>
-
-                      <Button
-                        startDecorator={<Search />}
-                        size="sm"
-                        variant="soft"
-                        loading={isFetchingDataOfClass}
-                        onClick={handleSectionSearchBtn}
-                      />
-                    </Stack>
-
-                    <Divider sx={{ mt: "8px" }} />
-                  </Box>
-                  <Stack direction="column" gap={1.5}>
-                    {selectedStudentArrayForClass &&
-                      selectedStudentArrayForClass.map((student, index) => {
-                        return (
-                          <Chip
-                            key={index}
-                            startDecorator={<Avatar src={student.profil_url} />}
-                            endDecorator={
-                              <ChipDelete
-                                onDelete={() => handleRemoveStudent(student)}
-                              />
-                            }
-                            sx={{
-                              "--Chip-decoratorChildHeight": "28px",
-                            }}
-                          >
-                            {student.student_name + "-" + student.admission_no}
-                          </Chip>
-                        );
-                      })}
-                  </Stack>
-                  <br />
-                  <Button
-                    sx={{ width: "100%", mb: "5px" }}
-                    color="neutral"
-                    onClick={()=>handleGeneratePdf("byClass")}
-                    loading={loading}
-                  >
-                    Generate Sticker
-                  </Button>
-                </Paper>
-              </Grid>
-              <Grid
-                xs={9}
-                sx={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                {previewUrl && selectedStudentArrayForClass.length > 0 ? (
-                  <iframe
-                    src={previewUrl}
-                    title="PDF viewwer"
-                    style={{ height: "52vh", width: "100%" }}
-                  ></iframe>
-                ) : (
-                  <p>Your Generated PDF will be shown here</p>
-                )}
-              </Grid>
+            <Grid
+              xs={9}
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              {previewUrl && selectedStudentArrayForClass.length > 0 ? (
+                <iframe
+                  src={previewUrl}
+                  title="PDF viewwer"
+                  style={{ height: "52vh", width: "100%" }}
+                ></iframe>
+              ) : (
+                <p>Your Generated PDF will be shown here</p>
+              )}
             </Grid>
-          </TabPanel>
-        </Tabs>
-      </LSPage>
-    </PageContainer>
+          </Grid>
+        </TabPanel>
+      </Tabs>
+    </>
   );
 }
 

@@ -39,6 +39,8 @@ import Attendance from "pages/Attendance/Attendance";
 import AttendanceConfiguration from "pages/Attendance/AttendanceConfiguration";
 import IotAttendance from "pages/Attendance/iotAttendanance/IotAttendance";
 import FollowUp from "pages/FollowUp/FollowUp";
+import { User } from "iconsax-react";
+import UserManagement from "pages/UserManagement/UserManagement";
 
 export const routesConfig = [
   {
@@ -291,11 +293,12 @@ export const routesConfig = [
     isHeader: false,
     Component: FollowUp,
   },
-  
+
 
   {
     title: "Controls",
     isHeader: true,
+    permission: "manageUsers",
   },
   {
     title: "Master Data",
@@ -304,6 +307,7 @@ export const routesConfig = [
     isCollapsable: false,
     isHeader: false,
     Component: MasterData,
+    permission: "manageUsers"
   },
   {
     title: "Website Config",
@@ -312,6 +316,16 @@ export const routesConfig = [
     isCollapsable: false,
     isHeader: false,
     Component: WebsiteConfig,
+    permission: "manageUsers"
+  },
+  {
+    title: "User Management",
+    to: "/user-management",
+    icon: User,
+    isCollapsable: false,
+    isHeader: false,
+    Component: UserManagement,
+    permission: "manageUsers"
   },
   {
     title: "Settings",
@@ -320,5 +334,6 @@ export const routesConfig = [
     isCollapsable: false,
     isHeader: false,
     Component: SettingsPage,
+    permission: "manageUsers"
   },
 ];

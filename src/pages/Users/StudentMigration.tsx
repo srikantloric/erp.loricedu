@@ -2,9 +2,7 @@ import { Search } from "@mui/icons-material";
 import { Box, Button, Card, Divider, FormControl, FormHelperText, FormLabel, LinearProgress, Option, Select, Stack, Typography } from "@mui/joy";
 import { Paper } from "@mui/material";
 import PageHeaderWithHelpButton from "components/Breadcrumbs/PageHeaderWithHelpButton";
-import Navbar from "components/Navbar/Navbar";
-import LSPage from "components/Utils/LSPage";
-import PageContainer from "components/Utils/PageContainer";
+
 import { SCHOOL_CLASSES } from "config/schoolConfig";
 import { enqueueSnackbar } from "notistack";
 import { useEffect, useState } from "react";
@@ -162,126 +160,123 @@ function StudentMigration() {
 
 
     return (
-        <PageContainer>
-            <Navbar />
-            <LSPage>
-                <PageHeaderWithHelpButton title="Promote Students Class" />
-                <Paper sx={{ p: "10px", mt: "8px" }}>
-                    <Stack
-                        direction="row"
-                        alignItems="center"
-                        justifyContent="space-between"
-                    >
-                        <Box>
-                            <Typography level="title-md">Search Student</Typography>
-                        </Box>
-                        <Stack direction="row" alignItems="center" gap={1.5}>
-
-                            <Select
-                                placeholder="choose class"
-                                onChange={(e, val) => setSelectedClass(val)}
-                            >
-                                {SCHOOL_CLASSES.map((item) => {
-                                    return <Option value={item.value} key={item.id}>{item.title}</Option>;
-                                })}
-                            </Select>
-
-                            <Button
-                                sx={{ ml: "8px" }}
-                                startDecorator={<Search />}
-                                onClick={handleStudentSearch}
-                            ></Button>
-                            <Button
-                                variant="soft"
-                                sx={{ ml: "8px" }}
-                                onClick={handleInputResetBtn}
-                            >
-                                Reset
-                            </Button>
-                        </Stack>
-                    </Stack>
-                </Paper>
-                <br />
-                {
-                    selectedClass &&
+        <>
+            <PageHeaderWithHelpButton title="Promote Students Class" />
+            <Paper sx={{ p: "10px", mt: "8px" }}>
+                <Stack
+                    direction="row"
+                    alignItems="center"
+                    justifyContent="space-between"
+                >
                     <Box>
-                        <Card
-                            size="sm"
-                            variant="outlined"
-                            color="warning"
-                            sx={{ height: "100%" }}
-                        >
-                            <Stack
-                                direction={"row"}
-                                justifyContent={"center"}
-                                sx={{ height: "100%" }}
-                                alignItems={"center"}
-                            >
-                                <Stack direction={"row"} spacing={4} justifyContent={"center"} alignItems={"center"}>
-
-                                    <FormControl>
-                                        <FormLabel>Current Class</FormLabel>
-                                        <Select
-                                            value={selectedClass}
-                                        >
-                                            {SCHOOL_CLASSES.map((item) => {
-                                                return <Option value={item.value} key={item.id}>{item.title}</Option>;
-                                            })}
-                                        </Select>
-                                        <FormHelperText>Total Count: {students.length}</FormHelperText>
-                                    </FormControl>
-                                    <img src={ArrowMigration} height={40} alt="promoted students" />
-                                    <FormControl>
-                                        <FormLabel>After Promotion Class</FormLabel>
-                                        <Select
-                                            placeholder="choose migration class"
-                                            value={afterMigrationClass}
-                                            onChange={(e, val) => setAfterMigrationClass(val)}
-                                        >
-                                            {SCHOOL_CLASSES.map((item) => {
-                                                return <Option value={item.value} key={item.id}>{item.title}</Option>;
-                                            })}
-                                        </Select>
-                                        <FormHelperText>Total Count: N/A</FormHelperText>
-                                    </FormControl>
-
-                                </Stack>
-
-                            </Stack>
-                            <Divider />
-                            <Stack direction={"row"}>
-                                <Typography color="warning" level="body-xs" startDecorator={<WarningIcon />}>Please execute this transaction with utmost care, as incorrect execution may lead to system misalignment. You also have the option to select or deselect students who should not be promoted.</Typography>
-                                <Stack>
-                                    <Button size="sm" onClick={() => setStudentPromotionModalOpen(true)}>Promote Students</Button>
-                                </Stack>
-
-                            </Stack>
-                        </Card>
-                        <br />
-                        <Card variant="outlined">
-                            {loading && <LinearProgress />}
-                            <MaterialTable
-                                style={{ display: "grid", boxShadow: "none" }}
-                                columns={columnMat}
-                                data={students}
-                                title="Students List"
-                                onSelectionChange={(data) => setSelectedData(data)}
-                                options={{
-                                    selection: true,
-                                    grouping: false,
-                                    headerStyle: {
-                                        backgroundColor: "#F4F4F4",
-                                    },
-                                }}
-                            />
-                        </Card>
+                        <Typography level="title-md">Search Student</Typography>
                     </Box>
-                }
+                    <Stack direction="row" alignItems="center" gap={1.5}>
 
-                <StudentPromotionConfirmationModal open={studentPromotionModalOpen} setModalOpen={setStudentPromotionModalOpen} handlePromoteStudents={handlePromoteStudents} />
+                        <Select
+                            placeholder="choose class"
+                            onChange={(e, val) => setSelectedClass(val)}
+                        >
+                            {SCHOOL_CLASSES.map((item) => {
+                                return <Option value={item.value} key={item.id}>{item.title}</Option>;
+                            })}
+                        </Select>
 
-            </LSPage>
-        </PageContainer>
+                        <Button
+                            sx={{ ml: "8px" }}
+                            startDecorator={<Search />}
+                            onClick={handleStudentSearch}
+                        ></Button>
+                        <Button
+                            variant="soft"
+                            sx={{ ml: "8px" }}
+                            onClick={handleInputResetBtn}
+                        >
+                            Reset
+                        </Button>
+                    </Stack>
+                </Stack>
+            </Paper>
+            <br />
+            {
+                selectedClass &&
+                <Box>
+                    <Card
+                        size="sm"
+                        variant="outlined"
+                        color="warning"
+                        sx={{ height: "100%" }}
+                    >
+                        <Stack
+                            direction={"row"}
+                            justifyContent={"center"}
+                            sx={{ height: "100%" }}
+                            alignItems={"center"}
+                        >
+                            <Stack direction={"row"} spacing={4} justifyContent={"center"} alignItems={"center"}>
+
+                                <FormControl>
+                                    <FormLabel>Current Class</FormLabel>
+                                    <Select
+                                        value={selectedClass}
+                                    >
+                                        {SCHOOL_CLASSES.map((item) => {
+                                            return <Option value={item.value} key={item.id}>{item.title}</Option>;
+                                        })}
+                                    </Select>
+                                    <FormHelperText>Total Count: {students.length}</FormHelperText>
+                                </FormControl>
+                                <img src={ArrowMigration} height={40} alt="promoted students" />
+                                <FormControl>
+                                    <FormLabel>After Promotion Class</FormLabel>
+                                    <Select
+                                        placeholder="choose migration class"
+                                        value={afterMigrationClass}
+                                        onChange={(e, val) => setAfterMigrationClass(val)}
+                                    >
+                                        {SCHOOL_CLASSES.map((item) => {
+                                            return <Option value={item.value} key={item.id}>{item.title}</Option>;
+                                        })}
+                                    </Select>
+                                    <FormHelperText>Total Count: N/A</FormHelperText>
+                                </FormControl>
+
+                            </Stack>
+
+                        </Stack>
+                        <Divider />
+                        <Stack direction={"row"}>
+                            <Typography color="warning" level="body-xs" startDecorator={<WarningIcon />}>Please execute this transaction with utmost care, as incorrect execution may lead to system misalignment. You also have the option to select or deselect students who should not be promoted.</Typography>
+                            <Stack>
+                                <Button size="sm" onClick={() => setStudentPromotionModalOpen(true)}>Promote Students</Button>
+                            </Stack>
+
+                        </Stack>
+                    </Card>
+                    <br />
+                    <Card variant="outlined">
+                        {loading && <LinearProgress />}
+                        <MaterialTable
+                            style={{ display: "grid", boxShadow: "none" }}
+                            columns={columnMat}
+                            data={students}
+                            title="Students List"
+                            onSelectionChange={(data) => setSelectedData(data)}
+                            options={{
+                                selection: true,
+                                grouping: false,
+                                headerStyle: {
+                                    backgroundColor: "#F4F4F4",
+                                },
+                            }}
+                        />
+                    </Card>
+                </Box>
+            }
+
+            <StudentPromotionConfirmationModal open={studentPromotionModalOpen} setModalOpen={setStudentPromotionModalOpen} handlePromoteStudents={handlePromoteStudents} />
+
+        </>
     )
 }
 

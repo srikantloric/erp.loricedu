@@ -1,8 +1,8 @@
-import Navbar from "../../components/Navbar/Navbar";
+
 import FingerprintIcon from "@mui/icons-material/Fingerprint";
-import LSPage from "../../components/Utils/LSPage";
+
 import { Divider, LinearProgress, Paper } from "@mui/material";
-import PageContainer from "../../components/Utils/PageContainer";
+
 
 
 import SaveIcon from "@mui/icons-material/Save";
@@ -234,9 +234,7 @@ function ManualAttendance() {
 
   return (
     <>
-      <PageContainer>
-        <Navbar />
-        <LSPage>
+      
           <BreadCrumbsV2
             Icon={FingerprintIcon}
             Path="Attendance Management/Test/Mark Attendance"
@@ -455,8 +453,7 @@ function ManualAttendance() {
               </>
             ) : null}
           </Paper>
-        </LSPage>
-      </PageContainer>
+
     </>
   );
 }

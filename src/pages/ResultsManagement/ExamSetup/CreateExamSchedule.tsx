@@ -1,12 +1,12 @@
 import { AutoFixHigh, Delete } from "@mui/icons-material";
 import { Box, Button, IconButton, LinearProgress, Option, Select, Stack } from "@mui/joy";
 import { IconPlus } from "@tabler/icons-react";
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { ExamData } from "types/reports/exam";
 import { Dialog, DialogActions, DialogContent, DialogTitle, TextField } from "@mui/material";
 import { collection, doc, getDoc, serverTimestamp, setDoc } from "firebase/firestore";
 import { useFirebase } from "context/firebaseContext";
-import SideBarContext from "context/SidebarContext";
+import { useSidebar } from "context/SidebarContext";
 import { enqueueSnackbar } from "notistack";
 import { useSearchParams } from "react-router-dom";
 import { PaperType } from "pages/MasterData/AddSubjects";
@@ -77,7 +77,7 @@ function CreateExamSchedule() {
   const examId = searchParams.get("examId");
 
   const { db } = useFirebase();
-  const { setSidebarOpen } = useContext(SideBarContext);
+  const { setMini, isMini } = useSidebar();
 
   useEffect(() => {
     const fetchPapers = async () => {
@@ -106,8 +106,8 @@ function CreateExamSchedule() {
 
 
   useEffect(() => {
-    setSidebarOpen(false);
-  }, [setSidebarOpen]);
+    setMini(true);
+  }, []);
 
   // --- Fetch existing schedule based on examId ---
   useEffect(() => {
@@ -241,7 +241,7 @@ function CreateExamSchedule() {
           }
         ]
       });
-      
+
 
       setIsAiGenerating(false)
       console.log("✅ Exam schedule created:", response.data);
@@ -255,7 +255,9 @@ function CreateExamSchedule() {
 
 
   return (
-    <>
+    <Box sx={{ width: isMini ? "85vw" : "77vw" }}>
+
+
       <Stack justifyContent={"end"} direction={"row"}>
         <Button onClick={generateAiExamSchedule} startDecorator={<AutoFixHigh />} loading={isAiGenerating} variant="plain" >Auto Generate</Button>
       </Stack>
@@ -373,7 +375,7 @@ function CreateExamSchedule() {
           <Button onClick={handleAddDate} variant="solid">Add</Button>
         </DialogActions>
       </Dialog>
-    </>
+    </Box>
   );
 }
 

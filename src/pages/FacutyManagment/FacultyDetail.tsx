@@ -1,7 +1,4 @@
 
-import Navbar from "../../components/Navbar/Navbar";
-import LSPage from "../../components/Utils/LSPage";
-import PageContainer from "../../components/Utils/PageContainer";
 
 import {
   Box,
@@ -78,9 +75,7 @@ function FacultyDetail() {
 
   return (
     <>
-      <PageContainer>
-        <Navbar />
-        <LSPage>
+    
           <PageHeaderWithHelpButton title="Faculty Details" />
           <br></br>
           <div
@@ -187,8 +182,7 @@ function FacultyDetail() {
 
             </Tabs>
           </Box>
-        </LSPage>
-      </PageContainer>
+  
     </>
   );
 }

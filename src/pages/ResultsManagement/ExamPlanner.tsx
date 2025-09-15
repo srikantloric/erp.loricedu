@@ -3,10 +3,7 @@ import { Button, Input } from "@mui/joy"
 import { Stack } from "@mui/material"
 import { IconCalendarEvent } from "@tabler/icons-react"
 import BreadCrumbsV2 from "components/Breadcrumbs/BreadCrumbsV2"
-import Navbar from "components/Navbar/Navbar"
-import LSPage from "components/Utils/LSPage"
-import PageContainer from "components/Utils/PageContainer"
-// import { useState } from "react"
+
 import ExamCardWithSchedule from "./ExamCardWithSchedule"
 import { useNavigate } from "react-router-dom"
 import { useEffect, useState } from "react"
@@ -46,43 +43,39 @@ function ExamPlanner() {
 
 
     return (
-        <PageContainer>
-            <Navbar />
-            <LSPage>
-                <BreadCrumbsV2
-                    Icon={IconCalendarEvent}
-                    Path="School Exams/Plan Exam"
-                />
-                <Stack direction={"row"} spacing={2} mt={2}>
-                    <Input
-                        startDecorator={<Search />}
-                        sx={{
-                            mt: 4,
-                            mb: 2,
-                            flex: 1
-                        }}
-                        placeholder="Search for exams..."
-                    ></Input>
-                    <Button startDecorator={<Add />} onClick={() => navigate("/schoolResults/add-exam")}>Add New Exam</Button>
-                </Stack>
-                <Stack mt={2} spacing={2}>
-                    {
-                        exams && exams.map((exam, index) => {
-                            return (
-                                <ExamCardWithSchedule
-                                    index={index}
-                                    key={exam.examId}
-                                    examId={exam.examId}
-                                    examDescription={exam.examDescription}
-                                    examTitle={exam.examTitle}
-                                    createdAt={exam.createdAt} />
-                            )
-                        })
-                    }
-                </Stack>
-
-            </LSPage>
-        </PageContainer>
+        <>
+            <BreadCrumbsV2
+                Icon={IconCalendarEvent}
+                Path="School Exams/Plan Exam"
+            />
+            <Stack direction={"row"} spacing={2} mt={2}>
+                <Input
+                    startDecorator={<Search />}
+                    sx={{
+                        mt: 4,
+                        mb: 2,
+                        flex: 1
+                    }}
+                    placeholder="Search for exams..."
+                ></Input>
+                <Button startDecorator={<Add />} onClick={() => navigate("/exams/add-exam")}>Add New Exam</Button>
+            </Stack>
+            <Stack mt={2} spacing={2}>
+                {
+                    exams && exams.map((exam, index) => {
+                        return (
+                            <ExamCardWithSchedule
+                                index={index}
+                                key={exam.examId}
+                                examId={exam.examId}
+                                examDescription={exam.examDescription}
+                                examTitle={exam.examTitle}
+                                createdAt={exam.createdAt} />
+                        )
+                    })
+                }
+            </Stack>
+        </>
     )
 }
 

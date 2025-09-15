@@ -2,9 +2,7 @@ import { InfoOutlined, Pageview, Restore } from "@mui/icons-material"
 import { Box, Button, Checkbox, Chip, Divider, FormControl, FormLabel, Input, Option, Select, Stack, Typography } from "@mui/joy"
 import PageHeaderWithHelpButton from "components/Breadcrumbs/PageHeaderWithHelpButton"
 import MonthCard from "components/Card/MonthCard"
-import Navbar from "components/Navbar/Navbar"
-import LSPage from "components/Utils/LSPage"
-import PageContainer from "components/Utils/PageContainer"
+
 import { useEffect, useState } from "react"
 import { FeeHeadType, InstallmentChallanType } from "types/payments/payments"
 import CurrencyRupeeIcon from '@mui/icons-material/CurrencyRupee';
@@ -424,9 +422,7 @@ function NewFeeCollection() {
 
     return (
         <>
-            <PageContainer>
-                <Navbar />
-                <LSPage>
+            
                     <PageHeaderWithHelpButton title="Students Fee Collection" />
 
                     <br />
@@ -709,9 +705,7 @@ function NewFeeCollection() {
                             </Box>
                         </Box>
                     </Stack>
-                </LSPage>
-            </PageContainer >
-
+    
         </>
     )
 }

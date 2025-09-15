@@ -1,19 +1,14 @@
 import { Box, Tab, TabList, TabPanel, Tabs } from "@mui/joy";
 import { IconDatabaseCog } from "@tabler/icons-react";
 import BreadCrumbsV2 from "components/Breadcrumbs/BreadCrumbsV2";
-import Navbar from "components/Navbar/Navbar";
-import LSPage from "components/Utils/LSPage";
-import PageContainer from "components/Utils/PageContainer";
+
 import WebsiteContent from "./WebsiteContent";
 import PhotoGalleryContent from "./PhotoGalleryContent";
 import VideoGalleryContent from "./VideoGalleryContent";
 
 const WebsiteConfig = () => {
   return (
-    <PageContainer>
-      <LSPage>
-        <Navbar />
-        <br />
+<>
 
         <BreadCrumbsV2 Icon={IconDatabaseCog} Path="Website Management" />
         <Box mt="1rem">
@@ -34,8 +29,8 @@ const WebsiteConfig = () => {
             </TabPanel>
           </Tabs>
         </Box>
-      </LSPage>
-    </PageContainer>
+        </>
+
   );
 };
 

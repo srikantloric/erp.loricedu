@@ -1,8 +1,5 @@
 import { Box, Button, FormControl, FormLabel, Select, Option } from "@mui/joy";
 import BreadCrumbsV2 from "components/Breadcrumbs/BreadCrumbsV2";
-import Navbar from "components/Navbar/Navbar";
-import LSPage from "components/Utils/LSPage";
-import PageContainer from "components/Utils/PageContainer";
 import { IconReport } from "@tabler/icons-react";
 import { useState } from "react";
 import { collection, getDocs, query, where } from "firebase/firestore";
@@ -113,9 +110,8 @@ export default function FacultyMonthlyAttendanceReport() {
     };
 
     return (
-        <PageContainer>
-            <Navbar />
-            <LSPage>
+        <>
+       
                 <BreadCrumbsV2 Icon={IconReport} Path="Faculty Monthly Attendance Report" />
                 <Box sx={{ maxWidth: 400, mt: 4 }}>
                     <FormControl>
@@ -154,7 +150,6 @@ export default function FacultyMonthlyAttendanceReport() {
                         {loading ? "Generating..." : "Generate Report"}
                     </Button>
                 </Box>
-            </LSPage>
-        </PageContainer>
+    </>
     );
 }

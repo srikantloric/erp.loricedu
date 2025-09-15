@@ -1,8 +1,6 @@
-import Navbar from "components/Navbar/Navbar";
 import FingerprintIcon from "@mui/icons-material/Fingerprint";
 
 import { Divider, LinearProgress, Paper } from "@mui/material";
-import PageContainer from "components/Utils/PageContainer";
 // import firebase from "firebase";
 import SaveIcon from "@mui/icons-material/Save";
 
@@ -27,7 +25,6 @@ import { getCurrentDate } from "utilities/UtilitiesFunctions";
 import Search from "@mui/icons-material/Search";
 import BreadCrumbsV2 from "components/Breadcrumbs/BreadCrumbsV2";
 import HeaderTitleCard from "components/Card/HeaderTitleCard";
-import LSPage from "components/Utils/LSPage";
 
 import { FacultyAttendanceShema } from "types/facuities";
 import { enqueueSnackbar } from "notistack";
@@ -198,9 +195,7 @@ function FacultyAttendance() {
   };
   return (
     <>
-      <PageContainer>
-        <Navbar />
-        <LSPage>
+  
           <BreadCrumbsV2
             Icon={FingerprintIcon}
             Path="Attendance Management/Facuities Attendence"
@@ -399,8 +394,7 @@ function FacultyAttendance() {
               </>
             ) : null}
           </Paper>
-        </LSPage>
-      </PageContainer>
+
     </>
   );
 };

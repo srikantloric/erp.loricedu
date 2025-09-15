@@ -1,4 +1,3 @@
-import React, { useContext, useState, useEffect } from "react";
 import "./Navbar.scss";
 import {
   Avatar,
@@ -9,9 +8,10 @@ import {
   Menu,
   MenuItem,
   Tooltip,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
-import SideBarContext from "../../context/SidebarContext";
 import {
   IconBell,
   IconMessage2,
@@ -24,11 +24,17 @@ import { useSearchDialog } from "context/SearchDialogContext";
 import { Chip, Option, Select, Stack, Typography } from "@mui/joy";
 import { useNavbar } from "context/NavbarContext";
 import { useAuth } from "context/AuthContext";
+import { useState } from "react";
+import { useSidebar } from "context/SidebarContext";
 
-function Navbar() {
-  const [screenSize, setScreenSize] = useState(getCurrentDimension());
-  const [anchorEl, setAnchorEl] = React.useState(null);
+
+const Navbar = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+  const [anchorEl, setAnchorEl] = useState(null);
   const environment = process.env.REACT_APP_MODE || process.env.NODE_ENV;
+  const { toggleSidebar } = useSidebar();
 
   const open = Boolean(anchorEl);
   const handleClick = (event: any) => {
@@ -53,42 +59,13 @@ function Navbar() {
     return `${count} notifications`;
   };
 
-  const status = useContext(SideBarContext);
-  const handleOnClick = () => {
-    status.toggle();
-  };
-
   //auth context
-  const {  displayName, userType } = useAuth()
-
-
-  function getCurrentDimension() {
-    return {
-      width: window.innerWidth,
-      height: window.innerHeight,
-    };
-  }
+  const { currentUser, displayName } = useAuth()
 
   const handleLogout = () => {
     console.log("called logout");
     auth.signOut();
   };
-
-  useEffect(() => {
-    const updateDimension = () => {
-      setScreenSize(getCurrentDimension());
-      if (getCurrentDimension().width < 1000) {
-        status.setSidebarOpen(false);
-      } else {
-        status.setSidebarOpen(true);
-      }
-    };
-    window.addEventListener("resize", updateDimension);
-
-    return () => {
-      window.removeEventListener("resize", updateDimension);
-    };
-  }, [screenSize, status]);
 
 
   return (
@@ -96,11 +73,11 @@ function Navbar() {
       <div className="navbar-wrapper">
         <div className="navbar-leftsection">
           <Tooltip title="Collapse">
-            <IconButton onClick={handleOnClick}>
+            <IconButton onClick={toggleSidebar}>
               <MenuIcon />
             </IconButton>
           </Tooltip>
-          {screenSize.width > 768 && (
+          {!isMobile && (
             <div className="search-box" onClick={() => openDialog()}>
               <IconSearch className="search-iconn" size={28} />
               <span>Search..</span>
@@ -110,10 +87,7 @@ function Navbar() {
         </div>
 
         <div className="navbar-rightsection">
-
-
-
-          {screenSize.width > 768 && (
+          {!isMobile && (
             <Chip
               color="primary"
               sx={{ mr: 2, pl: "10px", pr: "10px" }}
@@ -128,7 +102,7 @@ function Navbar() {
             <Option value="2024-25">2024-25</Option>
           </Select>
 
-          {screenSize.width > 768 && (
+          {!isMobile && (
             <>
               <div className="rounded-bg">
                 <Tooltip title="Night Mode">
@@ -172,6 +146,7 @@ function Navbar() {
                   height: 32,
                   backgroundColor: "var(--bs-orange)",
                 }}
+
               >
                 {displayName ? displayName.charAt(0).toUpperCase() : "U"}
               </Avatar>
@@ -219,7 +194,7 @@ function Navbar() {
                   {displayName}
                 </Typography>
                 <Typography level="body-sm" sx={{ color: "text.secondary" }}>
-                  {userType}
+                  {currentUser?.email}
                 </Typography>
               </Stack>
 
