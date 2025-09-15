@@ -1,7 +1,5 @@
 import BreadCrumbsV2 from "components/Breadcrumbs/BreadCrumbsV2";
-import Navbar from "components/Navbar/Navbar";
-import LSPage from "components/Utils/LSPage";
-import PageContainer from "components/Utils/PageContainer";
+
 import { IconReport } from "@tabler/icons-react";
 import {
   Avatar,
@@ -179,16 +177,16 @@ const StudentsList = () => {
         studentsQuery =
           selectedSection === -1
             ? query(
-                collection(db, "STUDENTS"),
-                where("class", "==", selectedClass),
-                where("is_active", "==", true)
-              )
+              collection(db, "STUDENTS"),
+              where("class", "==", selectedClass),
+              where("is_active", "==", true)
+            )
             : query(
-                collection(db, "STUDENTS"),
-                where("class", "==", selectedClass),
-                where("section", "==", selectedSection),
-                where("is_active", "==", true)
-              );
+              collection(db, "STUDENTS"),
+              where("class", "==", selectedClass),
+              where("section", "==", selectedSection),
+              where("is_active", "==", true)
+            );
       }
 
       const studentSnapshot = await getDocs(studentsQuery);
@@ -218,8 +216,8 @@ const StudentsList = () => {
       setFilterChipLabel(
         selectedSection !== -1
           ? `Filter set for class ${getClassNameByValue(
-              selectedClass
-            )} and section ${selectedSection}`
+            selectedClass
+          )} and section ${selectedSection}`
           : `Filter set for class ${getClassNameByValue(selectedClass)}`
       );
       setFilterChip(true);
@@ -519,344 +517,342 @@ const StudentsList = () => {
   };
 
   return (
-    <PageContainer>
-      <Navbar />
-      <LSPage>
-        <BreadCrumbsV2 Icon={IconReport} Path="Reports/Students List" />
-        <br />
-        <Paper sx={{ p: "10px", mt: "8px" }}>
-          <Box>
-            <Typography level="title-md">Students List</Typography>
-          </Box>
-          <Stack direction="column" spacing={2}>
-            <Stack
-              direction="row"
-              spacing={2}
-              sx={{
-                justifyContent: "flex-end",
-                alignItems: "center",
-              }}
-            >
-              <Box>
-                <FormControl>
-                  <FormLabel>Class</FormLabel>
-                  <Select
-                    placeholder="choose class"
-                    value={selectedClass}
-                    onChange={(e, val) => val !== null && setSelectedClass(val)}
-                    sx={{ minWidth: 150 }}
-                  >
-                    <Option value={-1}>Select Class</Option>
-                    {SCHOOL_CLASSES.map((item) => (
-                      <Option key={item.id} value={item.value}>
-                        {item.title}
-                      </Option>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Box>
+    <>
 
-              <Box>
-                <FormControl>
-                  <FormLabel>Section</FormLabel>
-                  <Select
-                    placeholder="choose section"
-                    value={selectedSection}
-                    onChange={(e, val) =>
-                      val !== null && setSelectedSection(val)
-                    }
-                    disabled={selectedClass === -1}
-                    sx={{ minWidth: 150 }}
-                  >
-                    <Option value={-1}>All Sections</Option>
-                    {SCHOOL_SECTIONS.map((section) => (
-                      <Option
-                        key={`section-${section.value}`}
-                        value={section.value}
-                      >
-                        {section.title}
-                      </Option>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Box>
-
-              <Box>
-                <FormControl>
-                  <FormLabel>Sort By</FormLabel>
-                  <Select
-                    placeholder="Select sorting preference"
-                    value={sortingPreference}
-                    onChange={(e, val) =>
-                      handleSortingPreferenceChange(val || "")
-                    }
-                    sx={{ minWidth: 200 }}
-                  >
-                    <Option value="">None</Option>
-                    <Option value="student_name">Sort by Name</Option>
-                    <Option value="class_roll">Sort by Roll</Option>
-                    <Option value="admission_no">
-                      Sort by Admission Number
-                    </Option>
-                    <Option value="date_of_addmission">
-                      Sort by Admission Date
-                    </Option>
-                  </Select>
-                </FormControl>
-              </Box>
-
-              <Box>
-                <FormControl>
-                  <FormLabel>Sort Order</FormLabel>
-                  <Select
-                    placeholder="Select sort order"
-                    value={sortOrder}
-                    onChange={(e, val) => val && handleSortOrderChange(val)}
-                    disabled={!sortingPreference}
-                    sx={{ minWidth: 150 }}
-                  >
-                    <Option value="asc">Ascending</Option>
-                    <Option value="desc">Descending</Option>
-                  </Select>
-                </FormControl>
-              </Box>
-
-              <Box>
-                <Button onClick={handelFetchStudentDetails} sx={{ mt: 3 }}>
-                  Fetch Students
-                </Button>
-              </Box>
-            </Stack>
-
-            <Stack
-              direction="row"
-              spacing={2}
-              sx={{
-                justifyContent: "flex-end",
-                alignItems: "center",
-              }}
-            >
-              <Button
-                variant="outlined"
-                onClick={() => setColumnSelectionOpen(true)}
-              >
-                Select Columns
-              </Button>
-              <Button
-                disabled={students.length === 0}
-                onClick={handleGeneratePDF}
-              >
-                Generate PDF
-              </Button>
-              <Button
-                disabled={students.length === 0}
-                onClick={handleExportExcel}
-              >
-                Export Excel
-              </Button>
-            </Stack>
-          </Stack>
-        </Paper>
-
-        <Modal
-          open={columnSelectionOpen}
-          onClose={() => setColumnSelectionOpen(false)}
-        >
-          <ModalDialog
+      <BreadCrumbsV2 Icon={IconReport} Path="Reports/Students List" />
+      <br />
+      <Paper sx={{ p: "10px", mt: "8px" }}>
+        <Box>
+          <Typography level="title-md">Students List</Typography>
+        </Box>
+        <Stack direction="column" spacing={2}>
+          <Stack
+            direction="row"
+            spacing={2}
             sx={{
-              minWidth: 400,
-              maxWidth: "80vw",
-              maxHeight: "90vh",
+              justifyContent: "flex-end",
+              alignItems: "center",
             }}
           >
-            <DialogTitle>
-              <Stack
-                direction="row"
-                alignItems="center"
-                justifyContent="space-between"
+            <Box>
+              <FormControl>
+                <FormLabel>Class</FormLabel>
+                <Select
+                  placeholder="choose class"
+                  value={selectedClass}
+                  onChange={(e, val) => val !== null && setSelectedClass(val)}
+                  sx={{ minWidth: 150 }}
+                >
+                  <Option value={-1}>Select Class</Option>
+                  {SCHOOL_CLASSES.map((item) => (
+                    <Option key={item.id} value={item.value}>
+                      {item.title}
+                    </Option>
+                  ))}
+                </Select>
+              </FormControl>
+            </Box>
+
+            <Box>
+              <FormControl>
+                <FormLabel>Section</FormLabel>
+                <Select
+                  placeholder="choose section"
+                  value={selectedSection}
+                  onChange={(e, val) =>
+                    val !== null && setSelectedSection(val)
+                  }
+                  disabled={selectedClass === -1}
+                  sx={{ minWidth: 150 }}
+                >
+                  <Option value={-1}>All Sections</Option>
+                  {SCHOOL_SECTIONS.map((section) => (
+                    <Option
+                      key={`section-${section.value}`}
+                      value={section.value}
+                    >
+                      {section.title}
+                    </Option>
+                  ))}
+                </Select>
+              </FormControl>
+            </Box>
+
+            <Box>
+              <FormControl>
+                <FormLabel>Sort By</FormLabel>
+                <Select
+                  placeholder="Select sorting preference"
+                  value={sortingPreference}
+                  onChange={(e, val) =>
+                    handleSortingPreferenceChange(val || "")
+                  }
+                  sx={{ minWidth: 200 }}
+                >
+                  <Option value="">None</Option>
+                  <Option value="student_name">Sort by Name</Option>
+                  <Option value="class_roll">Sort by Roll</Option>
+                  <Option value="admission_no">
+                    Sort by Admission Number
+                  </Option>
+                  <Option value="date_of_addmission">
+                    Sort by Admission Date
+                  </Option>
+                </Select>
+              </FormControl>
+            </Box>
+
+            <Box>
+              <FormControl>
+                <FormLabel>Sort Order</FormLabel>
+                <Select
+                  placeholder="Select sort order"
+                  value={sortOrder}
+                  onChange={(e, val) => val && handleSortOrderChange(val)}
+                  disabled={!sortingPreference}
+                  sx={{ minWidth: 150 }}
+                >
+                  <Option value="asc">Ascending</Option>
+                  <Option value="desc">Descending</Option>
+                </Select>
+              </FormControl>
+            </Box>
+
+            <Box>
+              <Button onClick={handelFetchStudentDetails} sx={{ mt: 3 }}>
+                Fetch Students
+              </Button>
+            </Box>
+          </Stack>
+
+          <Stack
+            direction="row"
+            spacing={2}
+            sx={{
+              justifyContent: "flex-end",
+              alignItems: "center",
+            }}
+          >
+            <Button
+              variant="outlined"
+              onClick={() => setColumnSelectionOpen(true)}
+            >
+              Select Columns
+            </Button>
+            <Button
+              disabled={students.length === 0}
+              onClick={handleGeneratePDF}
+            >
+              Generate PDF
+            </Button>
+            <Button
+              disabled={students.length === 0}
+              onClick={handleExportExcel}
+            >
+              Export Excel
+            </Button>
+          </Stack>
+        </Stack>
+      </Paper>
+
+      <Modal
+        open={columnSelectionOpen}
+        onClose={() => setColumnSelectionOpen(false)}
+      >
+        <ModalDialog
+          sx={{
+            minWidth: 400,
+            maxWidth: "80vw",
+            maxHeight: "90vh",
+          }}
+        >
+          <DialogTitle>
+            <Stack
+              direction="row"
+              alignItems="center"
+              justifyContent="space-between"
+            >
+              <Typography level="h4">Configure Report Columns</Typography>
+              <IconButton
+                variant="plain"
+                onClick={() => setColumnSelectionOpen(false)}
               >
-                <Typography level="h4">Configure Report Columns</Typography>
-                <IconButton
-                  variant="plain"
-                  onClick={() => setColumnSelectionOpen(false)}
-                >
-                  <Close />
-                </IconButton>
-              </Stack>
-            </DialogTitle>
-            <DialogContent sx={{ overflow: "hidden" }}>
-              <Box>
-                <Typography
-                  level="body-sm"
-                  sx={{ mb: 1, color: "neutral.500" }}
-                >
-                  Select the columns you want to include in the report
-                </Typography>
-                <List
-                  sx={{
-                    maxHeight: "400px",
-                    overflowY: "auto",
-                    border: "1px solid",
-                    borderColor: "neutral.200",
-                    borderRadius: "sm",
-                    p: 1,
-                  }}
-                >
-                  <ListItem>
+                <Close />
+              </IconButton>
+            </Stack>
+          </DialogTitle>
+          <DialogContent sx={{ overflow: "hidden" }}>
+            <Box>
+              <Typography
+                level="body-sm"
+                sx={{ mb: 1, color: "neutral.500" }}
+              >
+                Select the columns you want to include in the report
+              </Typography>
+              <List
+                sx={{
+                  maxHeight: "400px",
+                  overflowY: "auto",
+                  border: "1px solid",
+                  borderColor: "neutral.200",
+                  borderRadius: "sm",
+                  p: 1,
+                }}
+              >
+                <ListItem>
+                  <Checkbox
+                    label="Select All"
+                    checked={selectedColumns.every((col) => col.selected)}
+                    onChange={() => {
+                      const allSelected = selectedColumns.every(
+                        (col) => col.selected
+                      );
+                      setSelectedColumns((cols) =>
+                        cols.map((col) => ({
+                          ...col,
+                          selected: !allSelected,
+                        }))
+                      );
+                    }}
+                  />
+                </ListItem>
+                {selectedColumns.map((col) => (
+                  <ListItem key={col.field}>
                     <Checkbox
-                      label="Select All"
-                      checked={selectedColumns.every((col) => col.selected)}
-                      onChange={() => {
-                        const allSelected = selectedColumns.every(
-                          (col) => col.selected
-                        );
-                        setSelectedColumns((cols) =>
-                          cols.map((col) => ({
-                            ...col,
-                            selected: !allSelected,
-                          }))
-                        );
-                      }}
+                      checked={col.selected}
+                      onChange={() => handleColumnToggle(col.field)}
+                      label={col.title}
                     />
                   </ListItem>
-                  {selectedColumns.map((col) => (
-                    <ListItem key={col.field}>
-                      <Checkbox
-                        checked={col.selected}
-                        onChange={() => handleColumnToggle(col.field)}
-                        label={col.title}
-                      />
-                    </ListItem>
-                  ))}
-                </List>
+                ))}
+              </List>
 
-                <Typography
-                  level="body-sm"
-                  sx={{ mt: 2, mb: 1, color: "neutral.500" }}
-                >
-                  Custom Fields
-                </Typography>
-                <List
-                  sx={{
-                    border: "1px solid",
-                    borderColor: "neutral.200",
-                    borderRadius: "sm",
-                    p: 1,
-                  }}
-                >
-                  {customFields.map((field) => (
-                    <ListItem key={field.field}>
-                      <Checkbox
-                        checked={
-                          selectedColumns.find(
-                            (col) => col.field === field.field
-                          )?.selected ?? true
-                        }
-                        label={field.title}
-                        onChange={() => handleColumnToggle(field.field)}
-                      />
-                      <IconButton
-                        size="sm"
-                        variant="plain"
-                        color="danger"
-                        onClick={() => handleRemoveCustomField(field.field)}
-                      >
-                        <Close />
-                      </IconButton>
-                    </ListItem>
-                  ))}
-                  <ListItem>
-                    <Stack
-                      direction="row"
-                      spacing={1}
-                      alignItems="center"
-                      sx={{ width: "100%" }}
+              <Typography
+                level="body-sm"
+                sx={{ mt: 2, mb: 1, color: "neutral.500" }}
+              >
+                Custom Fields
+              </Typography>
+              <List
+                sx={{
+                  border: "1px solid",
+                  borderColor: "neutral.200",
+                  borderRadius: "sm",
+                  p: 1,
+                }}
+              >
+                {customFields.map((field) => (
+                  <ListItem key={field.field}>
+                    <Checkbox
+                      checked={
+                        selectedColumns.find(
+                          (col) => col.field === field.field
+                        )?.selected ?? true
+                      }
+                      label={field.title}
+                      onChange={() => handleColumnToggle(field.field)}
+                    />
+                    <IconButton
+                      size="sm"
+                      variant="plain"
+                      color="danger"
+                      onClick={() => handleRemoveCustomField(field.field)}
                     >
-                      <Input
-                        size="sm"
-                        placeholder="Enter custom column name"
-                        value={newFieldName}
-                        onChange={(e) => setNewFieldName(e.target.value)}
-                        sx={{ flex: 1 }}
-                      />
-                      <IconButton
-                        size="sm"
-                        variant="solid"
-                        color="primary"
-                        onClick={handleAddCustomField}
-                      >
-                        <Add />
-                      </IconButton>
-                    </Stack>
+                      <Close />
+                    </IconButton>
                   </ListItem>
-                </List>
-              </Box>
-            </DialogContent>
-          </ModalDialog>
-        </Modal>
+                ))}
+                <ListItem>
+                  <Stack
+                    direction="row"
+                    spacing={1}
+                    alignItems="center"
+                    sx={{ width: "100%" }}
+                  >
+                    <Input
+                      size="sm"
+                      placeholder="Enter custom column name"
+                      value={newFieldName}
+                      onChange={(e) => setNewFieldName(e.target.value)}
+                      sx={{ flex: 1 }}
+                    />
+                    <IconButton
+                      size="sm"
+                      variant="solid"
+                      color="primary"
+                      onClick={handleAddCustomField}
+                    >
+                      <Add />
+                    </IconButton>
+                  </Stack>
+                </ListItem>
+              </List>
+            </Box>
+          </DialogContent>
+        </ModalDialog>
+      </Modal>
 
-        {loading && <LinearProgress sx={{ mt: 2 }} />}
+      {loading && <LinearProgress sx={{ mt: 2 }} />}
 
-        {filterChip && (
-          <Stack direction="row" spacing={1} mt={2} mb={1}>
-            <Chip
-              color="primary"
-              variant="soft"
-              endDecorator={
-                <Close onClick={handleFilterReset} sx={{ cursor: "pointer" }} />
-              }
-            >
-              {filterChipLabel}
+      {filterChip && (
+        <Stack direction="row" spacing={1} mt={2} mb={1}>
+          <Chip
+            color="primary"
+            variant="soft"
+            endDecorator={
+              <Close onClick={handleFilterReset} sx={{ cursor: "pointer" }} />
+            }
+          >
+            {filterChipLabel}
+          </Chip>
+          <Chip color="primary" variant="soft">
+            Total Students: {students.length}
+          </Chip>
+          {sortingPreference && (
+            <Chip color="success" variant="soft">
+              Sorted by: {sortingPreference.replace(/_/g, " ")} (
+              {sortOrder === "asc" ? "Ascending" : "Descending"})
             </Chip>
-            <Chip color="primary" variant="soft">
-              Total Students: {students.length}
-            </Chip>
-            {sortingPreference && (
-              <Chip color="success" variant="soft">
-                Sorted by: {sortingPreference.replace(/_/g, " ")} (
-                {sortOrder === "asc" ? "Ascending" : "Descending"})
-              </Chip>
-            )}
-          </Stack>
-        )}
+          )}
+        </Stack>
+      )}
 
-        {students.length > 0 && (
-          <Box sx={{ mt: 2 }}>
-            <MaterialTable
-              style={{
-                display: "grid",
-                overflow: "hidden",
-                border: "1px solid oklch(.905 .013 255.508)",
-                borderRadius: "10px",
-                boxShadow: "none",
-              }}
-              columns={getSelectedColumnsConfig()}
-              data={students}
-              title="Students Data"
-              options={{
-                grouping: true,
-                pageSizeOptions: [5, 10, 20, 50, 100],
-                pageSize: 10,
-                headerStyle: {
-                  backgroundColor: "#5d87ff",
-                  color: "#FFF",
+      {students.length > 0 && (
+        <Box sx={{ mt: 2 }}>
+          <MaterialTable
+            style={{
+              display: "grid",
+              overflow: "hidden",
+              border: "1px solid oklch(.905 .013 255.508)",
+              borderRadius: "10px",
+              boxShadow: "none",
+            }}
+            columns={getSelectedColumnsConfig()}
+            data={students}
+            title="Students Data"
+            options={{
+              grouping: true,
+              pageSizeOptions: [5, 10, 20, 50, 100],
+              pageSize: 10,
+              headerStyle: {
+                backgroundColor: "#5d87ff",
+                color: "#FFF",
+              },
+              exportMenu: [
+                {
+                  label: "Export PDF",
+                  exportFunc: handleGeneratePDF,
                 },
-                exportMenu: [
-                  {
-                    label: "Export PDF",
-                    exportFunc: handleGeneratePDF,
-                  },
-                  {
-                    label: "Export Excel",
-                    exportFunc: handleExportExcel,
-                  },
-                ],
-              }}
-            />
-          </Box>
-        )}
-      </LSPage>
-    </PageContainer>
+                {
+                  label: "Export Excel",
+                  exportFunc: handleExportExcel,
+                },
+              ],
+            }}
+          />
+        </Box>
+      )}
+    </>
   );
 };
 

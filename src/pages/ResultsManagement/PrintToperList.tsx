@@ -3,9 +3,7 @@ import { Box, Button, Chip, Option, Select, Stack, Typography } from "@mui/joy";
 import { Paper } from "@mui/material";
 import { IconBrandTinder } from "@tabler/icons-react";
 import BreadCrumbsV2 from "components/Breadcrumbs/BreadCrumbsV2";
-import Navbar from "components/Navbar/Navbar";
-import LSPage from "components/Utils/LSPage";
-import PageContainer from "components/Utils/PageContainer";
+
 import { SCHOOL_CLASSES } from "config/schoolConfig";
 import { useEffect, useState } from "react";
 import { enqueueSnackbar } from "notistack";
@@ -170,7 +168,7 @@ function PrintTopperList() {
       const studentsQuery = query(
         collection(db, "STUDENTS"),
         where("class", "==", selectedClass)
-        ,where("is_active", "==", true)
+        , where("is_active", "==", true)
       );
       const studentsSnap = await getDocs(studentsQuery);
 
@@ -219,7 +217,7 @@ function PrintTopperList() {
                 item.paperId === "DRAWING"
                   ? 0
                   : Number(item.theory) +
-                    Number(item.practical);
+                  Number(item.practical);
 
               return total + obtainedMarkCalculated;
             }, 0);
@@ -255,7 +253,7 @@ function PrintTopperList() {
         if (
           index > 0 &&
           student.marksObtained ===
-            markSheetTempListExtended[index - 1].marksObtained
+          markSheetTempListExtended[index - 1].marksObtained
         ) {
           student.rankObtained =
             markSheetTempListExtended[index - 1].rankObtained;
@@ -278,74 +276,72 @@ function PrintTopperList() {
   };
 
   return (
-    <PageContainer>
-      <Navbar />
-      <LSPage>
-        <BreadCrumbsV2
-          Icon={IconBrandTinder}
-          Path="School Results/Print Topper List"
-        />
-        <Paper sx={{ p: "10px", mt: "8px" }}>
-          <Stack
-            direction="row"
-            alignItems="center"
-            justifyContent="space-between"
-          >
-            <Box>
-              <Typography level="title-md">Print Toper List</Typography>
-            </Box>
-            <Stack direction="row" alignItems="center" gap={1.5}>
-              <Select
-                placeholder="choose class"
-                onChange={(e, val) => setSelectedClass(val)}
-              >
-                {SCHOOL_CLASSES.map((item) => {
-                  return <Option value={item.value}>{item.title}</Option>;
-                })}
-              </Select>
-              <Select
-                placeholder="choose exam"
-                value={selectedExam}
-                onChange={(e, val) => setSelectedExam(val)}
-              >
-                {examsList &&
-                  examsList.map((item, key) => {
-                    return (
-                      <Option value={item.examId}>{item.examTitle}</Option>
-                    );
-                  })}
-              </Select>
-              <Button
-                sx={{ ml: "8px" }}
-                startDecorator={<Print />}
-                loading={isGeneratingRank}
-                onClick={printTopperStudents}
-              >
-                Print Topper List
-              </Button>
-            </Stack>
-          </Stack>
-        </Paper>
-        <br />
+    <>
 
-        {pdfUrl && (
-          <>
-            <Chip sx={{ mt: "8px", mb: "8px" }}>
-              Total student count :{studentRankDetails.length}
-            </Chip>
-            <Paper sx={{ height: "100vh" }}>
-              <iframe
-                src={pdfUrl}
-                title="PDF Viewer"
-                width="100%"
-                height="100%"
-                frameBorder={0}
-              />
-            </Paper>
-          </>
-        )}
-      </LSPage>
-    </PageContainer>
+      <BreadCrumbsV2
+        Icon={IconBrandTinder}
+        Path="School Results/Print Topper List"
+      />
+      <Paper sx={{ p: "10px", mt: "8px" }}>
+        <Stack
+          direction="row"
+          alignItems="center"
+          justifyContent="space-between"
+        >
+          <Box>
+            <Typography level="title-md">Print Toper List</Typography>
+          </Box>
+          <Stack direction="row" alignItems="center" gap={1.5}>
+            <Select
+              placeholder="choose class"
+              onChange={(e, val) => setSelectedClass(val)}
+            >
+              {SCHOOL_CLASSES.map((item) => {
+                return <Option value={item.value}>{item.title}</Option>;
+              })}
+            </Select>
+            <Select
+              placeholder="choose exam"
+              value={selectedExam}
+              onChange={(e, val) => setSelectedExam(val)}
+            >
+              {examsList &&
+                examsList.map((item, key) => {
+                  return (
+                    <Option value={item.examId}>{item.examTitle}</Option>
+                  );
+                })}
+            </Select>
+            <Button
+              sx={{ ml: "8px" }}
+              startDecorator={<Print />}
+              loading={isGeneratingRank}
+              onClick={printTopperStudents}
+            >
+              Print Topper List
+            </Button>
+          </Stack>
+        </Stack>
+      </Paper>
+      <br />
+
+      {pdfUrl && (
+        <>
+          <Chip sx={{ mt: "8px", mb: "8px" }}>
+            Total student count :{studentRankDetails.length}
+          </Chip>
+          <Paper sx={{ height: "100vh" }}>
+            <iframe
+              src={pdfUrl}
+              title="PDF Viewer"
+              width="100%"
+              height="100%"
+              frameBorder={0}
+            />
+          </Paper>
+        </>
+      )}
+    </>
   );
 }
 

@@ -1,4 +1,4 @@
-import { useContext, useEffect } from "react";
+import {  useEffect } from "react";
 import {
   Button, Box
 } from "@mui/material";
@@ -6,7 +6,6 @@ import {
   Stack, FormControl, FormLabel, Input, FormHelperText,
   Divider, Typography, Chip, ChipDelete
 } from "@mui/joy";
-import SideBarContext from "context/SidebarContext";
 import { useFirebase } from "context/firebaseContext";
 import { collection, doc, getDoc, serverTimestamp, setDoc } from "firebase/firestore";
 import { PaperType } from "pages/MasterData/AddSubjects";
@@ -64,7 +63,6 @@ export type ExamFormValues = z.infer<typeof examSchema>;
 
 
 function SetExamDetails({ setActiveStep }: any) {
-  const { setSidebarOpen } = useContext(SideBarContext);
   const { db } = useFirebase();
   const navigate = useNavigate();
   const {
@@ -89,9 +87,7 @@ function SetExamDetails({ setActiveStep }: any) {
     name: "papers"
   });
 
-  useEffect(() => {
-    setSidebarOpen(false);
-  }, [setSidebarOpen]);
+  
 
   useEffect(() => {
     const fetchPapers = async () => {

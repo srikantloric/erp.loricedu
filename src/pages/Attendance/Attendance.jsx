@@ -1,11 +1,8 @@
 import React from "react";
 import Sidebar from "../../components/Sidebar/Sidebar";
-import Navbar from "../../components/Navbar/Navbar";
 
-import LSPage from "../../components/Utils/LSPage";
 import { Breadcrumbs, Divider, Paper } from "@mui/material";
 import { Link } from "react-router-dom";
-import PageContainer from "../../components/Utils/PageContainer";
 import FingerprintIcon from "@mui/icons-material/Fingerprint";
 import GrainIcon from "@mui/icons-material/Grain";
 import SaveIcon from "@mui/icons-material/Save";
@@ -52,9 +49,7 @@ function Attendance() {
 
   return (
     <>
-      <PageContainer>
-        <Navbar />
-        <LSPage>
+     
           <div
             style={{
               backgroundColor: "var(--bs-gray-201)",
@@ -256,8 +251,7 @@ function Attendance() {
               </>
             ) : null}
           </Paper>
-        </LSPage>
-      </PageContainer>
+
     </>
   );
 }

@@ -1,8 +1,6 @@
 import { Box, Button, FormControl, FormLabel, Input } from "@mui/joy";
 import BreadCrumbsV2 from "components/Breadcrumbs/BreadCrumbsV2";
-import Navbar from "components/Navbar/Navbar";
-import LSPage from "components/Utils/LSPage";
-import PageContainer from "components/Utils/PageContainer";
+
 import { IconReport } from "@tabler/icons-react";
 import { useState } from "react";
 import { collection, getDocs, query, where } from "firebase/firestore";
@@ -18,7 +16,7 @@ export default function FacultyDailyAttendanceReport() {
     const handleGenerateReport = async () => {
         if (!selectedDate) return;
 
-        console.log("selected date",selectedDate)
+        console.log("selected date", selectedDate)
 
         setLoading(true);
         const db = await getFirestoreInstance();
@@ -96,34 +94,31 @@ export default function FacultyDailyAttendanceReport() {
     };
 
     return (
-        <PageContainer>
-            <Navbar />
-            <LSPage>
-                <BreadCrumbsV2 Icon={IconReport} Path="Faculty Daily Attendance Report" />
-                <Box sx={{ maxWidth: 400, mt: 4 }}>
-                    <FormControl>
-                        <FormLabel>Select Date</FormLabel>
-                        <Input
-                            type="date"
-                            value={selectedDate}
-                            onChange={(e) => setSelectedDate(e.target.value)}
-                            slotProps={{
-                                input: {
-                                    min: "2020-01-01",
-                                }
-                            }}
-                        />
-                    </FormControl>
-                    <Button
-                        sx={{ mt: 2 }}
-                        onClick={handleGenerateReport}
-                        disabled={!selectedDate || loading}
-                        loading={loading}
-                    >
-                        {loading ? "Generating..." : "Generate Report"}
-                    </Button>
-                </Box>
-            </LSPage>
-        </PageContainer>
+        <>
+            <BreadCrumbsV2 Icon={IconReport} Path="Faculty Daily Attendance Report" />
+            <Box sx={{ maxWidth: 400, mt: 4 }}>
+                <FormControl>
+                    <FormLabel>Select Date</FormLabel>
+                    <Input
+                        type="date"
+                        value={selectedDate}
+                        onChange={(e) => setSelectedDate(e.target.value)}
+                        slotProps={{
+                            input: {
+                                min: "2020-01-01",
+                            }
+                        }}
+                    />
+                </FormControl>
+                <Button
+                    sx={{ mt: 2 }}
+                    onClick={handleGenerateReport}
+                    disabled={!selectedDate || loading}
+                    loading={loading}
+                >
+                    {loading ? "Generating..." : "Generate Report"}
+                </Button>
+            </Box>
+        </>
     );
 }

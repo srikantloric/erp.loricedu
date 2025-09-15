@@ -1,6 +1,4 @@
-import Navbar from "components/Navbar/Navbar"
-import LSPage from "components/Utils/LSPage"
-import PageContainer from "components/Utils/PageContainer"
+
 import { Link, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { collection, query, where, getDocs, doc, getDoc } from "firebase/firestore";
@@ -153,53 +151,51 @@ function AllocatedStudentsLocations() {
 
 
     return (
-        <PageContainer>
-            <Navbar />
-            <LSPage>
-                <PageHeaderWithHelpButton title="Allocated Students" />
+        <>
 
-                {loading &&
-                    <LinearProgress sx={{ mt: 2 }} />
-                }
-                <Box sx={{ border: "1px solid oklch(.900 .013 255.508)", borderRadius: "10px", padding: "2px", mt: 1 }}>
-                    <MaterialTable
-                        style={{
-                            display: "grid", overflow: "hidden", boxShadow: "none"
-                        }}
-                        columns={columnMat}
-                        data={students}
-                        title={`Details of students allocated to the ${locationDetails?.pickupPointName} (${students.length})`}
-                        options={{
-                            padding: 'dense',
+            <PageHeaderWithHelpButton title="Allocated Students" />
 
-                            headerStyle: {
-                                backgroundColor: "#5d87ff",
-                                color: "#FFF",
-                                paddingLeft: "1rem",
-                                paddingRight: "1rem",
-                            },
-                            actionsColumnIndex: -1,
-                            exportAllData: true,
-                            exportMenu: [
-                                {
-                                    label: 'Export PDF',
-                                    exportFunc: (cols, data) => {
-                                        ExportPdf(cols, data, `Students Allocated to ${locationDetails?.pickupPointName} (${students.length})`);
-                                    }
-                                },
-                                {
-                                    label: 'Export CSV',
-                                    exportFunc: (cols, data) => {
-                                        ExportCsv(cols, data, `Students Allocated to ${locationDetails?.pickupPointName} (${students.length})`);
-                                    }
+            {loading &&
+                <LinearProgress sx={{ mt: 2 }} />
+            }
+            <Box sx={{ border: "1px solid oklch(.900 .013 255.508)", borderRadius: "10px", padding: "2px", mt: 1 }}>
+                <MaterialTable
+                    style={{
+                        display: "grid", overflow: "hidden", boxShadow: "none"
+                    }}
+                    columns={columnMat}
+                    data={students}
+                    title={`Details of students allocated to the ${locationDetails?.pickupPointName} (${students.length})`}
+                    options={{
+                        padding: 'dense',
+
+                        headerStyle: {
+                            backgroundColor: "#5d87ff",
+                            color: "#FFF",
+                            paddingLeft: "1rem",
+                            paddingRight: "1rem",
+                        },
+                        actionsColumnIndex: -1,
+                        exportAllData: true,
+                        exportMenu: [
+                            {
+                                label: 'Export PDF',
+                                exportFunc: (cols, data) => {
+                                    ExportPdf(cols, data, `Students Allocated to ${locationDetails?.pickupPointName} (${students.length})`);
                                 }
-                            ]
-                        }}
+                            },
+                            {
+                                label: 'Export CSV',
+                                exportFunc: (cols, data) => {
+                                    ExportCsv(cols, data, `Students Allocated to ${locationDetails?.pickupPointName} (${students.length})`);
+                                }
+                            }
+                        ]
+                    }}
 
-                    />
-                </Box>
-            </LSPage>
-        </PageContainer>
+                />
+            </Box>
+        </>
     )
 }
 

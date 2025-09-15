@@ -11,9 +11,7 @@ import {
 import { Paper } from "@mui/material";
 import { IconBrandTinder } from "@tabler/icons-react";
 import BreadCrumbsV2 from "components/Breadcrumbs/BreadCrumbsV2";
-import Navbar from "components/Navbar/Navbar";
-import LSPage from "components/Utils/LSPage";
-import PageContainer from "components/Utils/PageContainer";
+
 import { SCHOOL_CLASSES } from "config/schoolConfig";
 import { useEffect, useState } from "react";
 import { enqueueSnackbar } from "notistack";
@@ -135,7 +133,7 @@ function PrintRankList() {
       setIsGeneratingRank(true);
 
       // Fetch all students in the selected class
-      const studentsQuery = query(collection(db, "STUDENTS"), where("class", "==", selectedClass),where("is_active", "==", true));
+      const studentsQuery = query(collection(db, "STUDENTS"), where("class", "==", selectedClass), where("is_active", "==", true));
       const studentsSnap = await getDocs(studentsQuery);
 
       if (studentsSnap.empty) {
@@ -158,7 +156,7 @@ function PrintRankList() {
         paper.classes.includes(`${selectedClass}`)
       ) || [];
 
- 
+
 
       const fullMarks: Record<string, number> = {};
       examPapers.forEach((paper) => {
@@ -262,77 +260,73 @@ function PrintRankList() {
   };
 
   return (
-    <PageContainer>
-      <Navbar />
-      <LSPage>
-        <BreadCrumbsV2
-          Icon={IconBrandTinder}
-          Path="School Results/Print Rank List"
-        />
-        <Paper sx={{ p: "10px", mt: "8px" }}>
-          <Stack
-            direction="row"
-            alignItems="center"
-            justifyContent="space-between"
-          >
-            <Box>
-              <Typography level="title-md">Print Rank List</Typography>
-            </Box>
-            <Stack direction="row" alignItems="center" gap={1.5}>
-              <Select
-                placeholder="choose class"
-                onChange={(e, val) => setSelectedClass(val)}
-              >
-                {SCHOOL_CLASSES.map((item) => {
-                  return <Option value={item.value}>{item.title}</Option>;
+    <>
+      <BreadCrumbsV2
+        Icon={IconBrandTinder}
+        Path="School Results/Print Rank List"
+      />
+      <Paper sx={{ p: "10px", mt: "8px" }}>
+        <Stack
+          direction="row"
+          alignItems="center"
+          justifyContent="space-between"
+        >
+          <Box>
+            <Typography level="title-md">Print Rank List</Typography>
+          </Box>
+          <Stack direction="row" alignItems="center" gap={1.5}>
+            <Select
+              placeholder="choose class"
+              onChange={(e, val) => setSelectedClass(val)}
+            >
+              {SCHOOL_CLASSES.map((item) => {
+                return <Option value={item.value}>{item.title}</Option>;
+              })}
+            </Select>
+            <Select
+              placeholder="choose exam"
+              value={selectedExam}
+              onChange={(e, val) => setSelectedExam(val)}
+            >
+              {examsList &&
+                examsList.map((item, key) => {
+                  return (
+                    <Option value={item.examId}>{item.examTitle}</Option>
+                  );
                 })}
-              </Select>
-              <Select
-                placeholder="choose exam"
-                value={selectedExam}
-                onChange={(e, val) => setSelectedExam(val)}
-              >
-                {examsList &&
-                  examsList.map((item, key) => {
-                    return (
-                      <Option value={item.examId}>{item.examTitle}</Option>
-                    );
-                  })}
-              </Select>
-              <Button
-                sx={{ ml: "8px" }}
-                startDecorator={<Print />}
-                loading={isGeneratingRank}
-                onClick={printStudentRank}
-              >
-                Print Rank List
-              </Button>
-            </Stack>
+            </Select>
+            <Button
+              sx={{ ml: "8px" }}
+              startDecorator={<Print />}
+              loading={isGeneratingRank}
+              onClick={printStudentRank}
+            >
+              Print Rank List
+            </Button>
           </Stack>
-        </Paper>
-        <br />
+        </Stack>
+      </Paper>
+      <br />
 
-        {
-          pdfUrl &&
-          <>
-            <Chip sx={{ mt: "8px", mb: "8px" }}>
-              Total student count :{studentRankDetails.length}
-            </Chip>
-            <Paper sx={{ height: "100vh" }}>
-              <iframe
-                src={pdfUrl}
-                title="PDF Viewer"
-                width="100%"
-                height="100%"
-                frameBorder={0}
-              />
-            </Paper>
-          </>
+      {
+        pdfUrl &&
+        <>
+          <Chip sx={{ mt: "8px", mb: "8px" }}>
+            Total student count :{studentRankDetails.length}
+          </Chip>
+          <Paper sx={{ height: "100vh" }}>
+            <iframe
+              src={pdfUrl}
+              title="PDF Viewer"
+              width="100%"
+              height="100%"
+              frameBorder={0}
+            />
+          </Paper>
+        </>
 
-        }
-
-      </LSPage>
-    </PageContainer>
+      }
+    </>
   );
 }
 

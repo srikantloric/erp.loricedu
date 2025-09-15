@@ -1,21 +1,18 @@
 
 import {
-  EMAIL_ICON,
-  LOGO_BASE_64,
-  PHONE_ICON,
   POPPINS_BOLD,
   POPPINS_REGULAR,
   POPPINS_SEMIBOLD,
 } from "utilities/Base64Url";
 
-import {jsPDF} from "jspdf";
+import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import { BalanceSheetType } from "types/student";
 import { getAppConfig } from "hooks/getAppConfig";
 
 
 
-export const BalanceSheet = async (
+export const GenerateBalanceSheet = async (
   transData: BalanceSheetType[]
 ): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -29,7 +26,8 @@ export const BalanceSheet = async (
       schoolName: SCHOOL_NAME,
       schoolAddress: SCHOOL_ADDRESS,
       schoolContact: SCHOOL_CONTACT,
-      schoolEmail: SCHOOL_EMAIL,
+      schoolLogoBase64: SCHOOL_LOGO_BASE64,
+      schoolWebsite:SCHOOL_WEBSITE
     } = config;
 
     try {
@@ -39,15 +37,18 @@ export const BalanceSheet = async (
         format: "a4",
 
       });
-      // const autotable = new autoTable(doc);
 
+
+      //Page Setup
       const cardWidth = (doc.internal.pageSize.getWidth() - 15);
       const cardHeight = (doc.internal.pageSize.getHeight() - 15);
+
+      //Margin
       const margin = 2;
 
       const x = 5 + margin;
       const y = 5 + margin;
-      // const y=cardHeight+margin;
+
 
 
       doc.setTextColor("#000");
@@ -61,101 +62,102 @@ export const BalanceSheet = async (
 
       doc.addFileToVFS("Poppins-Semibold", POPPINS_SEMIBOLD);
       doc.addFont("Poppins-Semibold", "Poppins", "semibold");
-      ///Start of PDF Design
+      
 
-      doc.addImage(LOGO_BASE_64, x + 8, y+2, 30, 25);
+      //HEADER START
+      const schoolHeaderStartX = x + 40;
+      const schoolHeaderStartY = y + 12;
+      
+      doc.addImage(SCHOOL_LOGO_BASE64, x + 5, y + 5, 27, 25);
 
-      const schoolHeaderStartX = x + 50;
-      const schoolHeaderStartY = y + 5;
 
-      doc.setFontSize(15);
+      doc.setFontSize(22);
       doc.setFont("Poppins", "bold");
-      doc.text(SCHOOL_NAME, schoolHeaderStartX + 10, schoolHeaderStartY);
+      doc.setTextColor("#0000");
+
+      doc.text(
+        SCHOOL_NAME.toUpperCase(),
+        schoolHeaderStartX,
+        schoolHeaderStartY,
+        { align: "left" }
+      );
 
       doc.setFontSize(8);
       doc.setFont("Poppins", "semibold");
+      const tagline = "An English Medium School Based on CBSE Curriculum";
       doc.text(
-        "An English Medium School Based on CBSE Syllabus",
-        schoolHeaderStartX + 7,
-        schoolHeaderStartY + 5
+        tagline,
+        schoolHeaderStartX,
+        schoolHeaderStartY + 5,
+        { align: "left" }
       );
 
-      const schoolContactDetailStartY = schoolHeaderStartY + 2;
-      // const schoolContactDetailStartX = schoolHeaderStartX - 5;
+      const schoolContactDetailStartY = schoolHeaderStartY + 5;
+      doc.setFontSize(8);
+      doc.setFont("Poppins", "normal");
+      const address = "Address: " + SCHOOL_ADDRESS;
+      doc.text(
+        address,
+        schoolHeaderStartX,
+        schoolContactDetailStartY + 5,
+        { align: "left" }
+      );
+
+      const contact = "Phone: " + SCHOOL_CONTACT;
+      doc.text(
+        contact,
+        schoolHeaderStartX,
+        schoolContactDetailStartY + 9
+      );
+
+      const websiteName = "" + SCHOOL_WEBSITE;
+      doc.text(
+        websiteName,
+        schoolHeaderStartX,
+        schoolContactDetailStartY + 13
+      );
+
+      doc.setTextColor("#135296")
+      doc.setFontSize(14)
+      doc.setFont("Poppins", "semibold");
+      doc.text("(BALANCE SHEET REPORT)", cardWidth, 25, { align: "right" })
 
       const cardXStartPoint = x;
       const cardXEndPoint = cardWidth;
 
-      doc.setFillColor("#cbc9c9");
-      doc.rect(
-        schoolHeaderStartX + 5,
-        schoolContactDetailStartY + 5,
-        cardXEndPoint - 140,
-        4,
-        "F"
-      );
-
-      doc.setFontSize(6);
-      doc.setFont("Poppins", "normal");
-      doc.text(
-        SCHOOL_ADDRESS,
-        schoolHeaderStartX + 12,
-        schoolContactDetailStartY + 7.5
-      );
-
-      //school contact
-      doc.addImage(
-        PHONE_ICON,
-        schoolHeaderStartX + 9,
-        schoolContactDetailStartY + 10,
-        3,
-        3
-      );
-
-      doc.text(
-        SCHOOL_CONTACT,
-        schoolHeaderStartX + 13,
-        schoolContactDetailStartY + 12
-      );
-
-      //school email
-      doc.addImage(
-        EMAIL_ICON,
-        schoolHeaderStartX + 34,
-        schoolContactDetailStartY + 10,
-        3,
-        3
-      );
-
-      doc.text(
-        SCHOOL_EMAIL,
-        schoolHeaderStartX + 38,
-        schoolContactDetailStartY + 12
-      );
-
+      // Title section
       doc.setFillColor("#939393");
-
-      doc.rect(cardXStartPoint, y + 26, cardXEndPoint, 6, "F");
-
+      doc.rect(cardXStartPoint, y + 35, cardXEndPoint, 6, "F");
       doc.setFont("Poppins", "semibold");
       doc.setFontSize(9);
       doc.setTextColor("#fff");
-      doc.text("BALANCE SHEET", cardWidth / 2, y + 30);
 
+      let headerText = "Balance Sheet"
 
+      const textWidth = doc.getTextWidth(headerText);
+      const centerX = (cardWidth - textWidth) / 2;
+      doc.text(headerText, x + centerX, y + 39);
+      //HEADER END
 
-      //Again Start
+      //FOOTER START
+      const footerText = "Report generated usign LoricEdu Software |" + new Date().toLocaleString().toString()
+      doc.setTextColor("#000")
+      doc.setFontSize(6)
+      doc.text(footerText, doc.internal.pageSize.getWidth() / 2, doc.internal.pageSize.getHeight() - 4, { align: "center" });
+      //FOOTER END
+
+      //START OF BODY
       let bodyX = x + 10;
       let bodyY = y + 35;
       var i = 0, j = 0;
       let cellx = bodyX
       let celly = bodyY + 5;
-      let cellWidth = cardWidth / 3 -7;
+      let cellWidth = cardWidth / 3 - 7;
       doc.setLineWidth(0.2);
       doc.setDrawColor("#000");
 
       for (i = 1; i <= 12; i++) {
-        doc.line(bodyX, bodyY + 5, cardWidth-4.5, bodyY+5);
+        doc.line(bodyX, bodyY + 5, cardWidth - 4.5, bodyY + 5);
         (i % 4 === 0) ? (bodyY += 10) : (bodyY += 5);
       }
       //Vertical Line
@@ -184,12 +186,12 @@ export const BalanceSheet = async (
 
       // Set up the table parameters
       let tableX = x + 10;
-      let tableY = y + 43.5;
+      let tableY = y + 50;
 
       doc.setFont("Poppins", "bold");
       doc.setFontSize(12);
       doc.setTextColor("#c50000");
-      doc.text("Students Report:", cardWidth/2, tableY - 6.5);
+      doc.text("Students Report:", cardWidth / 2, tableY - 6.5);
 
       doc.setLineWidth(0.5);
       doc.setDrawColor("#000");
@@ -200,12 +202,12 @@ export const BalanceSheet = async (
 
 
       for (i; i < data1.length; i += 3) {
-        var x1 = tableX+5;
+        var x1 = tableX + 5;
         doc.text(data1[i][0], x1, tableY);
         doc.text(data1[i][1], x1 + 60, tableY);
         // doc.rect(x1-2, tableY-5, x1+50, 7);
         if (data1[i + 1]) {
-          x1+=cellWidth;
+          x1 += cellWidth;
           doc.text(data1[i + 1][0], x1, tableY);
           doc.text(data1[i + 1][1], x1 + 60, tableY);
           // doc.rect(x1+73, tableY-5, x1+55, 7);
@@ -213,8 +215,8 @@ export const BalanceSheet = async (
           console.log("Data ended");
         }
         if (data1[i + 2]) {
-          x1+=cellWidth;
-          doc.text(data1[i + 2][0], x1 , tableY);
+          x1 += cellWidth;
+          doc.text(data1[i + 2][0], x1, tableY);
           doc.text(data1[i + 2][1], x1 + 60, tableY);
           // doc.rect(x1+155, tableY-5, x1+55, 7);
         } else {
@@ -229,7 +231,7 @@ export const BalanceSheet = async (
       doc.setFont("Poppins", "bold");
       doc.setFontSize(12);
       doc.setTextColor("#c50000");
-      doc.text("Faculties Report:", cardWidth/2, tableY - 6.5);
+      doc.text("Faculties Report:", cardWidth / 2, tableY - 6.5);
 
       const data2 = [
         ['Total Teachers:', "16(+1)"],
@@ -247,21 +249,21 @@ export const BalanceSheet = async (
       i = 0;
 
       for (i; i < data2.length; i += 3) {
-        var x1x = tableX+5;
+        var x1x = tableX + 5;
         doc.text(data2[i][0], x1x, tableY);
         doc.text(data2[i][1], x1x + 60, tableY);
         // doc.rect(x1-2, tableY-5, x1+50, 7);
         if (data2[i + 1]) {
-          x1x+=cellWidth;
-          doc.text(data2[i + 1][0], x1x , tableY);
-          doc.text(data2[i + 1][1], x1x +60, tableY);
+          x1x += cellWidth;
+          doc.text(data2[i + 1][0], x1x, tableY);
+          doc.text(data2[i + 1][1], x1x + 60, tableY);
           // doc.rect(x1+73, tableY-5, x1+55, 7);
         } else {
           console.log("Data ended");
         }
         if (data2[i + 2]) {
-          x1x+=cellWidth;
-          doc.text(data2[i + 2][0], x1x , tableY);
+          x1x += cellWidth;
+          doc.text(data2[i + 2][0], x1x, tableY);
           doc.text(data2[i + 2][1], x1x + 60, tableY);
           // doc.rect(x1+155, tableY-5, x1+55, 7);
         } else {
@@ -276,7 +278,7 @@ export const BalanceSheet = async (
       doc.setFont("Poppins", "bold");
       doc.setFontSize(12);
       doc.setTextColor("#c50000");
-      doc.text("Fee Report:", cardWidth/2, tableY - 6.5);
+      doc.text("Fee Report:", cardWidth / 2, tableY - 6.5);
 
       const data3 = [
         ['Total Slips:', "56(+10)"],
@@ -295,20 +297,20 @@ export const BalanceSheet = async (
       i = 0;
 
       for (i; i < data3.length; i += 3) {
-        var x1 = tableX+5;
+        var x1 = tableX + 5;
         doc.text(data3[i][0], x1, tableY);
         doc.text(data3[i][1], x1 + 60, tableY);
         // doc.rect(x1-2, tableY-5, x1+50, 7);
         if (data3[i + 1]) {
-          x1+=cellWidth;
-          doc.text(data3[i + 1][0], x1 , tableY);
+          x1 += cellWidth;
+          doc.text(data3[i + 1][0], x1, tableY);
           doc.text(data3[i + 1][1], x1 + 60, tableY);
           // doc.rect(x1+73, tableY-5, x1+55, 7);
         } else {
           console.log("Data ended");
         }
         if (data3[i + 2]) {
-          x1+=cellWidth;
+          x1 += cellWidth;
           doc.text(data3[i + 2][0], x1, tableY);
           doc.text(data3[i + 2][1], x1 + 60, tableY);
           // doc.rect(x1+155, tableY-5, x1+55, 7);
@@ -329,22 +331,22 @@ export const BalanceSheet = async (
         ['Today Con. Count:', "2"]
       ];
 
-      const data5Head=[['Date', 'Opening', 'Addition', 'Receiving','Balance']];
+      const data5Head = [['Date', 'Opening', 'Addition', 'Receiving', 'Balance']];
       const data5 = [
-        ["25-Apr-24","0","+0","-0","0"],
-        ["25-Apr-24","0","+0","-0","0"],
-        ["25-Apr-24","0","+0","-0","0"],
-        ["25-Apr-24","0","+0","-0","0"],
-        ["25-Apr-24","0","+181000","-21000","160000"],
-        ["25-Apr-24","160000","+87500","-52000","19500"],
-        ["25-Apr-24","195500","+106000","-138500","163000"]
+        ["25-Apr-24", "0", "+0", "-0", "0"],
+        ["25-Apr-24", "0", "+0", "-0", "0"],
+        ["25-Apr-24", "0", "+0", "-0", "0"],
+        ["25-Apr-24", "0", "+0", "-0", "0"],
+        ["25-Apr-24", "0", "+181000", "-21000", "160000"],
+        ["25-Apr-24", "160000", "+87500", "-52000", "19500"],
+        ["25-Apr-24", "195500", "+106000", "-138500", "163000"]
       ];
 
       tableY += 20;
       doc.setLineWidth(0.5);
       doc.setDrawColor("#000");
       doc.setFillColor("#fff");
-    
+
       doc.setTextColor("#c50000");
       doc.text("Fee Balance Report", tableX + 30, tableY);
       doc.setFontSize(9);
@@ -365,7 +367,7 @@ export const BalanceSheet = async (
       tableY -= 45;
       doc.setFontSize(9);
       doc.setTextColor("#000");
-      doc.rect(tableX - 5, tableY - 5, tableX+35, 70);
+      doc.rect(tableX - 5, tableY - 5, tableX + 35, 70);
       tableY += 2;
       doc.setFontSize(12);
       doc.setTextColor("#c50000");
@@ -378,28 +380,28 @@ export const BalanceSheet = async (
         head: data5Head,
         body: data5,
         startY: tableY,
-        margin: {left: tableX},
+        margin: { left: tableX },
         theme: 'grid',
         styles: {
           textColor: '#000',
           fontSize: 6,
         },
-        headStyles:{
-          cellWidth:30,
-          fillColor:'#fff',
-          textColor:'#000',
-          minCellHeight:4,
+        headStyles: {
+          cellWidth: 30,
+          fillColor: '#fff',
+          textColor: '#000',
+          minCellHeight: 4,
         },
         columnStyles: {
-          0: {cellWidth: 30},
-          1: {cellWidth: 30},
-          2: {cellWidth: 30},
-          3: {cellWidth: 30},
-          4: {cellWidth: 30},
-          
+          0: { cellWidth: 30 },
+          1: { cellWidth: 30 },
+          2: { cellWidth: 30 },
+          3: { cellWidth: 30 },
+          4: { cellWidth: 30 },
+
           // etc
         }
-        });
+      });
 
 
 

@@ -1,18 +1,16 @@
 import { Search } from "@mui/icons-material"
 import { Box, Button, Divider, Option, Select, Stack, Typography } from "@mui/joy"
 import PageHeaderWithHelpButton from "components/Breadcrumbs/PageHeaderWithHelpButton"
-import Navbar from "components/Navbar/Navbar"
 import StudentsResultUpdateTable from "components/Tables/StudentsResultUpdateTable"
-import LSPage from "components/Utils/LSPage"
 import { SCHOOL_CLASSES } from "config/schoolConfig"
 import { useFirebase } from "context/firebaseContext"
 import { useNavbar } from "context/NavbarContext"
 import { doc, getDoc } from "firebase/firestore"
 import { enqueueSnackbar } from "notistack"
-import { useContext, useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { StudentDetailsType } from "types/student"
-import SideBarContext from "context/SidebarContext"
+import { useSidebar } from "context/SidebarContext"
 import { Exam, ExamPaper } from "types/exam"
 
 type ExamConfig = {
@@ -41,11 +39,11 @@ function UpdateResultBulk() {
 
   const { db } = useFirebase();
   const { session } = useNavbar();
-  const { setSidebarOpen } = useContext(SideBarContext);
+  const { setMini, isMini } = useSidebar()
 
   useEffect(() => {
-    setSidebarOpen(false);
-  }, [setSidebarOpen]);
+    setMini(true)
+  }, []);
 
 
   useEffect(() => {
@@ -83,7 +81,7 @@ function UpdateResultBulk() {
         setSelectedExamPapers([]);
       }
     }
-  }, [examConfig, selectedExam,selectedClass]);
+  }, [examConfig, selectedExam, selectedClass]);
 
 
   const handleSearchBtn = () => {
@@ -139,68 +137,66 @@ function UpdateResultBulk() {
   return (
     <div
       style={{
-        maxWidth: "95vw",
-        marginLeft: "80px",
+        maxWidth: isMini ? "90vw" : "85vw",
         width: selectedExamPapers.length < 3 ? "100%" : undefined,
         backgroundColor: "#fff",
       }}
     >
-      <Navbar />
-      <LSPage>
-        <PageHeaderWithHelpButton title="Update students result" />
-        <br />
-        <Stack
-          direction="column"
-          gap={2}
-          sx={{ p: "10px", mt: "8px", border: "1px solid oklch(.929 .013 255.508)", borderRadius: "10px" }}
-        >
-          <Stack direction={"row"} justifyContent={"space-between"} alignItems="center" >
-            <Box>
-              <Typography level="title-md">Select Class & Exam</Typography>
-            </Box>
-            <Stack direction="row" alignItems="center" gap={1.5}>
 
-              <Select
-                placeholder="choose class"
-                onChange={(e, val) => setSelectedClass(val)}
-              >
-                {SCHOOL_CLASSES.map((item) => {
-                  return <Option value={item.value} key={item.id}>{item.title}</Option>;
-                })}
-              </Select>
-              <Select
-                placeholder="choose exam"
-                onChange={(e, val) => setSelectedExam(val)}
-              >
-                {examConfig?.exams.map((item) => {
-                  return <Option value={item.examId} key={item.examId}>{item.examTitle}</Option>;
-                })}
-              </Select>
-              <Button
-                sx={{ ml: "8px" }}
-                startDecorator={<Search />}
-                onClick={handleSearchBtn}
-              ></Button>
-              <Button
-                variant="soft"
-                sx={{ ml: "8px" }}
-              >
-                Reset
-              </Button>
-            </Stack>
+      <PageHeaderWithHelpButton title="Update students result" />
+      <br />
+      <Stack
+        direction="column"
+        gap={2}
+        sx={{ p: "10px", mt: "8px", border: "1px solid oklch(.929 .013 255.508)", borderRadius: "10px" }}
+      >
+        <Stack direction={"row"} justifyContent={"space-between"} alignItems="center" >
+          <Box>
+            <Typography level="title-md">Select Class & Exam</Typography>
+          </Box>
+          <Stack direction="row" alignItems="center" gap={1.5}>
+
+            <Select
+              placeholder="choose class"
+              onChange={(e, val) => setSelectedClass(val)}
+            >
+              {SCHOOL_CLASSES.map((item) => {
+                return <Option value={item.value} key={item.id}>{item.title}</Option>;
+              })}
+            </Select>
+            <Select
+              placeholder="choose exam"
+              onChange={(e, val) => setSelectedExam(val)}
+            >
+              {examConfig?.exams.map((item) => {
+                return <Option value={item.examId} key={item.examId}>{item.examTitle}</Option>;
+              })}
+            </Select>
+            <Button
+              sx={{ ml: "8px" }}
+              startDecorator={<Search />}
+              onClick={handleSearchBtn}
+            ></Button>
+            <Button
+              variant="soft"
+              sx={{ ml: "8px" }}
+            >
+              Reset
+            </Button>
           </Stack>
-          <Divider />
-          <br />
-          <StudentsResultUpdateTable students={students}
-            papers={selectedExamPapers}
-            results={results}
-            setResults={setResults}
-            selectedExam={selectedExam}
-            selectedExamTitle={examConfig && selectedExam && examConfig.exams.filter((exam) => exam.examId === selectedExam)[0].examTitle || "N/A"}
-            savedStudents={savedStudents}
-            setSavedStudents={setSavedStudents} />
         </Stack>
-      </LSPage>
+        <Divider />
+        <br />
+        <StudentsResultUpdateTable students={students}
+          papers={selectedExamPapers}
+          results={results}
+          setResults={setResults}
+          selectedExam={selectedExam}
+          selectedExamTitle={examConfig && selectedExam && examConfig.exams.filter((exam) => exam.examId === selectedExam)[0].examTitle || "N/A"}
+          savedStudents={savedStudents}
+          setSavedStudents={setSavedStudents} />
+      </Stack>
+
     </div >
   )
 }

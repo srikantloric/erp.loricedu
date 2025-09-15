@@ -5,14 +5,14 @@ import { Backdrop, CircularProgress } from "@mui/material";
 import { auth } from "../firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { useFirebase } from "./firebaseContext";
+import { Permissions } from "types/Users";
 
 interface AuthContextType {
   currentUser: User | null;
   login: (email: string, password: string) => Promise<void>;
-  userType: string | null;
-  displayName: string| null; 
+  displayName: string | null;
   role: string | null;
-  access: string[];
+  permissions: Permissions | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -27,10 +27,9 @@ export function useAuth() {
 
 const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [userType, setUserType] = useState<string | null>(null);
-  const [displayName, setDisplayName] = useState<string|null>(null);
+  const [displayName, setDisplayName] = useState<string | null>(null);
   const [role, setRole] = useState<string | null>(null);
-  const [access, setAccess] = useState<string[]>([]);
+  const [permissions, setPermissions] = useState<Permissions | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   //Get Firebase DB instance
@@ -51,32 +50,28 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
           const userDoc = await getDoc(doc(db, "ADMIN_USERS", user.uid));
           if (userDoc.exists()) {
             const data = userDoc.data();
-            setUserType(data.userType || null);
             setRole(data.role || null);
-            setAccess(data.access || []);
-            setDisplayName(data.displayName || user.email || "User");
+            setPermissions(data.permissions || []);
+            setDisplayName(data.name || user.email || "User");
           } else {
-            setUserType(null);
             setRole(null);
-            setAccess([]);
+            setPermissions(null);
           }
         } catch (error) {
-          setUserType(null);
           setRole(null);
-          setAccess([]);
+          setPermissions(null);
         }
       } else {
         setCurrentUser(null);
-        setUserType(null);
         setRole(null);
-        setAccess([]);
+        setPermissions(null);
         navigate("/login");
       }
     });
     return unsubscribe;
   }, [navigate]);
 
-  const value = { currentUser, login, userType, role, access,displayName };
+  const value = { currentUser, login, role, permissions, displayName };
 
   return (
     <AuthContext.Provider value={value}>

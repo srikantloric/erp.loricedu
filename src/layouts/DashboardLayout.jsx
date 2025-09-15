@@ -1,6 +1,5 @@
 import { Outlet } from "react-router-dom";
 import Sidebar from "../components/Sidebar/Sidebar";
-import LSContainer from "../components/Utils/LSContainer";
 import { useSearchDialog } from "context/SearchDialogContext";
 import { useEffect } from "react";
 import SearchDialog from "components/Dialog/SearchDialog";
@@ -24,11 +23,11 @@ function DashboardLayout() {
     };
   }, [openDialog]);
   return (
-    <LSContainer>
-      <SearchDialog/>
+    <>
+      <SearchDialog />
       <Sidebar />
-      <Outlet/>
-    </LSContainer>
+      <Outlet />
+    </>
   );
 }
 

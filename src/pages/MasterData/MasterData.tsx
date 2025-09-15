@@ -1,8 +1,6 @@
 import { Box, Tab, TabList, TabPanel, Tabs } from "@mui/joy";
 import BreadCrumbsV2 from "components/Breadcrumbs/BreadCrumbsV2"
-import Navbar from "components/Navbar/Navbar"
-import LSPage from "components/Utils/LSPage"
-import PageContainer from "components/Utils/PageContainer"
+
 import { Settings } from "iconsax-react";
 import AddClasses from "./AddClasses";
 import AddSections from "./AddSections";
@@ -11,10 +9,8 @@ import AddReligionCategory from "./AddCasteCategory";
 import AddSubjects from "./AddSubjects";
 function MasterData() {
   return (
-    <PageContainer>
-    <LSPage>
-      <Navbar />
-      <br />
+    <>
+    
       <BreadCrumbsV2 Path="Configurations/Settings" Icon={Settings} />
       <Box mt="1rem">
         <Tabs aria-label="Basic tabs" defaultValue={0}>
@@ -44,8 +40,7 @@ function MasterData() {
          
         </Tabs>
       </Box>
-    </LSPage>
-  </PageContainer>
+  </>
   )
 }
 

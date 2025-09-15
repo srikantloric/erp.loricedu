@@ -10,7 +10,7 @@ import { SearchDialogProvider } from "context/SearchDialogContext";
 // Layouts & Context
 import AuthenticationLayout from "./layouts/AuthenticationLayout";
 import DashboardLayout from "./layouts/DashboardLayout";
-import AuthProvider from "./context/AuthContext";
+import AuthProvider, { useAuth } from "./context/AuthContext";
 
 // Utility Component for Lazy Loading
 import Loadable from "./components/thirdparty/Loadable";
@@ -19,6 +19,7 @@ import ExamPlanner from "pages/ResultsManagement/ExamPlanner";
 import { FirebaseProvider } from "context/firebaseContext";
 import { auth } from "./firebase";
 import { onAuthStateChanged } from "firebase/auth";
+
 import FacultyAttendance from "pages/Attendance/FacultyAttendance/facultyAttendance";
 import PrintRankList from "pages/ResultsManagement/PrintRankList";
 import StudentMigration from "pages/Users/StudentMigration";
@@ -39,6 +40,7 @@ import ExamSetup from "pages/ResultsManagement/ExamSetup/ExamSetup";
 
 
 // Lazy Loaded Components
+
 
 
 const GenerateQrSticker = Loadable(
@@ -106,8 +108,11 @@ const TriggerFacultyDailyAttendanceReport = Loadable(
 )
 
 function App() {
+
+
   const routeItems = routesConfig.map(
-    ({ to, Component, isHeader, childrens }) => {
+    ({ to, Component, isHeader }) => {
+
       if (!isHeader) {
         return <Route key={to} path={to} element={<Component />} />;
       }
@@ -138,7 +143,7 @@ function App() {
     return () => unsubscribe();
   }, []);
 
-  console.log("Version: 1.2.0");
+  console.log("📝Version: 1.2.0");
 
   return (
     <FirebaseProvider key={authKey}>
@@ -157,7 +162,7 @@ function App() {
         <SideBarContext.Provider value={{ isActive, toggle, setSidebarOpen }}>
           <SearchDialogProvider>
             <NavbarProvider>
-              <Suspense>
+              <Suspense >
                 <Routes>
                   <Route path="/" element={<DashboardLayout />}>
                     {routeItems}

@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-import PageContainer from "../../components/Utils/PageContainer";
-import LSPage from "../../components/Utils/LSPage";
+
 import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
 import PrintIcon from "@mui/icons-material/Print";
 
@@ -21,7 +20,6 @@ import {
   Button
 } from "@mui/joy";
 import BreadCrumbsV3 from "components/Breadcrumbs/BreadCrumbsV3";
-import Navbar from "components/Navbar/Navbar";
 import AddFeeArrearModal from "components/Modals/payments/AddFeeArrearModal";
 
 import IndividualFeeDetailsHeader from "components/Headers/IndividualFeeDetailsHeader";
@@ -59,6 +57,7 @@ import FeeChallanTable from "components/FeeManager/FeeChallanTable";
 import PartPaymentForm from "components/FeeManager/PartPaymentForm";
 import PaymentForm from "components/FeeManager/PaymentForm";
 import ViewChallanDetails from "components/Modals/payments/ViewChallanDetails";
+import { useAuth } from "context/AuthContext";
 
 const SearchAnotherButton = () => {
   const historyRef = useNavigate();
@@ -144,6 +143,8 @@ function StudentFeeDetails() {
   const [challanList, setChallanList] = useState<IChallanNL[]>([]);
 
   const [showViewChallanDetailsModal, setShowViewChallanDetailsModal] = useState<boolean>(false);
+
+  const { permissions } = useAuth()
 
 
   // Calculate total feeConsession and totalPaidAmount
@@ -247,7 +248,7 @@ function StudentFeeDetails() {
     setFeeCollectionDate(getCurrentDate());
     setLoading(true);
 
-    
+
 
     if (!location.state?.[0]) {
       enqueueSnackbar("Failed to load student master data!", { variant: "warning" });
@@ -541,170 +542,171 @@ function StudentFeeDetails() {
 
 
   return (
-    <PageContainer>
-      <Navbar />
-      <LSPage>
-        <BreadCrumbsV3
-          Path="Fee Management/Fee Details"
-          Icon={AccountBalanceWalletIcon}
-          ActionBtn={SearchAnotherButton}
-        />
-        <br />
+    <>
+      <BreadCrumbsV3
+        Path="Fee Management/Fee Details"
+        Icon={AccountBalanceWalletIcon}
+        ActionBtn={SearchAnotherButton}
+      />
+      <br />
 
-        <IndividualFeeDetailsHeader
-          studentMasterData={location.state[0]}
-          totalFeeHeaderData={totalFeeHeaderData}
-        />
-        <br />
-        {loading ? <LinearProgress /> : null}
-        <Box sx={{ display: "flex", justifyContent: "end", mb: "0px" }}>
-          <Box
-            sx={{
-              borderTop: "1px solid var(--bs-gray-300)",
-              borderLeft: "1px solid var(--bs-gray-300)",
-              borderRight: "1px solid var(--bs-gray-300)",
-              borderRadius: "10px 10px 0px 0px",
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-            }}
-            padding="8px"
-          >
-            <Button
-              variant="soft"
-              color="primary"
-              onClick={() => setInstantPaymentDialogOpen(true)}
-            >
-              Instant Payment
-            </Button>
-
-            <Button
-              variant="soft"
-              startDecorator={<Print />}
-              onClick={() => generateCurrentFeeReciept(false)}
-            ></Button>
-            <Button variant="soft" startDecorator={<SettingsIcon />}></Button>
-          </Box>
-        </Box>
-
-        <Box sx={{ border: "1px solid var(--bs-gray-300)", padding: "8px" }}>
-          <PaymentForm
-            feeCollectionDate={feeCollectionDate}
-            setFeeCollectionDate={setFeeCollectionDate}
-            feeChallans={feeChallans}
-            selectedChallan={selectedChallan}
-            setSelectedChallan={setSelectedChallan}
-            selectedPaymentMethod={selectedPaymentMethod}
-            setSelectedPaymentMethod={setSelectedPaymentMethod}
-            recievedAmount={recievedAmount}
-            isPaymentLoading={isPaymentLoading}
-            showPartPaymentOption={showPartPaymentOption}
-            setShowPartPaymentOption={setShowPartPaymentOption}
-            handlePaymentRecieveButton={handlePaymentRecieveButton}
-          />
-          <br />
-          {
-            showPartPaymentOption &&
-            <PartPaymentForm
-              selectedChallanDetails={selectedChallanDetails}
-              recievedAmountPartPayment={recievedAmountPartPayment}
-              setRecievedAmountPartPayment={setRecievedAmountPartPayment}
-              partPaymentComment={partPaymentComment}
-              setPartPaymentComment={setPartPaymentComment}
-              isPaymentLoading={isPaymentLoading}
-              handlePartPaymentSubmit={handlePartPaymentSubmit}
-            />
-          }
-          <Divider sx={{ mt: "16px", mb: "10px" }} />
-          <FeeChallanTable
-            challanList={challanList}
-            sum={sum}
-            sumAmountByHeaderTitle={sumAmountByHeaderTitle}
-            handleMenuClick={handleMenuClick}
-          />
-        </Box>
-
-        <Menu
-          anchorEl={anchorEll}
-          id="account-menu"
-          open={menuOpen}
-          onClose={handleMenuClose}
-          onClick={handleMenuClose}
-          PaperProps={{
-            elevation: 0,
-            sx: {
-              overflow: "visible",
-              filter: "drop-shadow(0px 2px 8px rgba(0,0,0,0.32))",
-              mt: 1.5,
-              "& .MuiAvatar-root": {
-                width: 32,
-                height: 32,
-                ml: -0.5,
-                mr: 1,
-              },
-              "&:before": {
-                content: '""',
-                display: "block",
-                position: "absolute",
-                top: 0,
-                right: 14,
-                width: 10,
-                height: 10,
-                bgcolor: "background.paper",
-                transform: "translateY(-50%) rotate(45deg)",
-                zIndex: 0,
-              },
-            },
+      <IndividualFeeDetailsHeader
+        studentMasterData={location.state[0]}
+        totalFeeHeaderData={totalFeeHeaderData}
+      />
+      <br />
+      {loading ? <LinearProgress /> : null}
+      <Box sx={{ display: "flex", justifyContent: "end", mb: "0px" }}>
+        <Box
+          sx={{
+            borderTop: "1px solid var(--bs-gray-300)",
+            borderLeft: "1px solid var(--bs-gray-300)",
+            borderRight: "1px solid var(--bs-gray-300)",
+            borderRadius: "10px 10px 0px 0px",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
           }}
-          transformOrigin={{ horizontal: "right", vertical: "top" }}
-          anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+          padding="8px"
         >
-          <MenuItem onClick={() => generateCurrentFeeReciept(true)}>
-            <ListItemIcon>
-              <PrintIcon fontSize="small" />
-            </ListItemIcon>
-            Print Reciept
-          </MenuItem>
-          <Divider />
-          <MenuItem onClick={() => setShowViewChallanDetailsModal(true)}>
-            <ListItemIcon>
-              <PrintIcon fontSize="small" />
-            </ListItemIcon>
-            View Details
-          </MenuItem>
-          <Divider />
-          <MenuItem onClick={() => setAddArrearModalopen(true)}>
-            <ListItemIcon>
-              <PaymentIcon fontSize="small" />
-            </ListItemIcon>
-            Add Fee Arrear
-          </MenuItem>
-          <Divider />
-          <MenuItem onClick={() => setAddFeeConsessionModalOpen(true)}>
-            <ListItemIcon>
-              <DiscountIcon fontSize="small" />
-            </ListItemIcon>
-            Add Consession
-          </MenuItem>
-          <Divider />
-          <MenuItem
-            onClick={() => {
-              setShowDeleteAuthenticationDialog(true);
-            }}
+          <Button
+            variant="soft"
+            color="primary"
+            onClick={() => setInstantPaymentDialogOpen(true)}
           >
-            <ListItemIcon>
-              <Delete fontSize="small" />
-            </ListItemIcon>
-            Delete
-          </MenuItem>
-        </Menu>
+            Instant Payment
+          </Button>
 
-        <AddFeeConsessionModal
-          open={addFeeConsessionModalOpen}
-          setOpen={setAddFeeConsessionModalOpen}
-          challanData={selectedRow!}
+          <Button
+            variant="soft"
+            startDecorator={<Print />}
+            onClick={() => generateCurrentFeeReciept(false)}
+          ></Button>
+          <Button variant="soft" startDecorator={<SettingsIcon />}></Button>
+        </Box>
+      </Box>
+
+      <Box sx={{ border: "1px solid var(--bs-gray-300)", padding: "8px" }}>
+        <PaymentForm
+          feeCollectionDate={feeCollectionDate}
+          setFeeCollectionDate={setFeeCollectionDate}
+          feeChallans={feeChallans}
+          selectedChallan={selectedChallan}
+          setSelectedChallan={setSelectedChallan}
+          selectedPaymentMethod={selectedPaymentMethod}
+          setSelectedPaymentMethod={setSelectedPaymentMethod}
+          recievedAmount={recievedAmount}
+          isPaymentLoading={isPaymentLoading}
+          showPartPaymentOption={showPartPaymentOption}
+          setShowPartPaymentOption={setShowPartPaymentOption}
+          handlePaymentRecieveButton={handlePaymentRecieveButton}
         />
-        {selectedRow ? (
+        <br />
+        {
+          showPartPaymentOption &&
+          <PartPaymentForm
+            selectedChallanDetails={selectedChallanDetails}
+            recievedAmountPartPayment={recievedAmountPartPayment}
+            setRecievedAmountPartPayment={setRecievedAmountPartPayment}
+            partPaymentComment={partPaymentComment}
+            setPartPaymentComment={setPartPaymentComment}
+            isPaymentLoading={isPaymentLoading}
+            handlePartPaymentSubmit={handlePartPaymentSubmit}
+          />
+        }
+        <Divider sx={{ mt: "16px", mb: "10px" }} />
+        <FeeChallanTable
+          challanList={challanList}
+          sum={sum}
+          sumAmountByHeaderTitle={sumAmountByHeaderTitle}
+          handleMenuClick={handleMenuClick}
+        />
+      </Box>
+
+      <Menu
+        anchorEl={anchorEll}
+        id="account-menu"
+        open={menuOpen}
+        onClose={handleMenuClose}
+        onClick={handleMenuClose}
+        PaperProps={{
+          elevation: 0,
+          sx: {
+            overflow: "visible",
+            filter: "drop-shadow(0px 2px 8px rgba(0,0,0,0.32))",
+            mt: 1.5,
+            "& .MuiAvatar-root": {
+              width: 32,
+              height: 32,
+              ml: -0.5,
+              mr: 1,
+            },
+            "&:before": {
+              content: '""',
+              display: "block",
+              position: "absolute",
+              top: 0,
+              right: 14,
+              width: 10,
+              height: 10,
+              bgcolor: "background.paper",
+              transform: "translateY(-50%) rotate(45deg)",
+              zIndex: 0,
+            },
+          },
+        }}
+        transformOrigin={{ horizontal: "right", vertical: "top" }}
+        anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+      >
+        <MenuItem onClick={() => generateCurrentFeeReciept(true)}>
+          <ListItemIcon>
+            <PrintIcon fontSize="small" />
+          </ListItemIcon>
+          Print Reciept
+        </MenuItem>
+        <Divider />
+        <MenuItem onClick={() => setShowViewChallanDetailsModal(true)}>
+          <ListItemIcon>
+            <PrintIcon fontSize="small" />
+          </ListItemIcon>
+          View Details
+        </MenuItem>
+        <Divider />
+        <MenuItem onClick={() => setAddArrearModalopen(true)}>
+          <ListItemIcon>
+            <PaymentIcon fontSize="small" />
+          </ListItemIcon>
+          Add Fee Arrear
+        </MenuItem>
+        <Divider />
+        <MenuItem onClick={() => setAddFeeConsessionModalOpen(true)}>
+          <ListItemIcon>
+            <DiscountIcon fontSize="small" />
+          </ListItemIcon>
+          Add Consession
+        </MenuItem>
+        {permissions?.deleteFee && (
+          <>
+            <Divider />
+            <MenuItem
+              onClick={() => setShowDeleteAuthenticationDialog(true)}
+            >
+              <ListItemIcon>
+                <Delete fontSize="small" />
+              </ListItemIcon>
+              Delete
+            </MenuItem>
+          </>
+        )}
+      </Menu >
+
+      <AddFeeConsessionModal
+        open={addFeeConsessionModalOpen}
+        setOpen={setAddFeeConsessionModalOpen}
+        challanData={selectedRow!}
+      />
+      {
+        selectedRow ? (
           <AddFeeArrearModal
             open={addArrearModalOpen}
             setOpen={setAddArrearModalopen}
@@ -731,29 +733,33 @@ function StudentFeeDetails() {
                 )?.amount || 0,
             }}
           />
-        ) : null}
+        ) : null
+      }
 
-        <InstantPaymentModal
-          open={instantPaymentDialogOpen}
-          studentMasterData={location.state[0]}
-          setOpen={setInstantPaymentDialogOpen}
-        />
-        {selectedRow ? (
+      <InstantPaymentModal
+        open={instantPaymentDialogOpen}
+        studentMasterData={location.state[0]}
+        setOpen={setInstantPaymentDialogOpen}
+      />
+      {
+        selectedRow ? (
           <DeleteChallanConfirmationDialog
             open={showDeleteAuthenticationDialog}
             setOpen={setShowDeleteAuthenticationDialog}
             studentId={selectedRow.studentId}
             challanId={selectedRow.challanId}
           />
-        ) : null}
+        ) : null
+      }
 
-        {selectedRow && showViewChallanDetailsModal ? (
+      {
+        selectedRow && showViewChallanDetailsModal ? (
           <ViewChallanDetails challanId={selectedRow.challanId} studentId={selectedRow.studentId} open={showViewChallanDetailsModal} setOpen={setShowViewChallanDetailsModal} />
-        ) : null}
+        ) : null
+      }
 
-        <ModalLoader loading={isGeneratingFeeReciept} />
-      </LSPage>
-    </PageContainer>
+      <ModalLoader loading={isGeneratingFeeReciept} />
+    </>
   );
 }
 

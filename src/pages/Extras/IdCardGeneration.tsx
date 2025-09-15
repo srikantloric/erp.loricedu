@@ -1,8 +1,7 @@
 import { Button, Input, Sheet, Stack } from "@mui/joy";
-import Navbar from "components/Navbar/Navbar";
+
 import { GenerateIdCards } from "components/Reports/GenerateIdCards";
-import LSPage from "components/Utils/LSPage";
-import PageContainer from "components/Utils/PageContainer";
+
 import { useState } from "react";
 import * as XLSX from "xlsx";
 
@@ -41,9 +40,7 @@ function IdCardGeneration() {
   };
 
   return (
-    <PageContainer>
-      <Navbar />
-      <LSPage>
+  <>
         <Stack direction="row">
           <Input type="file" onChange={handleFileUpload}></Input>
           <Button onClick={handleGenerateBtn}>Generate</Button>
@@ -56,11 +53,10 @@ function IdCardGeneration() {
             width="600"
             height="800"
             style={{ border: "1px solid black", marginTop: "20px" }}
-          />
+            />
           {/* )} */}
         </Sheet>
-      </LSPage>
-    </PageContainer>
+        </>
   );
 }
 
