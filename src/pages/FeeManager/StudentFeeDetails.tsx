@@ -67,7 +67,7 @@ const SearchAnotherButton = () => {
       variant="solid"
       sx={{ backgroundColor: "var(--bs-primary)" }}
       onClick={(e) => {
-        historyRef("/FeeManagement");
+        historyRef("/fee-management");
       }}
     >
       Search Another
