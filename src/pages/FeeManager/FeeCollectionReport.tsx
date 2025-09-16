@@ -5,7 +5,7 @@ import TouchAppIcon from "@mui/icons-material/TouchApp";
 import { useState } from "react";
 import { IPaymentNLForChallan } from "types/payment";
 
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { collection, getDocs, orderBy, query, Timestamp, where } from "firebase/firestore";
 import { useFirebase } from "context/firebaseContext";
 import { getClassNameByValue } from "utilities/UtilitiesFunctions";
 import { ExportCsv, ExportPdf } from "@material-table/exporters";
@@ -42,12 +42,10 @@ function FeeCollectionReport() {
             title: "Received At",
             field: "timestamp",
             render: (rowData) => {
-                if (!rowData.recievedOn) return "N/A";
-
-                const date = new Date(rowData.recievedOn.seconds * 1000);
-
+                if (!rowData.timestamp) return "N/A";
+                const recievedOn = rowData.timestamp as Timestamp
                 // ✅ Format dd/mm/yyyy hh:mm AM/PM
-                return date.toLocaleString("en-GB", {
+                return recievedOn.toDate().toLocaleString("en-GB", {
                     day: "2-digit",
                     month: "2-digit",
                     year: "numeric",
@@ -56,6 +54,10 @@ function FeeCollectionReport() {
                     hour12: true, // 12-hour format with AM/PM
                 });
             },
+        },
+        {
+            title: "Received By",
+            field: "recievedBy",
         },
     ];
 
@@ -72,7 +74,8 @@ function FeeCollectionReport() {
             const q = query(
                 collection(db, "MY_PAYMENTS"),
                 where("timestamp", ">=", start),
-                where("timestamp", "<=", end)
+                where("timestamp", "<=", end),
+                orderBy("timestamp","desc")
             );
 
             const snapshot = await getDocs(q);

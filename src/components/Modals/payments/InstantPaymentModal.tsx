@@ -32,6 +32,7 @@ import { generateFeeHeadersForChallanWithMarkedAsPaid } from "utilities/PaymentU
 import { IChallanHeaderType, IChallanNL, IPaymentNL } from "types/payment";
 import { collection, doc, getDoc, serverTimestamp, Timestamp, writeBatch } from "firebase/firestore";
 import { useFirebase } from "context/firebaseContext";
+import { useAuth } from "context/AuthContext";
 
 interface Props {
   open: boolean;
@@ -75,6 +76,8 @@ const InstantPaymentModal: React.FC<Props> = ({
 
   const [totalFee, setTotalFee] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
+
+  const { currentUser } = useAuth()
 
   const [feeDetail, setFeeDetails] = useState<IInstantPaymentDetailsType>({
     monthlyFee: 0,
@@ -194,7 +197,7 @@ const InstantPaymentModal: React.FC<Props> = ({
       totalAmount: totalFeeAmount,
       amountPaid: isMarkedAsPaid ? totalFeeAmount : 0,
       status: isMarkedAsPaid ? "PAID" : "UNPAID",
-      createdBy: "Admin",
+      createdBy: currentUser?.email || "N/A",
       createdOn: Timestamp.fromDate(new Date()),
       dueDate: Timestamp.fromDate(new Date("9999-12-31")),
       feeDiscount: studentMasterDataUpdated.fee_discount || 0,
@@ -217,7 +220,7 @@ const InstantPaymentModal: React.FC<Props> = ({
       const feeConsessionLogRef = doc(collection(studentDocRef, "CONSESSION_LOG"));
       batch.set(feeConsessionLogRef, {
         createdAt: serverTimestamp(),
-        createdBy: "admin",
+        createdBy: currentUser?.email || "N/A",
         challanId: challanDocId,
         consessionAmount: feeDetail.feeConsession,
         dueAmountBeforeConsession: 0,
@@ -234,7 +237,7 @@ const InstantPaymentModal: React.FC<Props> = ({
         studentId: studentMasterDataUpdated.id,
         challanId: challanDocId,
         amountPaid: totalFeeAmount,
-        recievedBy: "Admin",
+        recievedBy: currentUser?.email || "N/A",
         recievedOn: Timestamp.now(),
         timestamp: Timestamp.now(),
         breakdown: finalFeeHeader,
