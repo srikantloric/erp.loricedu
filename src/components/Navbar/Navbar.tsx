@@ -60,7 +60,7 @@ const Navbar = () => {
   };
 
   //auth context
-  const { currentUser, displayName } = useAuth()
+  const { currentUser, displayName, profile } = useAuth()
 
   const handleLogout = () => {
     console.log("called logout");
@@ -146,9 +146,10 @@ const Navbar = () => {
                   height: 32,
                   backgroundColor: "var(--bs-orange)",
                 }}
-
+                src={profile!}
+                alt={displayName ? displayName.charAt(0).toUpperCase() : "U"}
               >
-                {displayName ? displayName.charAt(0).toUpperCase() : "U"}
+
               </Avatar>
             </IconButton>
           </Tooltip>
@@ -188,7 +189,7 @@ const Navbar = () => {
             anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
           >
             <MenuItem onClick={handleClose}>
-              <Avatar />
+              <Avatar src={profile!} alt={displayName ? displayName.charAt(0).toUpperCase() : "U"} />
               <Stack display={"flex"} direction={"column"}>
                 <Typography level="title-md">
                   {displayName}

@@ -10,6 +10,7 @@ import { Permissions } from "types/Users";
 interface AuthContextType {
   currentUser: User | null;
   login: (email: string, password: string) => Promise<void>;
+  profile: string | null;
   displayName: string | null;
   role: string | null;
   permissions: Permissions | null;
@@ -30,6 +31,7 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
   const [displayName, setDisplayName] = useState<string | null>(null);
   const [role, setRole] = useState<string | null>(null);
   const [permissions, setPermissions] = useState<Permissions | null>(null);
+  const [profile, setProfile] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   //Get Firebase DB instance
@@ -53,25 +55,29 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
             setRole(data.role || null);
             setPermissions(data.permissions || []);
             setDisplayName(data.name || user.email || "User");
+            setProfile(data.profile);
           } else {
             setRole(null);
             setPermissions(null);
+            setProfile(null)
           }
         } catch (error) {
           setRole(null);
+          setProfile(null)
           setPermissions(null);
         }
       } else {
         setCurrentUser(null);
         setRole(null);
         setPermissions(null);
+        setProfile(null)
         navigate("/login");
       }
     });
     return unsubscribe;
   }, [navigate]);
 
-  const value = { currentUser, login, role, permissions, displayName };
+  const value = { currentUser, login, role, permissions, displayName, profile };
 
   return (
     <AuthContext.Provider value={value}>
