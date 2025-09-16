@@ -144,7 +144,7 @@ function StudentFeeDetails() {
 
   const [showViewChallanDetailsModal, setShowViewChallanDetailsModal] = useState<boolean>(false);
 
-  const { permissions } = useAuth()
+  const { permissions, currentUser } = useAuth()
 
 
   // Calculate total feeConsession and totalPaidAmount
@@ -371,7 +371,7 @@ function StudentFeeDetails() {
           studentId: selectedChallanDetails.studentId,
           challanId: selectedChallanDetails.challanId,
           amountPaid: recievedAmountPartPayment!,
-          recievedBy: "Admin",
+          recievedBy: currentUser?.email || "Admin",
           recievedOn: Timestamp.fromDate(new Date(feeCollectionDate!)),
           timestamp: Timestamp.now(),
           breakdown: updatedFeeHeaderForPayment,
@@ -386,7 +386,7 @@ function StudentFeeDetails() {
           challanId: selectedChallanDetails.challanId,
           amountPaid:
             selectedChallanDetails.amountPaid + recievedAmountPartPayment!,
-          recievedBy: "Admin",
+          recievedBy: currentUser?.email || "Admin",
           recievedOn: Timestamp.fromDate(new Date(feeCollectionDate!)),
           timestamp: Timestamp.now(),
           breakdown: updatedFeeHeaderForChallan,
@@ -414,7 +414,7 @@ function StudentFeeDetails() {
           challanId: selectedChallanDetails.challanId,
           studentId: selectedChallanDetails.studentId,
           amountPaid: recievedAmount!,
-          recievedBy: "Admin",
+          recievedBy: currentUser?.email || "Admin",
           recievedOn: Timestamp.fromDate(new Date(feeCollectionDate!)),
           timestamp: Timestamp.now(),
           breakdown: updatedFeeHeaderForPayment,
@@ -428,7 +428,7 @@ function StudentFeeDetails() {
           challanId: selectedChallanDetails.challanId,
           studentId: selectedChallanDetails.studentId,
           amountPaid: selectedChallanDetails.amountPaid + recievedAmount!,
-          recievedBy: "Admin",
+          recievedBy: currentUser?.email || "Admin",
           recievedOn: Timestamp.fromDate(new Date(feeCollectionDate!)),
           timestamp: Timestamp.now(),
           breakdown: updatedFeeHeaderForChallan,
