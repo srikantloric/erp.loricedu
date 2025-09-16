@@ -24,6 +24,7 @@ import BreadCrumbsV2 from "components/Breadcrumbs/BreadCrumbsV2";
 import { fetchstudent } from "store/reducers/studentSlice";
 import { RootState, AppDispatch } from "store";
 import { getClassNameByValue } from "utilities/UtilitiesFunctions";
+import FeeCollectionReport from "./FeeCollectionReport";
 
 // -----------------------------
 // Interfaces / Types
@@ -135,18 +136,18 @@ const FeeManager: React.FC = () => {
       });
     }
   };
-  const handleNextPageBtnNew = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (selectedDoc) {
-      // const selectedData = data.filter((student) => student.id === selectedDoc);
-      // historyRef(`FeeDetails/${selectedDoc}`, { state: selectedData });
-      historyRef(`NewFeeDetails/${selectedDoc}`);
-    } else {
-      enqueueSnackbar("Error : Please enter student id or admission number !", {
-        variant: "error",
-      });
-    }
-  };
+  // const handleNextPageBtnNew = (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   if (selectedDoc) {
+  //     // const selectedData = data.filter((student) => student.id === selectedDoc);
+  //     // historyRef(`FeeDetails/${selectedDoc}`, { state: selectedData });
+  //     historyRef(`NewFeeDetails/${selectedDoc}`);
+  //   } else {
+  //     enqueueSnackbar("Error : Please enter student id or admission number !", {
+  //       variant: "error",
+  //     });
+  //   }
+  // };
 
   useEffect(() => {
     searchBoxRef.current?.focus();
@@ -163,7 +164,7 @@ const FeeManager: React.FC = () => {
         <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
           <Tabs value={value} onChange={handleChange} aria-label="tabs">
             <Tab label="Student Fee Collection" {...a11yProps(0)} sx={{ textTransform: "capitalize" }} />
-            <Tab
+            {/* <Tab
               label={
                 <Badge
                   color="error"
@@ -181,6 +182,25 @@ const FeeManager: React.FC = () => {
               }
               {...a11yProps(1)}
               sx={{ textTransform: "capitalize", pr: 4, minWidth: 180, paddingRight: 4 }} // increase minWidth and padding
+            /> */}
+            <Tab
+              label={
+                <Badge
+                  color="error"
+                  badgeContent="New"
+                  sx={{
+                    '& .MuiBadge-badge': {
+                      right: -20, // less negative so badge is more visible
+                      top: 8,
+                      zIndex: 1,
+                    },
+                  }}
+                >
+                  Collection Report
+                </Badge>
+              }
+              {...a11yProps(1)}
+              sx={{ textTransform: "capitalize", pr: 4, minWidth: 180, paddingRight: 6 }} // increase minWidth and padding
             />
           </Tabs>
         </Box>
@@ -223,7 +243,7 @@ const FeeManager: React.FC = () => {
           </Box>
         </CustomTabPanel>
 
-        <CustomTabPanel value={value} index={1}>
+        {/* <CustomTabPanel value={value} index={1}>
           <Box
             component="form"
             onSubmit={handleNextPageBtnNew}
@@ -257,6 +277,9 @@ const FeeManager: React.FC = () => {
               Search
             </Button>
           </Box>
+        </CustomTabPanel> */}
+         <CustomTabPanel value={value} index={1}>
+              <FeeCollectionReport/>
         </CustomTabPanel>
       </Box>
     </>

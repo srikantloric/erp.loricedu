@@ -111,8 +111,8 @@ function Reports() {
                 sx={{ height: "100%" }}
               >
                 <Stack>
-                  <Typography level="h4">{report.title}</Typography>
-                  <Typography level="body-sm">
+                  <Typography level="title-sm" >{report.title}</Typography>
+                  <Typography level="body-xs">
                     {report.description}
                   </Typography>
                 </Stack>
@@ -155,8 +155,8 @@ function Reports() {
             sx={{ height: "100%" }}
           >
             <Stack>
-              <Typography level="h4">Admission Form</Typography>
-              <Typography level="body-sm">
+              <Typography level="title-md" >Admission Form</Typography>
+              <Typography level="body-xs" >
                 Admission Form (English)
               </Typography>
             </Stack>
@@ -184,8 +184,8 @@ function Reports() {
             sx={{ height: "100%" }}
           >
             <Stack>
-              <Typography level="h4">Admission Form</Typography>
-              <Typography level="body-sm">
+              <Typography level="title-md">Admission Form</Typography>
+              <Typography level="body-xs">
                 Admission Form (Hindi)
               </Typography>
             </Stack>
