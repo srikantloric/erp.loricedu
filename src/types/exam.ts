@@ -16,5 +16,5 @@ export type Exam = {
   examTitle: string;
   examSession: string;
   marksheetDesign: string;
-  examPapers: ExamPaper[];
+  papers: ExamPaper[];
 };

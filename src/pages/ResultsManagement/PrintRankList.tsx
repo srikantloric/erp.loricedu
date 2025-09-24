@@ -152,7 +152,7 @@ function PrintRankList() {
       // Get exam papers for the selected exam and filter by selected class
       console.log("Selected Exam:", selectedExam);
       console.log("Selected Class:", selectedClass);
-      const examPapers = examsList.find((item) => item.examId === selectedExam)?.examPapers.filter((paper) =>
+      const examPapers = examsList.find((item) => item.examId === selectedExam)?.papers.filter((paper) =>
         paper.classes.includes(`${selectedClass}`)
       ) || [];
 
