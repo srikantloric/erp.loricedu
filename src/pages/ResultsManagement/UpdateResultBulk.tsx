@@ -12,10 +12,7 @@ import { collection, query, where, getDocs } from "firebase/firestore";
 import { StudentDetailsType } from "types/student"
 import { useSidebar } from "context/SidebarContext"
 import { Exam, ExamPaper } from "types/exam"
-
-type ExamConfig = {
-  exams: Exam[],
-}
+import { getClassNameByValue } from "utilities/UtilitiesFunctions"
 
 export type ResultsState = {
   [studentId: string]: {
@@ -32,7 +29,7 @@ function UpdateResultBulk() {
   const [selectedClass, setSelectedClass] = useState<any>(null);
   const [students, setStudents] = useState<StudentDetailsType[]>([]);
   const [selectedExam, setSelectedExam] = useState<any>(null);
-  const [examConfig, setExamConfig] = useState<ExamConfig | null>(null);
+  const [exams, setExams] = useState<Exam[]>([]);
   const [results, setResults] = useState<ResultsState>({});
   const [selectedExamPapers, setSelectedExamPapers] = useState<ExamPaper[]>([])
   const [savedStudents, setSavedStudents] = useState<Set<string>>(new Set());
@@ -46,42 +43,60 @@ function UpdateResultBulk() {
   }, []);
 
 
+
+
   useEffect(() => {
-    const fetchExamsConfig = async () => {
-      try {
-        const examsConfigRef = doc(db, "CONFIG", "EXAM_CONFIG");
-        const examConfig = await getDoc(examsConfigRef);
-        if (examConfig.exists()) {
-          const data = examConfig.data().exams;
-          const currentSessionExamConfig = data.filter((exam: any) => exam.examSession === session);
-          setExamConfig({ exams: currentSessionExamConfig });
-        } else {
-          console.log("No exams configuration found.");
-        }
-
-      } catch (error) {
-        console.error("Error fetching exams config:", error);
-      }
+    //fetch exams
+    const fetchExams = async () => {
+      const examsQuery = query(
+        collection(db, "EXAMS"),
+        where("examSession", "==", session)
+      );
+      const querySnapshot = await getDocs(examsQuery);
+      const fetchedExams = querySnapshot.docs.map(doc => doc.data() as Exam);
+      setExams(fetchedExams);
     }
+    fetchExams();
 
-    fetchExamsConfig();
   }, [session])
+
 
   //on exam selection change, fetch the exam papers
   useEffect(() => {
-    if (examConfig && selectedExam) {
-      const selectedExamData = examConfig.exams.find(exam => exam.examId === selectedExam);
-      if (selectedExamData) {
-        if (selectedClass) {
-          setSelectedExamPapers(selectedExamData.examPapers.filter(paper => paper.classes.includes(`${selectedClass}`)));
+    const fetchClassConfig = async () => {
+      if (exams && selectedExam) {
+        const selectedExamData = exams.find(exam => exam.examId === selectedExam);
+        if (selectedExamData) {
+          if (selectedClass) {
+
+            const classConfigRef = doc(db, "MASTER_DATA", "masterData");
+            const classConfig = await getDoc(classConfigRef);
+
+            const classConfigData = classConfig.data()?.papers;
+
+            const selectedClassText = getClassNameByValue(selectedClass);
+          
+            // Filter papers where classConfigData contains an entry with paperId === paper.paperId and classes includes selectedClassText
+            const filteredPapers = selectedExamData.papers.filter(paper =>
+              classConfigData.some(
+              (cfg: any) =>
+                cfg.paperId === paper.paperId &&
+                Array.isArray(cfg.classes) &&
+                cfg.classes.includes(selectedClassText)
+              )
+            );
+            setSelectedExamPapers(filteredPapers);
+
+          } else {
+            setSelectedExamPapers(selectedExamData.papers);
+          }
         } else {
-          setSelectedExamPapers(selectedExamData.examPapers);
+          setSelectedExamPapers([]);
         }
-      } else {
-        setSelectedExamPapers([]);
       }
     }
-  }, [examConfig, selectedExam, selectedClass]);
+    fetchClassConfig();
+  }, [exams, selectedExam, selectedClass]);
 
 
   const handleSearchBtn = () => {
@@ -168,7 +183,7 @@ function UpdateResultBulk() {
               placeholder="choose exam"
               onChange={(e, val) => setSelectedExam(val)}
             >
-              {examConfig?.exams.map((item) => {
+              {exams.map((item) => {
                 return <Option value={item.examId} key={item.examId}>{item.examTitle}</Option>;
               })}
             </Select>
@@ -192,7 +207,7 @@ function UpdateResultBulk() {
           results={results}
           setResults={setResults}
           selectedExam={selectedExam}
-          selectedExamTitle={examConfig && selectedExam && examConfig.exams.filter((exam) => exam.examId === selectedExam)[0].examTitle || "N/A"}
+          selectedExamTitle={exams && selectedExam && exams.filter((exam) => exam.examId === selectedExam)[0].examTitle || "N/A"}
           savedStudents={savedStudents}
           setSavedStudents={setSavedStudents} />
       </Stack>

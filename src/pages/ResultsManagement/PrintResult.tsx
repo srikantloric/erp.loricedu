@@ -31,17 +31,12 @@ import rank1Img from "../../assets/rank_images/1st_rank.png";
 import rank2Img from "../../assets/rank_images/2nd_rank.png";
 import rank3Img from "../../assets/rank_images/3rd_rank.png";
 import { getOrdinal } from "utilities/UtilitiesFunctions";
-import { collection, doc, getDoc, getDocs, query, setDoc, where } from "firebase/firestore";
+import { collection, doc, getDocs, query, setDoc, where } from "firebase/firestore";
 import { useFirebase } from "context/firebaseContext";
-import { Exam, ExamPaper } from "types/exam";
+import { Exam } from "types/exam";
 import { useNavbar } from "context/NavbarContext";
 
 
-
-type examConfig = {
-  examPapers: ExamPaper[];
-  exams: Exam[];
-};
 
 type rankTypeExtended = {
   studentId: string;
@@ -68,27 +63,22 @@ function PrintResult() {
   const { db } = useFirebase();
   const { session } = useNavbar()
 
+
   useEffect(() => {
-    const fetchExamConfig = async () => {
-      try {
-        const examConfigRef = doc(db, "CONFIG", "EXAM_CONFIG");
-        const snap = await getDoc(examConfigRef);
+    //fetch exams
+    const fetchExams = async () => {
+      const examsQuery = query(
+        collection(db, "EXAMS"),
+        where("examSession", "==", session)
+      );
+      const querySnapshot = await getDocs(examsQuery);
+      const fetchedExams = querySnapshot.docs.map(doc => doc.data() as Exam);
+      setExamList(fetchedExams);
+    }
+    fetchExams();
 
-        if (snap.exists()) {
-          const data = snap.data() as examConfig;
+  }, [session])
 
-          setExamList(data.exams.filter((exam) => exam.examSession === session));
-        } else {
-          console.log("No data retrieved from exam config.");
-        }
-      } catch (err) {
-        console.error("Error while fetching exams/papers:", err);
-      }
-    };
-
-    fetchExamConfig();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session]);
 
 
 
@@ -110,7 +100,7 @@ function PrintResult() {
 
     let currentPaperIds: string[] = [];
     const exam = examsList.find(e => e.examId === selectedExam);
-    const examPapers = exam?.examPapers || [];
+    const examPapers = exam?.papers || [];
     const currentClassPapers = examPapers.filter((paper) =>
       paper.classes && paper.classes.includes(`${selectedClass}`)
     );
