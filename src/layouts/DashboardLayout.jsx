@@ -3,6 +3,7 @@ import Sidebar from "../components/Sidebar/Sidebar";
 import { useSearchDialog } from "context/SearchDialogContext";
 import { useEffect } from "react";
 import SearchDialog from "components/Dialog/SearchDialog";
+import PlanExpiredDialog from "components/Dialog/PlanExpiredDialog";
 
 
 function DashboardLayout() {
@@ -26,6 +27,7 @@ function DashboardLayout() {
     <>
       <SearchDialog />
       <Sidebar />
+      <PlanExpiredDialog/>
       <Outlet />
     </>
   );
