@@ -37,9 +37,8 @@ const TabsSegmentedControls: React.FC<TabsSegmentedControlsProps> = ({ selectedT
                 }}
             >
                 <Tab disableIndicator value={0}>Overview</Tab>
-                <Tab disableIndicator value={1}>Expenses</Tab>
-                <Tab disableIndicator value={2}>Categories</Tab>
-                <Tab disableIndicator value={3}>Vendors</Tab>
+                <Tab disableIndicator value={1}>Log Expenses</Tab>
+                <Tab disableIndicator value={2}>Expense Heads</Tab>
             </TabList>
         </Tabs>
     );
