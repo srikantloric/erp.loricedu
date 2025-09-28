@@ -1,140 +1,175 @@
 import MaterialTable from "@material-table/core";
 import { Add, MoreVert, Search } from "@mui/icons-material"
-import { Box, Button, Chip, IconButton, Input, Stack, Tooltip, Typography } from "@mui/joy"
+import { Box, IconButton, Stack, Tooltip, Typography, LinearProgress } from "@mui/joy"
+import { Button, FormControl, InputAdornment, InputLabel, MenuItem, Select, SwipeableDrawer, TextField } from "@mui/material";
+import { useFirebase } from "context/firebaseContext";
+import { collection, doc, FieldValue, getDoc, getDocs, setDoc, Timestamp } from "firebase/firestore";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { enqueueSnackbar } from "notistack";
 
+interface Expense {
+  expenseId?: string;
+  expenseTitle: string;
+  description?: string;
+  invoiceNumber?: string;
+  expenseDate: string;
+  expenseHead: string;
+  expenseAmount: number;
+  receiverName: string;
+  payerName: string;
+  createdAt?: Timestamp | FieldValue
+  createdBy?: string;
+}
 
+const expenseSchema = z.object({
+  expenseTitle: z.string().min(1, "Title required"),
+  description: z.string().optional(),
+  invoiceNumber: z.string().optional(),
+  expenseDate: z.string().min(1, "Date required"),
+  expenseHead: z.string().min(1, "Expense head required"),
+  expenseAmount: z.coerce.number().min(1, "Amount required"),
+  receiverName: z.string().min(1, "Receiver required"),
+  payerName: z.string().min(1, "Payer required"),
+});
+
+type ExpenseFormType = z.infer<typeof expenseSchema>;
+
+type ExpenseHead = {
+  expenseHead: string;
+  description: string;
+  id?: string;
+}
 
 function ExpensesTab() {
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [expenseHeads, setExpenseHeads] = useState<ExpenseHead[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const { db } = useFirebase();
 
-  // const [expenses, _setExpenses] = useState([]);
+  // Fetch expenses
+  useEffect(() => {
+    const fetchExpenses = async () => {
+      const expenseCollRef = collection(db, "EXPENSES");
+      const expenseSnapshot = await getDocs(expenseCollRef);
+      const expenseList = expenseSnapshot.docs.map(doc => ({ expenseId: doc.id, ...doc.data() })) as Expense[];
+      setExpenses(expenseList);
+    };
 
-  const schoolManagementExpenses = [
-    {
-      expenseDate: "2024-03-01",
-      expenseId: "MGMT001",
-      category: "Salaries",
-      subcategory: "Teacher Salaries",
-      totalAmount: 5000.0,
-      paymentStatus: "due",
-      receiverName: "John Doe (Math Teacher)"
-    },
-    {
-      expenseDate: "2024-03-02",
-      expenseId: "MGMT002",
-      category: "Maintenance",
-      subcategory: "Building Repairs",
-      totalAmount: 1200.5,
-      paymentStatus: "due",
-      receiverName: "ABC Constructions"
-    },
-    {
-      expenseDate: "2024-03-03",
-      expenseId: "MGMT003",
-      category: "Utilities",
-      subcategory: "Electricity Bill",
-      totalAmount: 750.0,
-      paymentStatus: "Paid",
-      receiverName: "City Power Company"
-    },
-    {
-      expenseDate: "2024-03-04",
-      expenseId: "MGMT004",
-      category: "Transportation",
-      subcategory: "School Bus Fuel",
-      totalAmount: 300.0,
-      paymentStatus: "due",
-      receiverName: "Gas Station"
-    },
-    {
-      expenseDate: "2024-03-05",
-      expenseId: "MGMT005",
-      category: "Infrastructure",
-      subcategory: "New Classroom Furniture",
-      totalAmount: 2500.0,
-      paymentStatus: "Paid",
-      receiverName: "Furniture Supplier"
-    },
-    {
-      expenseDate: "2024-03-06",
-      expenseId: "MGMT006",
-      category: "Technology",
-      subcategory: "Computer Lab Equipment",
-      totalAmount: 1800.0,
-      paymentStatus: "due",
-      receiverName: "Tech Supplier"
-    },
-    {
-      expenseDate: "2024-03-07",
-      expenseId: "MGMT007",
-      category: "Events",
-      subcategory: "Annual Sports Day",
-      totalAmount: 900.0,
-      paymentStatus: "Paid",
-      receiverName: "Event Coordinator"
-    }
-  ];
+    const fetchExpenseHeads = async () => {
+      setLoading(true);
+      const masterDataRef = doc(db, "MASTER_DATA", "expenseHeads");
+      const masterDataSnap = await getDoc(masterDataRef);
+      if (masterDataSnap.exists()) {
+        const data = masterDataSnap.data();
+        setExpenseHeads(data.expenseHeads || []);
+      }
+      setLoading(false);
+    };
+    fetchExpenseHeads();
+    fetchExpenses();
+  }, []);
+
+
 
   const columnMat = [
-    { title: "Expense Date", field: "expenseDate" },
-    { title: "Expense Id", field: "expenseId" },
-    { title: "Category", field: "category" },
-    { title: "SubCategory", field: "subcategory" },
+    { title: "Expense Title", field: "expenseTitle" },
+    { title: "Description", field: "description" },
+    { title: "Invoice Number", field: "invoiceNumber" },
+    { title: "Date", field: "expenseDate" },
+    { title: "Expense Head", field: "expenseHead" },
     {
-      title: "Total Amount", field: "totalAmount",
-      render: (rowData: any) => {
-        return (
-          <Stack>
-            <Typography level="title-lg" >₹{rowData.totalAmount}</Typography>
-            <Typography level="body-sm" >Cash</Typography>
-          </Stack>
-        )
-      }
-
-    },
-    {
-      title: "Payment Status", field: "paymentStatus",
-      render: (rowData: any) => {
-        switch (rowData.paymentStatus.toUpperCase()) {
-          case "DUE":
-            return <Chip variant="soft" color="danger" >{rowData.paymentStatus}</Chip>;
-          case "PAID":
-            return <Chip variant="soft" color="success" >{rowData.paymentStatus}</Chip>;
-          default:
-            return <Chip variant="soft" color="primary" >{rowData.paymentStatus}</Chip>;
-        }
-      },
+      title: "Total Amount", field: "expenseAmount",
+      render: (rowData: any) => (
+        <Stack>
+          <Typography level="title-lg" color="primary">₹{rowData.expenseAmount}</Typography>
+          <Typography level="body-sm" >Cash</Typography>
+        </Stack>
+      )
     },
     {
       title: "Receiver", field: "receiverName",
-      render: (rowData: any) => {
-        return (
-          <Stack>
-            <Typography level="title-md" >{rowData.receiverName}</Typography>
-            <Typography level="body-sm" >Staff</Typography>
-          </Stack>
-        )
-      }
-
+      render: (rowData: any) => (
+        <Stack>
+          <Typography level="title-md" >{rowData.receiverName}</Typography>
+          <Typography level="body-sm" >Staff</Typography>
+        </Stack>
+      )
     },
-  ]
+    {
+      title: "Payer", field: "payerName",
+      render: (rowData: any) => (
+        <Stack>
+          <Typography level="title-md" >{rowData.payerName}</Typography>
+          <Typography level="body-sm" >Staff</Typography>
+        </Stack>
+      )
+    },
+    {
+      title: "Document", field: "documentUrl",
+      render: (rowData: any) =>
+        rowData.documentUrl ? (
+          <a href={rowData.documentUrl} target="_blank" rel="noopener noreferrer">View</a>
+        ) : (
+          <Typography level="body-xs" color="neutral">-</Typography>
+        )
+    }
+  ];
+
+  // React Hook Form with Zod
+  const { register, handleSubmit, reset, formState: { errors }, setValue, watch } = useForm<ExpenseFormType>({
+    resolver: zodResolver(expenseSchema),
+    defaultValues: {
+      expenseTitle: "",
+      description: "",
+      invoiceNumber: "",
+      expenseDate: new Date().toISOString().split("T")[0],
+      expenseHead: "",
+      expenseAmount: 0,
+      receiverName: "",
+      payerName: "",
+    }
+  });
+
+  const onSubmit = async (data: ExpenseFormType) => {
+    // Find the selected head object to get its id
+    const selectedHead = expenseHeads.find(h => h.expenseHead === data.expenseHead);
+
+    const newExpense: Expense & { headerId?: string } = {
+      ...data,
+      expenseAmount: Number(data.expenseAmount),
+      createdAt: Timestamp.now(),
+      headerId: selectedHead?.id || "",
+    };
+
+    // Save to Firestore
+    const expenseCollRef = collection(db, "EXPENSES");
+    const expenseDocRef = doc(expenseCollRef);
+    await setDoc(expenseDocRef, newExpense);
+    newExpense.expenseId = expenseDocRef.id;
+    setExpenses(prev => [...prev, newExpense]);
+    enqueueSnackbar("Expense added!", { variant: "success" });
+    reset();
+    setDrawerOpen(false);
+  };
+
   return (
     <>
-      <Stack
-        justifyContent={"space-between"}
-        direction={"row"}
-        mt={2}
-      >
-        <Input
-          startDecorator={<Search />}
-          sx={{ flex: 0.6, p: 1.1 }}
-          placeholder="Search expense id,reciever or subcategory..."
-        ></Input>
-
-        <Stack
-          direction={"row"}
-          spacing={2}
-        >
-          <Button startDecorator={<Add />}>Add Expense</Button>
+      <Stack justifyContent={"space-between"} direction={"row"} mt={2}>
+        <TextField
+          variant="outlined"
+          size="small"
+          InputProps={{
+            startAdornment: <Search sx={{ mr: 1 }} />,
+          }}
+          sx={{ flex: 0.6 }}
+          placeholder="Search expense id, receiver or subcategory..."
+        />
+        <Stack direction={"row"} spacing={2}>
+          <Button variant="contained" startIcon={<Add />} onClick={() => setDrawerOpen(true)}>Add Expense</Button>
           <Tooltip title="More option">
             <IconButton variant="outlined" >
               <MoreVert />
@@ -144,37 +179,35 @@ function ExpensesTab() {
       </Stack>
       <br />
       <Box
-        sx={{
-          borderRadius: "8px",
-          boxShadow: "0px 2px 2px rgba(0, 0, 0, 0.2)",
-          border: "1px solid #F4F4F4",
-          overflow: "hidden"
-        }}
+        sx={{ border: "1px solid oklch(.900 .013 255.508)", borderRadius: "10px", padding: "2px", }}
       >
+        {loading && <LinearProgress />}
         <MaterialTable
-          style={{ display: "grid", boxShadow: "none" }}
+          style={{ display: "grid", boxShadow: "none", fontSize: "0.92rem" }}
           columns={columnMat}
-          data={schoolManagementExpenses}
+          data={expenses}
           options={{
             search: false,
             showTitle: false,
             toolbar: false,
-            // grouping: true,
             headerStyle: {
               backgroundColor: "#F4F4F4",
-              // color: "#FFF",
-              paddingLeft: "1rem",
-              paddingRight: "1rem",
-              paddingTop: "0.5rem",
-              paddingBottom: "0.5rem",
-              margin: 1
+              paddingLeft: "0.5rem",
+              paddingRight: "0.5rem",
+              paddingTop: "0.3rem",
+              paddingBottom: "0.3rem",
+              margin: 1,
+              fontSize: "0.95rem",
+              height: 36,
+            },
+            rowStyle: {
+              fontSize: "0.92rem",
+              height: 34,
+              paddingTop: 2,
+              paddingBottom: 2,
             },
             actionsColumnIndex: -1,
-            rowStyle: (rowData, index) => ({
-              backgroundColor: index % 2 === 0 ? "#FFFFFF" : "#FAFAFA",
-            }),
           }}
-
           actions={[
             {
               icon: () => <MoreVert sx={{ color: "var(--bs-primary)" }} />,
@@ -184,10 +217,139 @@ function ExpensesTab() {
               },
             },
           ]}
+          renderSummaryRow={({ column, data }) => {
+            // Total for expenseAmount
+            if (column.field === "expenseAmount") {
+              const total = data.reduce((sum, row) => sum + (Number(row.expenseAmount) || 0), 0);
+              return {
+                value: `Total: ₹${total.toLocaleString()}`,
+                style: { fontWeight: "bold", textAlign: "center" },
+              };
+            }
+            // Optional: you can add other columns if needed
+            if (column.field === "expenseTitle") {
+              return { value: "Summary", style: { fontWeight: "bold" } };
+            }
+            return null;
+          }}
         />
       </Box>
+
+      <SwipeableDrawer
+        anchor="right"
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        onOpen={() => setDrawerOpen(true)}
+      >
+        <Box sx={{ width: 350, p: 2, height: "100%" }}>
+          <Stack direction={"row"} justifyContent={"space-between"} alignItems={"center"}>
+            <Typography mb={2}>Add Expense</Typography>
+            <IconButton onClick={() => setDrawerOpen(false)}><MoreVert /></IconButton>
+          </Stack>
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <Stack spacing={2}>
+              <TextField
+                label="Expense Title"
+                variant="outlined"
+                size="small"
+                {...register("expenseTitle")}
+                error={!!errors.expenseTitle}
+                helperText={errors.expenseTitle?.message}
+                fullWidth
+              />
+
+              <TextField
+                label="Description"
+                variant="outlined"
+                size="small"
+                multiline
+                minRows={2}
+                {...register("description")}
+                fullWidth
+              />
+
+              <TextField
+                label="Invoice Number"
+                variant="outlined"
+                size="small"
+                {...register("invoiceNumber")}
+                fullWidth
+              />
+
+              <TextField
+                label="Date"
+                type="date"
+                variant="outlined"
+                size="small"
+                {...register("expenseDate")}
+                error={!!errors.expenseDate}
+                helperText={errors.expenseDate?.message}
+                InputLabelProps={{ shrink: true }}
+                fullWidth
+              />
+
+              <FormControl fullWidth size="small" error={!!errors.expenseHead}>
+                <InputLabel id="expense-head-label">Head</InputLabel>
+                <Select
+                  labelId="expense-head-label"
+                  label="Head"
+                  value={watch("expenseHead")}
+                  onChange={e => {
+                    setValue("expenseHead", e.target.value as string);
+                  }}
+                >
+                  {expenseHeads.map((head, index) => (
+                    <MenuItem key={head.id || index} value={head.expenseHead}>
+                      {head.expenseHead}
+                    </MenuItem>
+                  ))}
+                </Select>
+                {errors.expenseHead && <Typography color="danger" fontSize={12}>{errors.expenseHead.message}</Typography>}
+              </FormControl>
+
+              <TextField
+                label="Amount"
+                variant="outlined"
+                size="small"
+                type="number"
+                InputProps={{
+                  startAdornment: <InputAdornment position="start">Rs.</InputAdornment>,
+                }}
+                {...register("expenseAmount")}
+                error={!!errors.expenseAmount}
+                helperText={errors.expenseAmount?.message}
+                fullWidth
+              />
+
+              <TextField
+                label="Receiver Name"
+                variant="outlined"
+                size="small"
+                {...register("receiverName")}
+                error={!!errors.receiverName}
+                helperText={errors.receiverName?.message}
+                fullWidth
+              />
+
+              <TextField
+                label="Payer Name"
+                variant="outlined"
+                size="small"
+                {...register("payerName")}
+                error={!!errors.payerName}
+                helperText={errors.payerName?.message}
+                fullWidth
+              />
+
+              <Button type="submit" variant="contained" sx={{ borderRadius: "12px" }} size="small" startIcon={<Add />}>
+                Add Expense
+              </Button>
+            </Stack>
+          </form>
+        </Box>
+      </SwipeableDrawer>
     </>
   )
 }
 
-export default ExpensesTab
+export default ExpensesTab;
