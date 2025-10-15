@@ -113,9 +113,9 @@ function AddStudentNew() {
 
     const InitialFormState = {
         student_name: "",
-        class: "",
+        class: 0,
         section: "",
-        class_roll: "",
+        class_roll: 0,
         dob: new Date(),
         date_of_addmission: new Date(),
         gender: "",
@@ -145,32 +145,31 @@ function AddStudentNew() {
         , is_active: true
 
     }
-    const fetchLastRollNumber = async (classId: string, sectionId: string) => {
+    const fetchLastRollNumber = async (classId: number, sectionId: string) => {
         try {
-            const studentsRef = collection(db, "STUDENTS"); // adjust collection name
+            const studentsRef = collection(db, "STUDENTS");
             const q = query(
                 studentsRef,
                 where("class", "==", classId),
                 where("section", "==", sectionId),
-                orderBy
-                    ("class_roll", "desc"),
+                orderBy("class_roll", "desc"),
                 limit(1)
             );
 
             const snapshot = await getDocs(q);
+
             if (!snapshot.empty) {
-                const lastRollStr = snapshot.docs[0].data().class_roll || "000";
-                const lastRollNum = parseInt(lastRollStr, 10) || 0;
-                return String(lastRollNum + 1).padStart(3, "0"); // e.g. "013"
+                const lastRoll = snapshot.docs[0].data().class_roll;
+                const lastRollNum = typeof lastRoll === "string" ? parseInt(lastRoll, 10) : lastRoll || 0;
+                return lastRollNum + 1; // Return as number
             } else {
-                return "001"; // First roll number
+                return 1; // First roll number
             }
         } catch (error) {
             console.error("Error fetching last roll number:", error);
-            return "001";
+            return 1;
         }
     };
-
     useEffect(() => {
         const fetchTransportData = async () => {
             try {
@@ -263,6 +262,7 @@ function AddStudentNew() {
                         values.computer_fee = Number(values.computer_fee || 0);
                         values.admission_fee = Number(values.admission_fee || 0);
                         const nextRoll = await fetchLastRollNumber(values.class, values.section);
+
                         if (!nextRoll) {
                             enqueueSnackbar("Some issue occured while auto-generating roll number", { variant: "error" })
                             return

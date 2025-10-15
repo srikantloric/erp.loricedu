@@ -2,7 +2,7 @@ import { ExamData } from "./reports/exam";
 
 export interface admitCardType {
     studentName: string;
-    rollNumber: string;
+    rollNumber: number;
     className: string;
     fatherName: string;
     motherName:string;

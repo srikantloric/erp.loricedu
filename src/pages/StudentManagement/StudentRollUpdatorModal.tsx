@@ -101,7 +101,7 @@ type StudentRollUpdaterModalProps = {
     open: boolean;
     onClose: () => void;
     selectedStudent: StudentDetailsType;
-    setUpdatedRollNumber: (updatedRoll: string) => void
+    setUpdatedRollNumber: (updatedRoll: number) => void
 };
 
 const StudentRollUpdaterModal: React.FC<StudentRollUpdaterModalProps> = ({
@@ -160,10 +160,12 @@ const StudentRollUpdaterModal: React.FC<StudentRollUpdaterModalProps> = ({
         if (active.id !== over?.id) {
             const oldIndex = students.findIndex((s) => s.id === active.id);
             const newIndex = students.findIndex((s) => s.id === over?.id);
+
             const updated = arrayMove(students, oldIndex, newIndex).map((student, idx) => ({
                 ...student,
-                class_roll: (idx + 1).toString()
+                class_roll: idx + 1 // store as number
             }));
+
             setStudents(updated);
         }
     };
@@ -183,14 +185,14 @@ const StudentRollUpdaterModal: React.FC<StudentRollUpdaterModalProps> = ({
             const batch = writeBatch(db);
             changedStudents.forEach((student) => {
                 const studentRef = doc(db, "STUDENTS", student.id);
-                batch.update(studentRef, { class_roll: student.class_roll });
+                batch.update(studentRef, { class_roll: Number(student.class_roll) }); // save as number
             });
             await batch.commit();
 
             // 🔁 Set the updated roll number of selected student
             const updatedStudent = students.find(s => s.id === selectedStudent.id);
             if (updatedStudent) {
-                setUpdatedRollNumber(updatedStudent.class_roll || "");
+                setUpdatedRollNumber(updatedStudent.class_roll); 
             }
 
             enqueueSnackbar("Roll numbers updated successfully!", { variant: "success" });
@@ -200,6 +202,7 @@ const StudentRollUpdaterModal: React.FC<StudentRollUpdaterModalProps> = ({
             enqueueSnackbar("Failed to update roll numbers", { variant: "error" });
         }
     };
+
 
     return (
         <Modal open={open} onClose={onClose}>

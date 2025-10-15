@@ -10,7 +10,7 @@ export type StudentDetailsType = {
   caste: string;
   city: string;
   class: number | null;
-  class_roll: string;
+  class_roll: number;
   contact_number: string;
   date_of_addmission: string;
   dob: string;

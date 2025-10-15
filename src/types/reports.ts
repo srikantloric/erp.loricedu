@@ -17,7 +17,7 @@ type StudentDetailsDemandSlip = {
     fatherName: string;
     dob: string;
     phoneNumber: string;
-    rollNumber: string;
+    rollNumber: number;
     admissionNo: string;
     section: string;
     address: string;
