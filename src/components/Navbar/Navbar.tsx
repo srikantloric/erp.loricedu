@@ -27,14 +27,13 @@ import { useAuth } from "context/AuthContext";
 import { useState } from "react";
 import { useSidebar } from "context/SidebarContext";
 
-
 const Navbar = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const [anchorEl, setAnchorEl] = useState(null);
   const environment = process.env.REACT_APP_MODE || process.env.NODE_ENV;
-  const { toggleSidebar } = useSidebar();
+  const { toggleSidebar, toggleMobileSidebar } = useSidebar();
 
   const open = Boolean(anchorEl);
   const handleClick = (event: any) => {
@@ -73,7 +72,7 @@ const Navbar = () => {
       <div className="navbar-wrapper">
         <div className="navbar-leftsection">
           <Tooltip title="Collapse">
-            <IconButton onClick={toggleSidebar}>
+            <IconButton onClick={isMobile ? toggleMobileSidebar : toggleSidebar}>
               <MenuIcon />
             </IconButton>
           </Tooltip>
