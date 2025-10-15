@@ -65,7 +65,7 @@ function UpdateResults() {
   const [studentList, setStudentList] = useState<StudentDetailsType[]>([]);
   const [selectedClass, setSelectedClass] = useState<any | null>(null);
   const [selectedRoll, setSelectedRoll] = useState<any | null>(null);
-  const [rollNoList, setRollNoList] = useState<string[] | null>(null);
+  const [rollNoList, setRollNoList] = useState<number[] | null>(null);
   const [prevBtnDisabled, setPrevBtnDisabled] = useState<boolean>(false);
   const [nextBtnDisabled, setNextBtnDisabled] = useState<boolean>(false);
   const [isUpdatingResult, setIsUpdatingResult] = useState(false);
@@ -172,7 +172,7 @@ function UpdateResults() {
           return;
         }
 
-        const rollListTemp: string[] = [];
+        const rollListTemp: number[] = [];
         const studentListTemp: StudentDetailsType[] = [];
 
         snapshot.forEach((doc) => {

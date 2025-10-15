@@ -27,6 +27,7 @@ export const getDemandSlips = async (selectedClass: number): Promise<DemandSlipT
     for (const student of studentSnap.docs) {
         const studentData = student.data() as StudentDetailsType;
         if (!studentData.generatedChallans) continue;
+        if (!studentData.is_active) continue;
 
         if (studentData.generatedChallans.length > 0) {
             // Get all challans for the student

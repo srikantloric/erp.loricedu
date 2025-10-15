@@ -137,7 +137,7 @@ const PersonalTab: React.FC<StudentProfileProps> = ({ studentData }) => {
   const [changeKeyAccessError, setChangeKeyAccessError] = useState<string>("");
 
   //Roll update modal state
-  const [updatedRollNumber, setUpdatedRollNumber] = useState<string>(studentData.class_roll)
+  const [updatedRollNumber, setUpdatedRollNumber] = useState<number>(studentData.class_roll)
   const [rollUpdateModalShowing, setRollUpdateModalShowing] = useState<boolean>(false)
 
   //Get Firebase DB instance
