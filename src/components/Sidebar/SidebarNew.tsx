@@ -1,10 +1,11 @@
 import { ExpandLess, ExpandMore } from "@mui/icons-material";
-import { IconButton, Popper, Paper, List, ListItemButton, ListItemIcon, ListItemText, Box, Collapse, Drawer, ListSubheader, styled, useMediaQuery, useTheme, Tooltip } from "@mui/material";
+import { Popper, Paper, List, ListItemButton, ListItemIcon, ListItemText, Box, Collapse, Drawer, ListSubheader, styled, useMediaQuery, useTheme, Tooltip } from "@mui/material";
 import { menuItems } from "config/menuConfig";
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import SidebarHeader from "./SidebarHeader";
 import { useAuth } from "context/AuthContext";
+import { useSidebar } from "context/SidebarContext";
 
 const drawerWidth = 240;
 const miniWidth = 87;
@@ -22,22 +23,21 @@ const StyledDrawer = styled(Drawer)<{ isMini: boolean }>(({ theme, isMini }) => 
     },
 }));
 
-interface SidebarProps {
-    isMini: boolean;
-}
 
-const NavbarNew: React.FC<SidebarProps> = ({ isMini }) => {
+
+const NavbarNew = () => {
     const theme = useTheme();
     const location = useLocation();
     const navigate = useNavigate();
 
-
+    const { isMini, isMobileOpen, setMobileOpen } = useSidebar();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
     const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
 
 
-    const [mobileOpen, setMobileOpen] = useState(false);
+    // const [mobileOpen, setMobileOpen] = useState(false);
+
     const [hoveredMenu, setHoveredMenu] = useState<null | string>(null);
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
@@ -247,8 +247,8 @@ const NavbarNew: React.FC<SidebarProps> = ({ isMini }) => {
     if (isMobile) {
         return (
             <>
-                <IconButton onClick={() => setMobileOpen(true)} sx={{ position: 'absolute', top: 10, left: 10 }}>kk</IconButton>
-                <Drawer variant="temporary" open={mobileOpen} onClose={() => setMobileOpen(false)} ModalProps={{ keepMounted: true }}>
+                {/* <IconButton onClick={() => setMobileOpen(true)} sx={{ position: 'absolute', top: 10, left: 10 }}>kk</IconButton> */}
+                <Drawer variant="temporary" open={isMobileOpen} onClose={() => setMobileOpen(false)} ModalProps={{ keepMounted: true }}>
                     {drawerContent}
                 </Drawer>
             </>
