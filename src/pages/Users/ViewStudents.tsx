@@ -31,7 +31,7 @@ import { useState } from "react";
 import MaterialTable from "@material-table/core";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
-import { MoreVert } from "@mui/icons-material";
+import { CurrencyRupee, MoreVert } from "@mui/icons-material";
 
 import { useSnackbar } from "notistack";
 import ConfirmationModal from "../../components/Modals/ConfirmationModal";
@@ -262,6 +262,19 @@ function ViewStudents() {
 
   }
 
+
+  const handleFeeDetails = (studentId: string) => {
+    if (studentId && filteredData) {
+      const selectedData = filteredData.filter((student) => student.id === studentId);
+      navigate(`/fee-management/FeeDetails/${studentId}`, { state: selectedData });
+
+    } else {
+      enqueueSnackbar("Error : Please enter student id or admission number !", {
+        variant: "error",
+      });
+    }
+  }
+
   return (
     <>
       <ConfirmationModal
@@ -435,7 +448,15 @@ function ViewStudents() {
               updatestudent(rowData);
             },
           },
-
+          {
+            icon: () => (
+              <CurrencyRupee sx={{ color: "var(--bs-primary)" }} />
+            ),
+            tooltip: "Fee Details",
+            onClick: (event, rowData: any) => {
+              handleFeeDetails(rowData.id);
+            },
+          },
           {
             icon: () => (
               <DeleteForeverIcon sx={{ color: "var(--bs-danger2)" }} />
@@ -445,6 +466,7 @@ function ViewStudents() {
               deletestudent(rowData);
             },
           },
+
           {
             icon: () => (
               <MoreVert
