@@ -15,6 +15,7 @@ export const RankListDesign1 = {
         session: string,
         className: string,
         fullMarksWithPapers: Record<string, number>,
+        paperIdToTitle: Record<string, string>
     ): Promise<string> => {
         const {
             schoolName: SCHOOL_NAME,

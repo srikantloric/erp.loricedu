@@ -54,35 +54,22 @@ function PrintRankList() {
   const { session } = useNavbar();
 
   useEffect(() => {
-    const fetchExamConfig = async () => {
-      try {
-        const examConfigRef = doc(db, "CONFIG", "EXAM_CONFIG");
-        const snap = await getDoc(examConfigRef);
-
-        if (snap.exists()) {
-          const data = snap.data();
-          const examData = data.exams.filter((exam: Exam) => exam.examSession === session);
-          setExamList(examData);
-        } else {
-          console.log("No data retrieved from exam config.");
-        }
-      } catch (err) {
-        console.error("Error while fetching exams/papers:", err);
-      }
-    };
-
-    // Fetch exam config on component mount
-    if (!session) {
-      enqueueSnackbar("Session not found, please select a session!", { variant: "error" });
-      return;
+    //fetch exams
+    const fetchExams = async () => {
+      const examsQuery = query(
+        collection(db, "EXAMS"),
+        where("examSession", "==", session)
+      );
+      const querySnapshot = await getDocs(examsQuery);
+      const fetchedExams = querySnapshot.docs.map(doc => doc.data() as Exam);
+      setExamList(fetchedExams);
     }
+    fetchExams();
 
-    fetchExamConfig();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session]);
+  }, [session])
 
 
-  const printRankList = async (marksheetList: any, fullMarksWithPapers: Record<string, number>) => {
+  const printRankList = async (marksheetList: any, fullMarksWithPapers: Record<string, number>, examPapers: any[]) => {
     if (!selectedClass) {
       enqueueSnackbar("Please select class!", { variant: "info" });
       return
@@ -95,13 +82,17 @@ function PrintRankList() {
     const selectedClassA = getClassNameByValue(selectedClass) || "N/A";
     const selectedExamA = examsList.find((item) => item.examId === selectedExam)?.examTitle || "N/A";
 
-
+    const paperIdToTitle: Record<string, string> = {};
+    examPapers.forEach((paper) => {
+      paperIdToTitle[paper.paperId] = paper.paperTitle;
+    });
 
     const pdfUrl = await ExamRankListGenerator(marksheetList,
       selectedExamA,
       session,
       selectedClassA,
       fullMarksWithPapers
+      , paperIdToTitle
     );
     setPdfUrl(pdfUrl);
   };
@@ -149,14 +140,26 @@ function PrintRankList() {
 
       let markSheetTempListExtended: ExtendedRankType[] = [];
 
-      // Get exam papers for the selected exam and filter by selected class
-      console.log("Selected Exam:", selectedExam);
-      console.log("Selected Class:", selectedClass);
-      const examPapers = examsList.find((item) => item.examId === selectedExam)?.papers.filter((paper) =>
-        paper.classes.includes(`${selectedClass}`)
-      ) || [];
 
+      // 🔹 Fetch master config only once
+      const configSnap = await getDoc(doc(db, "MASTER_DATA", "masterData"));
+      if (!configSnap.exists()) {
+        return enqueueSnackbar("Master data paper config missing!", { variant: "error" });
+      }
 
+      const masterData = configSnap.data();
+      const selectedClassName = getClassNameByValue(selectedClass);
+
+      // 🔹 Find paperIds linked to current class
+      const paperIdsForClass: string[] = masterData.papers
+        ?.filter((p: any) => p.classes.includes(selectedClassName))
+        .map((p: any) => p.paperId) ?? [];
+
+      if (!paperIdsForClass.length) {
+        return enqueueSnackbar("No papers configured for the selected class!", { variant: "warning" });
+      }
+
+      const examPapers = examsList.find((item) => item.examId === selectedExam)?.papers.filter((p) => paperIdsForClass.includes(p.paperId)) || [];
 
       const fullMarks: Record<string, number> = {};
       examPapers.forEach((paper) => {
@@ -196,7 +199,7 @@ function PrintRankList() {
 
               if (themeExam === "theory-practical-design") {
 
-                if (item.paperId === "DRAWING") {
+                if (item.grade && item.grade.trim() === "") {
                   obtainedMarkCalculated = 0; // Assuming DRAW has no marks
                 } else {
                   obtainedMarkCalculated = Number(item.theory || 0) + Number(item.practical || 0);
@@ -221,7 +224,7 @@ function PrintRankList() {
               subjectMarks: res.result.map((item) => ({
                 subject: item.paperId,
                 marks:
-                  item.paperId === "DRAWING"
+                  item.grade && item.grade.trim() === ""
                     ? (item.grade ?? "")
                     : ((Number(item.theory ?? 0) + Number(item.practical ?? 0))),
               })),
@@ -235,7 +238,6 @@ function PrintRankList() {
       // Sort students by marks obtained in descending order
       markSheetTempListExtended.sort((a, b) => b.marksObtained - a.marksObtained);
 
-      console.log("MarksheetList after sorting", markSheetTempListExtended)
       // Assign ranks, ensuring students with the same marks get the same rank
       let currentRank = 1;
       markSheetTempListExtended.forEach((student, index) => {
@@ -248,7 +250,7 @@ function PrintRankList() {
       });
 
       setStudentRankDetails(markSheetTempListExtended);
-      printRankList(markSheetTempListExtended, fullMarks);
+      printRankList(markSheetTempListExtended, fullMarks, examPapers);
       setIsGeneratingRank(false);
       enqueueSnackbar("Rank List Generated successfully!", { variant: "success" });
 

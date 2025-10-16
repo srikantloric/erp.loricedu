@@ -17,6 +17,7 @@ export const RankListDesign2 = {
         session: string,
         className: string,
         fullMarksWithPapers: Record<string, number>,
+        paperIdToTitle: Record<string, string>
     ): Promise<string> => {
 
         const {
@@ -135,9 +136,10 @@ export const RankListDesign2 = {
         rankList.sort((a, b) => a.rollNumber - b.rollNumber);
 
         const allSubjects = Object.keys(fullMarksWithPapers).sort((a, b) => a.localeCompare(b));
+        const allSubjectTitles = allSubjects.map((paperId) => paperIdToTitle[paperId] || paperId);
 
         const totalUnits = 100;
-        const subjectUnits = Math.floor((totalUnits * 0.5) / allSubjects.length); // 50% for all subjects
+        const subjectUnits = Math.floor((totalUnits * 0.5) / allSubjectTitles.length); // 50% for all subjects
         const columnWidths = {
             roll: effectiveWidth * 0.05, // 5%
             name: effectiveWidth * 0.2, // 20%
@@ -154,12 +156,12 @@ export const RankListDesign2 = {
         autoTable(doc, {
             startY: firstPageOffset,
             margin: { left: pageMargin, right: pageMargin },
-            head: [["Roll", "Name", ...allSubjects, "Total", "Percentage", "Rank"]],
+            head: [["Roll", "Name", ...allSubjectTitles, "Total", "Percentage", "Rank"]],
             body: [
                 [
                     "",
                     "",
-                    ...allSubjects.map((subject) => fullMarksWithPapers[subject] || "-"),
+                    ...allSubjectTitles.map((subject) => fullMarksWithPapers[subject] || "-"),
                     Object.keys(fullMarksWithPapers)
                         .filter((subject) => allSubjects.includes(subject))
                         .reduce((sum, subject) => sum + (fullMarksWithPapers[subject] || 0), 0),

@@ -95,6 +95,7 @@ export const menuItems: MenuItem[] = [
       { label: 'Setup Exam', path: '/exams' },
       { label: 'Update Result', path: '/exams/publish-result' },
       { label: 'Print Result', path: '/exams/print-result' },
+      { label: 'Print RankList', path: '/exams/print-ranklist' },
     ],
     group: "manager"
   },

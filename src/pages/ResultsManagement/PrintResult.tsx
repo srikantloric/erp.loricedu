@@ -30,8 +30,8 @@ import { MarksheetReportGenerator } from "components/Reports/MarksheetReport";
 import rank1Img from "../../assets/rank_images/1st_rank.png";
 import rank2Img from "../../assets/rank_images/2nd_rank.png";
 import rank3Img from "../../assets/rank_images/3rd_rank.png";
-import { getOrdinal } from "utilities/UtilitiesFunctions";
-import { collection, doc, getDocs, query, setDoc, where } from "firebase/firestore";
+import { getClassNameByValue, getOrdinal } from "utilities/UtilitiesFunctions";
+import { collection, doc, getDoc, getDocs, query, setDoc, where } from "firebase/firestore";
 import { useFirebase } from "context/firebaseContext";
 import { Exam } from "types/exam";
 import { useNavbar } from "context/NavbarContext";
@@ -83,56 +83,74 @@ function PrintResult() {
 
 
   const printMarkSheet = async (marksheetList: marksheetTypeNew[]) => {
-    if (!selectedExam || !examsList) {
-      enqueueSnackbar("Failed to load exam configuration!", { variant: "error" });
-      return
-    }
-    const examTheme = examsList.find((item) => item.examId === selectedExam)?.marksheetDesign;
-
-    if (!examTheme) {
-      enqueueSnackbar("Failed to load exam theme!", { variant: "error" });
-      return
+  try {
+    if (!selectedExam || !examsList?.length) {
+      return enqueueSnackbar("Failed to load exam configuration!", { variant: "error" });
     }
 
-    if (marksheetList.length === 0) {
-      enqueueSnackbar("No result found for selected options!", { variant: "info" });
-    }
-
-    let currentPaperIds: string[] = [];
     const exam = examsList.find(e => e.examId === selectedExam);
-    const examPapers = exam?.papers || [];
-    const currentClassPapers = examPapers.filter((paper) =>
-      paper.classes && paper.classes.includes(`${selectedClass}`)
-    );
+    if (!exam) {
+      return enqueueSnackbar("Exam not found!", { variant: "error" });
+    }
 
-    currentPaperIds = currentClassPapers.map(paper => paper.paperId);
+    const examTheme = exam.marksheetDesign;
+    if (!examTheme) {
+      return enqueueSnackbar("Failed to load exam theme!", { variant: "error" });
+    }
 
+    if (!marksheetList.length) {
+      return enqueueSnackbar("No result found for selected options!", { variant: "info" });
+    }
 
-    // Only keep results for papers that are in currentPaperIds
+    // 🔹 Fetch master config only once
+    const configSnap = await getDoc(doc(db, "MASTER_DATA", "masterData"));
+    if (!configSnap.exists()) {
+      return enqueueSnackbar("Master data paper config missing!", { variant: "error" });
+    }
+
+    const masterData = configSnap.data();
+    const selectedClassName = getClassNameByValue(selectedClass);
+
+    // 🔹 Find paperIds linked to current class
+    const paperIdsForClass: string[] = masterData.papers
+      ?.filter((p: any) => p.classes.includes(selectedClassName))
+      .map((p: any) => p.paperId) ?? [];
+
+    if (!paperIdsForClass.length) {
+      return enqueueSnackbar("No papers configured for the selected class!", { variant: "warning" });
+    }
+
+    // 🔹 Filter exam papers belonging to current class
+    const currentClassPapers = exam.papers.filter(p => paperIdsForClass.includes(p.paperId));
+    const currentPaperIds = currentClassPapers.map(p => p.paperId);
+
+    // 🔹 Filter only relevant subjects in results
     marksheetList.forEach(ms => {
-      ms.result = ms.result.filter(subject => currentPaperIds.includes(`${subject.paperId}`));
+      ms.result = ms.result.filter(sub => currentPaperIds.includes(String(sub.paperId)));
     });
 
-    const examPaperWithFullMarks = currentClassPapers.map(paper => ({
-      paperId: paper.paperId,
-      maxTheory: paper.maxTheory ?? 0, // Default to 0 if maxTheory is not defined
-      maxPractical: paper.maxPractical ?? 0, // Default to 0 if maxPractical is not defined
-      fullMarks: Number(paper.maxTheory ?? 0) + Number(paper.maxPractical ?? 0) || 0, // Default to 0 if fullMarks is not defined
+    // 🔹 Map with full marks
+    const examPaperWithFullMarks = currentClassPapers.map(p => ({
+      paperId: p.paperId,
+      maxTheory: Number(p.maxTheory) || 0,
+      maxPractical: Number(p.maxPractical) || 0,
+      fullMarks: (Number(p.maxTheory) || 0) + (Number(p.maxPractical) || 0),
     }));
 
-    console.log("Marksheet List:", marksheetList)
-
-
-
+    // 🔹 Generate marksheet PDF
     const pdfUrl = await MarksheetReportGenerator(
       marksheetList,
       session,
       examPaperWithFullMarks,
       examTheme
     );
-    setPdfUrl(pdfUrl);
-  };
 
+    setPdfUrl(pdfUrl);
+  } catch (error: any) {
+    console.error("Error generating marksheet:", error);
+    enqueueSnackbar("Unexpected error while generating marksheet!", { variant: "error" });
+  }
+};
 
   const fetchResults = async () => {
     try {

@@ -16,6 +16,7 @@ export const ExamRankListGenerator = async (
   session: string,
   className: string,
   fullMarks: { [subject: string]: number },
+  paperIdToTitle: Record<string, string>,
   theme?: string
 ): Promise<string> => {
   return new Promise(async (resolve, reject) => {
@@ -33,7 +34,7 @@ export const ExamRankListGenerator = async (
       const designModule = getDesignModule(selectedTheme);
 
       // Delegate the PDF generation to the design module
-      const pdfUrl = await designModule.generatePDF(config,rankList,examName,session,className,fullMarks);
+      const pdfUrl = await designModule.generatePDF(config, rankList, examName, session, className, fullMarks,paperIdToTitle);
 
       resolve(pdfUrl);
     } catch (error) {
