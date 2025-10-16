@@ -108,7 +108,7 @@ export const MarksheetDesign2 = {
 
       let resDataTable: paperMarksTypeLocal[] = [];
       data.result.forEach((item) => {
-        const obtainedMarkCaculated = item.paperId === "DRAWING" ? 0 : (Number(item.theory ?? 0) + Number(item.practical ?? 0))
+        const obtainedMarkCaculated = item.grade ? 0 : (Number(item.theory ?? 0) + Number(item.practical ?? 0))
         //get full marks from examPaperWithFullMarks
         const fullMarksItem = examPaperWithFullMarks.find((paper) => paper.paperId === item.paperId);
         const fullMarks = fullMarksItem ? (Number(fullMarksItem.maxTheory ?? 0) + Number(fullMarksItem.maxPractical ?? 0)) : 0;
@@ -116,15 +116,16 @@ export const MarksheetDesign2 = {
 
         const res: paperMarksTypeLocal = {
           paperTitle: item.paperTitle,
-          paperMarkTheory: item.paperId === "DRAWING" ? "-" : Number(item.theory ?? 0),
-          paperMarkPractical: item.paperId === "DRAWING" ? "-" : Number(item.practical ?? 0),
+          paperMarkTheory: item.grade ? "-" : Number(item.theory ?? 0),
+          paperMarkPractical: item.grade ? "-" : Number(item.practical ?? 0),
 
-          paperMarkObtained: item.paperId === "DRAWING"
+          paperMarkObtained: item.grade
             ? item.grade! // Assign grade for DRAWING
             : obtainedMarkCaculated === 0
               ? "AB"
               : obtainedMarkCaculated, // Assign numeric value for other subjects
-          paperMarkPassing: item.paperId === "DRAWING" ? item.grade! : GetGradeFromMark(obtainedMarkCaculated, fullMarks),
+
+          paperMarkPassing: item.grade ? item.grade! : GetGradeFromMark(obtainedMarkCaculated, fullMarks),
         };
 
         resDataTable.push(res);
@@ -141,14 +142,15 @@ export const MarksheetDesign2 = {
 
 
       let marksObtained = data.result.reduce((total, item) => {
-        const obtainedMarkCalculated =
-          item.paperId === "DRAWING"
-            ? 0
-            : Number(item.theory) + Number(item.practical);
+        const hasGrade = item.grade && item.grade.trim() !== ""; 
+
+        const theory = Number(item.theory) || 0;
+        const practical = Number(item.practical) || 0;
+
+        const obtainedMarkCalculated = hasGrade ? 0 : theory + practical;
 
         return total + obtainedMarkCalculated;
       }, 0);
-
 
       let percentage = (marksObtained / totalAllMarks) * 100;
 

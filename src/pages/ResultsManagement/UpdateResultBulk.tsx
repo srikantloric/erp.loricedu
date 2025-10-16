@@ -1,5 +1,5 @@
 import { Search } from "@mui/icons-material"
-import { Box, Button, Divider, Option, Select, Stack, Typography } from "@mui/joy"
+import { Box, Button, Divider, LinearProgress, Option, Select, Stack, Typography } from "@mui/joy"
 import PageHeaderWithHelpButton from "components/Breadcrumbs/PageHeaderWithHelpButton"
 import StudentsResultUpdateTable from "components/Tables/StudentsResultUpdateTable"
 import { SCHOOL_CLASSES } from "config/schoolConfig"
@@ -34,6 +34,9 @@ function UpdateResultBulk() {
   const [selectedExamPapers, setSelectedExamPapers] = useState<ExamPaper[]>([])
   const [savedStudents, setSavedStudents] = useState<Set<string>>(new Set());
 
+  //paper marks loading
+  const [loading, setLoading] = useState<boolean>(false);
+
   const { db } = useFirebase();
   const { session } = useNavbar();
   const { setMini, isMini } = useSidebar()
@@ -41,9 +44,6 @@ function UpdateResultBulk() {
   useEffect(() => {
     setMini(true)
   }, []);
-
-
-
 
   useEffect(() => {
     //fetch exams
@@ -75,14 +75,14 @@ function UpdateResultBulk() {
             const classConfigData = classConfig.data()?.papers;
 
             const selectedClassText = getClassNameByValue(selectedClass);
-          
+
             // Filter papers where classConfigData contains an entry with paperId === paper.paperId and classes includes selectedClassText
             const filteredPapers = selectedExamData.papers.filter(paper =>
               classConfigData.some(
-              (cfg: any) =>
-                cfg.paperId === paper.paperId &&
-                Array.isArray(cfg.classes) &&
-                cfg.classes.includes(selectedClassText)
+                (cfg: any) =>
+                  cfg.paperId === paper.paperId &&
+                  Array.isArray(cfg.classes) &&
+                  cfg.classes.includes(selectedClassText)
               )
             );
             setSelectedExamPapers(filteredPapers);
@@ -106,6 +106,7 @@ function UpdateResultBulk() {
     }
     // Fetch students based on selected class and exam
     const fetchStudents = async () => {
+      setLoading(true)
       try {
         const studentsQuery = query(
           collection(db, "STUDENTS"),
@@ -139,9 +140,11 @@ function UpdateResultBulk() {
             }
           }
         }
+        setLoading(false)
         setResults(fetchedResults);
         setSavedStudents(savedStudentIds);
       } catch (error) {
+        setLoading(false)
         console.error("Error fetching students:", error);
         enqueueSnackbar("Failed to fetch students.", { variant: "error" });
       }
@@ -202,6 +205,9 @@ function UpdateResultBulk() {
         </Stack>
         <Divider />
         <br />
+        {loading &&
+          <LinearProgress />
+        }
         <StudentsResultUpdateTable students={students}
           papers={selectedExamPapers}
           results={results}

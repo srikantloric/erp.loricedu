@@ -13,7 +13,6 @@ import ExamPlanner from "pages/ResultsManagement/ExamPlanner";
 import { FirebaseProvider } from "context/firebaseContext";
 
 
-import PrintRankList from "pages/ResultsManagement/PrintRankList";
 import StudentMigration from "pages/Users/StudentMigration";
 import PrintTopperList from "pages/ResultsManagement/PrintToperList";
 import AllocatedStudents from "pages/transport/vehicleDetailsTabs/AllocatedStudents";
@@ -60,6 +59,9 @@ const UpdateResultsBulk = Loadable(
 );
 const PrintResult = Loadable(
     lazy(() => import("pages/ResultsManagement/PrintResult"))
+);
+const PrintRankList = Loadable(
+    lazy(() => import("pages/ResultsManagement/PrintRankList"))
 );
 const IdCardGeneration = Loadable(
     lazy(() => import("pages/Extras/IdCardGeneration"))
@@ -230,6 +232,10 @@ function AppNew() {
                                         <Route
                                             path="exams/print-result"
                                             element={<PrintResult />}
+                                        />
+                                        <Route
+                                            path="exams/print-ranklist"
+                                            element={<PrintRankList />}
                                         />
                                         <Route
                                             path="schoolResults/class-migration"

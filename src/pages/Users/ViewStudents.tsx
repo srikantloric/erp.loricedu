@@ -11,7 +11,7 @@ import {
   Typography,
 } from "@mui/material";
 
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import GrainIcon from "@mui/icons-material/Grain";
 import SearchIcon from "@mui/icons-material/Search";
 import PersonIcon from "@mui/icons-material/Person";
@@ -91,6 +91,10 @@ function ViewStudents() {
   const [anchorEl, setAnchorEl] = useState(null);
   const menuOpen = Boolean(anchorEl);
 
+  const [searchParams, setSearchParams] = useSearchParams();
+  const searchQuery = searchParams.get("search") || "";
+  const [searchValue, setSearchValue] = useState(searchQuery);
+
   //Get Firebase DB instance
   const { db } = useFirebase();
   const handleMenuClick = (event: any, rowData: StudentDetailsType) => {
@@ -103,6 +107,10 @@ function ViewStudents() {
   const handleMenuClose = () => {
     setAnchorEl(null);
   };
+
+  useEffect(() => {
+    setSearchValue(searchQuery);
+  }, [searchQuery]);
 
   useEffect(() => {
     if (Array.from(data).length === 0) {
@@ -185,6 +193,8 @@ function ViewStudents() {
       enqueueSnackbar("Failed to generate report", { variant: "error" })
     }
   };
+
+
 
   //column for material table
   const columnMat = [
@@ -274,6 +284,10 @@ function ViewStudents() {
       });
     }
   }
+
+  useEffect(() => {
+    console.log(searchValue)
+  }, [searchValue])
 
   return (
     <>
@@ -419,15 +433,27 @@ function ViewStudents() {
         columns={columnMat}
         data={filteredData}
         title="Students Data"
-
+        onSearchChange={(newSearchText) => {
+          setSearchValue(newSearchText); // update your own state
+          // ✅ This line updates the URL automatically
+          if (newSearchText) {
+            setSearchParams({ search: newSearchText });
+          } else {
+            setSearchParams({});
+          }
+        }}
         options={{
           grouping: true,
+          searchText: searchValue,
           pageSizeOptions: [5, 10, 20, 50, 100],
           pageSize: 10,
+          search: true,  // enable search
+
           headerStyle: {
             backgroundColor: "#5d87ff",
             color: "#FFF",
           },
+
           exportMenu: [
             {
               label: "Export PDF",
