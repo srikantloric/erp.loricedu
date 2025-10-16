@@ -120,7 +120,7 @@ function PrintResult() {
       fullMarks: Number(paper.maxTheory ?? 0) + Number(paper.maxPractical ?? 0) || 0, // Default to 0 if fullMarks is not defined
     }));
 
-
+    console.log("Marksheet List:", marksheetList)
 
 
 

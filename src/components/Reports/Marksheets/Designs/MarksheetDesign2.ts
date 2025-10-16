@@ -67,7 +67,6 @@ export const MarksheetDesign2 = {
 
 
 
-
     resultData.forEach((data, index) => {
 
       const header2 = [
@@ -86,7 +85,7 @@ export const MarksheetDesign2 = {
             styles: { halign: "center", fillColor: [195, 240, 255] },
           },
           {
-            content: `Theory (${examPaperWithFullMarks[0].maxTheory ?? 0})`,
+            content: `Theory (${examPaperWithFullMarks[0].theory ?? 0})`,
             styles: { halign: "center", fillColor: [195, 240, 255] },
           },
           {
