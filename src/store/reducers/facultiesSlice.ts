@@ -3,6 +3,7 @@ import { addDoc, collection, getDocs, Timestamp } from "firebase/firestore";
 import { FacultyType } from "types/facuities";
 import { query, where } from "firebase/firestore";
 import { getFirestoreInstance } from "context/firebaseUtility";
+import { enqueueSnackbar } from "notistack";
 
 interface FacultyState {
   teacherArray: FacultyType[];
@@ -45,12 +46,21 @@ export const addFaculty = createAsyncThunk<FacultyType, Partial<FacultyType>>(
       updatedAt: Timestamp.now(),
     };
 
-    const docRef = await addDoc(collection(db, "STUDENTS"), facultyToAdd);
+    try {
 
-    return {
-      ...facultyData,
-      facultyId: docRef.id,
-    } as FacultyType;
+      const docRef = await addDoc(collection(db, "STUDENTS"), facultyToAdd);
+      console.log("Faculty added with ID: ", docRef.id);
+      enqueueSnackbar("Faculty added successfully", { variant: "success" });
+      return {
+        ...facultyData,
+        facultyId: docRef.id,
+      } as FacultyType;
+      
+    } catch (error) {
+      console.error("Error adding faculty: ", error);
+      throw error;
+    }
+
   }
 );
 

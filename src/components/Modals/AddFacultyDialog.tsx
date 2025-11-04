@@ -26,6 +26,7 @@ import { useState, useRef } from "react";
 
 import { addFaculty } from "store/reducers/facultiesSlice";
 import { useDispatch } from "store";
+import { enqueueSnackbar } from "notistack";
 
 const validationSchema = Yup.object({
     facultyName: Yup.string().required("Faculty name is required"),
@@ -84,15 +85,18 @@ export function AddFacultyDialog({ open, onClose }: AddFacultyDialogProps) {
             try {
                 const faculty: Partial<FacultyType> = {
                     ...values,
-                    facultyImage: selectedImage || undefined,
-                    facultyImageThumb: selectedImage || undefined, 
+                    facultyImage: selectedImage || "",
+                    facultyImageThumb: selectedImage || "",
                 };
-                await dispatch(addFaculty(faculty));
-                onClose();
-                formik.resetForm();
-                setSelectedImage(null);
-            } catch (error) {
-                console.error("Error adding faculty:", error);
+                try {
+                    await dispatch(addFaculty(faculty));
+                    onClose();
+                    formik.resetForm();
+                    setSelectedImage(null);
+                } catch (error) {
+                    enqueueSnackbar("Failed to add faculty. Please try again.", { variant: "error" });
+                    console.error("Error adding faculty:", error);
+                }
             } finally {
                 setIsSubmitting(false);
             }

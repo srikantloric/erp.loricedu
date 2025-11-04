@@ -79,7 +79,6 @@ function Faculties() {
       >
         {facultiesList &&
           facultiesList.map((dta) => {
-            console.log(dta)
             return <Card facultyData={dta} key={dta.id} />;
           })}
       </div>
