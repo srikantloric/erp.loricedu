@@ -13,9 +13,9 @@ import {
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import {
+  IconAccessPoint,
   IconBell,
   IconMessage2,
-  IconMoon,
   IconSearch,
 } from "@tabler/icons-react";
 import { Circle, Logout, Settings } from "@mui/icons-material";
@@ -27,7 +27,11 @@ import { useAuth } from "context/AuthContext";
 import { useState } from "react";
 import { useSidebar } from "context/SidebarContext";
 
-const Navbar = () => {
+type NavbarProps = {
+  setAttenzyFeed: (open: boolean) => void;
+};
+
+const Navbar: React.FC<NavbarProps> = ({ setAttenzyFeed }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -104,9 +108,9 @@ const Navbar = () => {
           {!isMobile && (
             <>
               <div className="rounded-bg">
-                <Tooltip title="Night Mode">
-                  <IconButton>
-                    <IconMoon size={22} />
+                <Tooltip title="Attenzy Device">
+                  <IconButton onClick={() => setAttenzyFeed(true)}>
+                    <IconAccessPoint size={22} />
                   </IconButton>
                 </Tooltip>
               </div>

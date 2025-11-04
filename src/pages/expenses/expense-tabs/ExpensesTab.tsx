@@ -3,7 +3,7 @@ import { Add, MoreVert, Search } from "@mui/icons-material"
 import { Box, IconButton, Stack, Tooltip, Typography, LinearProgress } from "@mui/joy"
 import { Button, FormControl, InputAdornment, InputLabel, MenuItem, Select, SwipeableDrawer, TextField } from "@mui/material";
 import { useFirebase } from "context/firebaseContext";
-import { collection, doc, FieldValue, getDoc, getDocs, setDoc, Timestamp } from "firebase/firestore";
+import { collection, doc, FieldValue, getDoc, getDocs, orderBy, query, setDoc, Timestamp } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -54,7 +54,8 @@ function ExpensesTab() {
   useEffect(() => {
     const fetchExpenses = async () => {
       const expenseCollRef = collection(db, "EXPENSES");
-      const expenseSnapshot = await getDocs(expenseCollRef);
+      const q = query(expenseCollRef, orderBy("createdAt", "desc"));
+      const expenseSnapshot = await getDocs(q);
       const expenseList = expenseSnapshot.docs.map(doc => ({ expenseId: doc.id, ...doc.data() })) as Expense[];
       setExpenses(expenseList);
     };
@@ -79,7 +80,12 @@ function ExpensesTab() {
     { title: "Expense Title", field: "expenseTitle" },
     { title: "Description", field: "description" },
     { title: "Invoice Number", field: "invoiceNumber" },
-    { title: "Date", field: "expenseDate" },
+    {
+      title: "Date", field: "expenseDate",
+      render: (rowData: any) => (
+        <Typography level="body-md" >{new Date(rowData.expenseDate).toDateString()}</Typography>
+      )
+    },
     { title: "Expense Head", field: "expenseHead" },
     {
       title: "Total Amount", field: "expenseAmount",
@@ -113,6 +119,24 @@ function ExpensesTab() {
       render: (rowData: any) =>
         rowData.documentUrl ? (
           <a href={rowData.documentUrl} target="_blank" rel="noopener noreferrer">View</a>
+        ) : (
+          <Typography level="body-xs" color="neutral">-</Typography>
+        )
+    },
+    {
+      title: "CreatedBy", field: "createdBy",
+      render: (rowData: any) =>
+        rowData.createdBy ? (
+          <Typography level="body-xs" color="neutral">{rowData.createdBy}</Typography>
+        ) : (
+          <Typography level="body-xs" color="neutral">-</Typography>
+        )
+    },
+    {
+      title: "CreatedAt", field: "createdAt",
+      render: (rowData: any) =>
+        rowData.createdAt ? (
+          <Typography level="body-md" color="neutral">{rowData.createdAt.toDate().toLocaleString()}</Typography>
         ) : (
           <Typography level="body-xs" color="neutral">-</Typography>
         )

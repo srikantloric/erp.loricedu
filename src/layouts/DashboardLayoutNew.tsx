@@ -1,16 +1,25 @@
 import { Box } from "@mui/material";
+import AttenzyLiveFeed from "components/Attenzy/AttenzyLiveFeed";
 import PlanExpiredDialog from "components/Dialog/PlanExpiredDialog";
 import SearchDialog from "components/Dialog/SearchDialog";
 import Footer from "components/Footer/Footer";
 import Navbar from "components/Navbar/Navbar";
 import SidebarNew from "components/Sidebar/SidebarNew";
+import { useState } from "react";
 import { Outlet } from "react-router-dom";
 
 function DashboardLayoutNew() {
+    const [showAttenzyFeed, setShowAttenzyFeed] = useState(true);
 
     return (
         <>
             <Box sx={{ display: "flex" }}>
+                <AttenzyLiveFeed
+                    isOpen={showAttenzyFeed}
+                    onClose={() => setShowAttenzyFeed(false)}
+                    maxEntries={100}
+                    bounds="parent"
+                />
                 {/* Sidebar */}
                 <SidebarNew />
 
@@ -25,7 +34,7 @@ function DashboardLayoutNew() {
                     }}
                 >
                     {/* Top Navbar */}
-                    <Navbar />
+                    <Navbar setAttenzyFeed={setShowAttenzyFeed} />
 
                     {/* Page Content */}
 
