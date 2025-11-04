@@ -135,7 +135,7 @@ function SetExamDetails({ setActiveStep }: any) {
     // Save the data with custom ID
     await setDoc(newDocRef, examData);
     navigate({
-      pathname: "/schoolResults/add-exam",
+      pathname: "/exams/add-exam",
       search: `?examId=${examData.examId}`
     });
 
