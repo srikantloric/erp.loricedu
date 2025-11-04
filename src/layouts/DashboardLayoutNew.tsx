@@ -9,7 +9,7 @@ import { useState } from "react";
 import { Outlet } from "react-router-dom";
 
 function DashboardLayoutNew() {
-    const [showAttenzyFeed, setShowAttenzyFeed] = useState(true);
+    const [showAttenzyFeed, setShowAttenzyFeed] = useState(false);
 
     return (
         <>
