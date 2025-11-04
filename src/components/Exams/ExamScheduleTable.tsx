@@ -382,7 +382,7 @@ const ExamScheduleTable: React.FC<ExamPlannerTableProps> = ({ examTitle, examId,
         if (examId) {
 
             navigate({
-                pathname: "/schoolResults/add-exam",
+                pathname: "/exams/add-exam",
                 search: `?examId=${examId}`
             });
         } else {
