@@ -44,7 +44,6 @@ export const MarksheetDesign1 = {
       format: "a4",
     });
 
-    console.log("Generating PDF for Marksheet Design 1");
 
     //data manupulation
     const pageWidth = doc.internal.pageSize.getWidth();
@@ -104,6 +103,7 @@ export const MarksheetDesign1 = {
 
 
       let resDataTable: paperMarksTypeLocal[] = [];
+      console.log("Processing result:", data);
       data.result.forEach((item) => {
         // Calculate obtained marks based on paperId
         const passingMark = (0.33 * (Number(item.theory) + Number(item.practical))).toFixed(0); // Calculate 33% of total marks

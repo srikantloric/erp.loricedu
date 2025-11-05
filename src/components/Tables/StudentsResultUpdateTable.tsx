@@ -129,7 +129,6 @@ export default function StudentResultsTable({ students, papers, results, setResu
         if (numericValue !== '' && (isNaN(numericValue) || numericValue < 0)) return;
         if (numericValue !== '' && numericValue > max) return;
 
-        // ⛔ Remove from savedStudents when edited
         setSavedStudents(prev => {
             const newSet = new Set(prev);
             newSet.delete(studentId);
@@ -148,8 +147,8 @@ export default function StudentResultsTable({ students, papers, results, setResu
         }));
     };
 
-    const handleGradeChange = (studentId: string, paperId: string, value: string|null) => {
-        if(!value) return
+    const handleGradeChange = (studentId: string, paperId: string, value: string | null) => {
+        if (!value) return
         setSavedStudents(prev => {
             const newSet = new Set(prev);
             newSet.delete(studentId);
@@ -225,6 +224,7 @@ export default function StudentResultsTable({ students, papers, results, setResu
         });
     };
 
+  
     return (
         <>
             <div style={tableContainerStyle}>
@@ -234,6 +234,7 @@ export default function StudentResultsTable({ students, papers, results, setResu
                             <TableHead style={stickyLeftStyle} rowSpan={2}>Student</TableHead>
                             {papers.map(paper => (
                                 <TableHead
+
                                     key={paper.paperId}
                                     style={{
                                         ...headCellStyle,
@@ -286,7 +287,7 @@ export default function StudentResultsTable({ students, papers, results, setResu
                                                 <>
                                                     <TableCell colSpan={2} style={{ textAlign: "center" }}>
                                                         <Select
-                                                        
+
                                                             value={grade}
                                                             onChange={(e, val) =>
                                                                 handleGradeChange(student.id, paper.paperId, val)
@@ -294,13 +295,13 @@ export default function StudentResultsTable({ students, papers, results, setResu
                                                         >
                                                             {paper.grade && paper.grade.map((grade) => {
                                                                 return (
-                                                                    <Option value={grade}>
+                                                                    <Option value={grade} key={grade}>
                                                                         {grade}
                                                                     </Option>
                                                                 )
                                                             })}
                                                         </Select>
-                                              
+
                                                     </TableCell>
                                                 </>
                                             ) : (

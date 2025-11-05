@@ -68,6 +68,7 @@ function UpdateResultBulk() {
         const selectedExamData = exams.find(exam => exam.examId === selectedExam);
         if (selectedExamData) {
           if (selectedClass) {
+            
 
             const classConfigRef = doc(db, "MASTER_DATA", "masterData");
             const classConfig = await getDoc(classConfigRef);
