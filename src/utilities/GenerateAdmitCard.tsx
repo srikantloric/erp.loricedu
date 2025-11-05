@@ -158,7 +158,7 @@ export const GenerateAdmitCard = async (
         { align: "left" }
       );
 
-      // Time Table
+      // --- Time Table Section ---
       doc.setFont("Poppins", "semibold");
       doc.setFontSize(10);
       let startY = positionY + 34;
@@ -168,43 +168,63 @@ export const GenerateAdmitCard = async (
       doc.rect(timeTableX - 4, startY - 6, 90, 8, "F");
       doc.text("Date", timeTableX + 7, startY - 2, { align: "center" });
       doc.text("1st Seating", timeTableX + 35, startY - 2, { align: "center" });
-      // doc.text("2nd Meeting", timeTableX + 70, startY - 2, { align: "center" });
+      doc.text("2nd Seating", timeTableX + 65, startY - 2, { align: "center" });
 
-      // Table Rows
+      // Fetch both sessions
+      const firstSession = getScheduleForClassAndSession(
+        studentData.timeTabel,
+        studentData.className,
+        "1st"
+      );
+      const secondSession = getScheduleForClassAndSession(
+        studentData.timeTabel,
+        studentData.className,
+        "2nd"
+      );
+
+      // Merge both sessions by date
+      const mergedSchedule = [] as {
+        date: string;
+        firstSubject: string;
+        secondSubject: string;
+      }[];
+
+      const allDates = new Set([
+        ...firstSession.map((x) => x.date),
+        ...secondSession.map((x) => x.date),
+      ]);
+
+      allDates.forEach((date) => {
+        const first = firstSession.find((x) => x.date === date);
+        const second = secondSession.find((x) => x.date === date);
+        mergedSchedule.push({
+          date,
+          firstSubject: first?.sessions[0]?.subject || "-",
+          secondSubject: second?.sessions[0]?.subject || "-",
+        });
+      });
+
+      // Sort dates (optional)
+      mergedSchedule.sort((a, b) => a.date.localeCompare(b.date));
+
+      // Draw table rows
       doc.setFont("Poppins", "normal");
-      const classSessionSchedule = getScheduleForClassAndSession(studentData.timeTabel, studentData.className, "1st");
 
-
-      classSessionSchedule.forEach((item, index) => {
+      mergedSchedule.forEach((item, index) => {
         const rowY = startY + (index + 1) * 6;
-        const fillColor = index % 2 === 0 ? "#ccffcc" : "#ffffcc"; // Light green and light yellow
+        const fillColor = index % 2 === 0 ? "#ccffcc" : "#ffffcc"; // alternating row colors
+
         doc.setFillColor(fillColor);
         doc.rect(timeTableX - 4, rowY - 6, 90, 6, "F");
         doc.setDrawColor(0, 0, 0);
         doc.rect(timeTableX - 4, rowY - 6, 90, 6);
+
         const [year, month, day] = item.date.split("-");
         const formattedDate = `${day}/${month}/${year}`;
 
-        doc.text(formattedDate, timeTableX + 7, rowY - 2, {
-          align: "center",
-        });
-    
-        doc.text(item.sessions[0].subject, timeTableX + 35, rowY - 2, {
-          align: "center",
-        });
-      });
-      const classSessionSchedule2 = getScheduleForClassAndSession(studentData.timeTabel, studentData.className, "2nd");
-
-      if (classSessionSchedule2.length !== 0) {
-        doc.text("2nd Seating", timeTableX + 60, startY - 2, { align: "center" });
-      }
-
-      classSessionSchedule2.forEach((item, index) => {
-        const rowY = startY + (index + 1) * 6;
-        
-        doc.text(item.sessions[0].subject, timeTableX + 60, rowY - 2, {
-          align: "center",
-        });
+        doc.text(formattedDate, timeTableX + 7, rowY - 2, { align: "center" });
+        doc.text(item.firstSubject, timeTableX + 35, rowY - 2, { align: "center" });
+        doc.text(item.secondSubject, timeTableX + 65, rowY - 2, { align: "center" });
       });
 
       // Signatures
