@@ -45,7 +45,7 @@ export const MarksheetDesign2 = {
     });
 
     console.log("Generating Marksheet Design 2 PDF...");
-
+    console.log("Exam Papers:", examPaperWithFullMarks);
 
     //data manupulation
     const pageWidth = doc.internal.pageSize.getWidth();
@@ -85,7 +85,7 @@ export const MarksheetDesign2 = {
             styles: { halign: "center", fillColor: [195, 240, 255] },
           },
           {
-            content: `Theory (${examPaperWithFullMarks[0].theory ?? 0})`,
+            content: `Theory (${examPaperWithFullMarks[0].maxTheory ?? 0})`,
             styles: { halign: "center", fillColor: [195, 240, 255] },
           },
           {
@@ -104,7 +104,6 @@ export const MarksheetDesign2 = {
         ,
 
       ];
-
 
       let resDataTable: paperMarksTypeLocal[] = [];
       data.result.forEach((item) => {
@@ -142,7 +141,7 @@ export const MarksheetDesign2 = {
 
 
       let marksObtained = data.result.reduce((total, item) => {
-        const hasGrade = item.grade && item.grade.trim() !== ""; 
+        const hasGrade = item.grade && item.grade.trim() !== "";
 
         const theory = Number(item.theory) || 0;
         const practical = Number(item.practical) || 0;
