@@ -6,6 +6,7 @@ export type ExamPaper = {
   scoreType?: 'grade' | 'marks'; // assuming only these two for now
   classes: string[]; // list of class IDs (e.g., "1", "2", "10", "14")
   grade?: string[];  // only present if scoreType is 'grade'
+  optional?:[string]; // list of class IDs for which this paper is optional
 };
 
 export type ExamPaperExtended = ExamPaper & {

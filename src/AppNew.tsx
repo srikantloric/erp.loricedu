@@ -31,6 +31,7 @@ import FeeManager from "pages/FeeManager/FeeManager";
 import Reports from "pages/Reports/Reports";
 import Expenses from "pages/expenses/Expenses";
 import { SidebarProvider } from "context/SidebarContext";
+import StudentProfilePictureUpdater from "pages/ProfileUpdater/StudentProfilePictureUpdater";
 
 
 // Lazy Loaded Components
@@ -313,10 +314,13 @@ function AppNew() {
                                         />
                                     </Route>
 
-
                                     <Route path="/login" element={<AuthenticationLayout />}>
                                         <Route index element={<Login />} />
                                     </Route>
+                                    <Route
+                                        path="profile-update"
+                                        element={<StudentProfilePictureUpdater />}
+                                    />
                                 </Routes>
                             </Suspense>
                         </NavbarProvider>
