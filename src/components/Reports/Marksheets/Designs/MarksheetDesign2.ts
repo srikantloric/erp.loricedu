@@ -45,7 +45,6 @@ export const MarksheetDesign2 = {
     });
 
     console.log("Generating Marksheet Design 2 PDF...");
-    console.log("Exam Papers:", examPaperWithFullMarks);
 
     //data manupulation
     const pageWidth = doc.internal.pageSize.getWidth();
@@ -106,15 +105,21 @@ export const MarksheetDesign2 = {
       ];
 
       let resDataTable: paperMarksTypeLocal[] = [];
+
       data.result.forEach((item) => {
         const obtainedMarkCaculated = item.grade ? 0 : (Number(item.theory ?? 0) + Number(item.practical ?? 0))
         //get full marks from examPaperWithFullMarks
         const fullMarksItem = examPaperWithFullMarks.find((paper) => paper.paperId === item.paperId);
+
+        const isOptional = fullMarksItem?.optional?.includes(getClassNameByValue(data.student.class!)) ?? false;
+
+        // ✅ Append (OP) if optional
+        const paperTitleDisplay = isOptional ? `${item.paperTitle} (OP)` : item.paperTitle;
+
         const fullMarks = fullMarksItem ? (Number(fullMarksItem.maxTheory ?? 0) + Number(fullMarksItem.maxPractical ?? 0)) : 0;
 
-
         const res: paperMarksTypeLocal = {
-          paperTitle: item.paperTitle,
+          paperTitle: paperTitleDisplay,
           paperMarkTheory: item.grade ? "-" : Number(item.theory ?? 0),
           paperMarkPractical: item.grade ? "-" : Number(item.practical ?? 0),
 
@@ -136,11 +141,18 @@ export const MarksheetDesign2 = {
 
 
       examPaperWithFullMarks.forEach((item) => {
-        totalAllMarks += item.fullMarks;
+        const isOptional = item?.optional?.includes(getClassNameByValue(resultData.at(0)?.student.class!)) ?? false;
+        if (!isOptional) {
+          totalAllMarks += item.fullMarks;
+        }
       })
 
 
       let marksObtained = data.result.reduce((total, item) => {
+        const fullMarksItem = examPaperWithFullMarks.find((paper) => paper.paperId === item.paperId);
+        const isOptional = fullMarksItem?.optional?.includes(getClassNameByValue(data.student.class!)) ?? false;
+        if (isOptional) return total; // ✅ skip optional subjects from total
+
         const hasGrade = item.grade && item.grade.trim() !== "";
 
         const theory = Number(item.theory) || 0;
@@ -252,24 +264,12 @@ export const MarksheetDesign2 = {
         schoolContactDetailStartY + 5,
         { align: "left" }
       );
-      //  const address2 = "Giridih, Jharkhand – 815312";
-      //   doc.text(
-      //     address2,
-      //     (pageWidth - doc.getTextWidth(address2)) / 2,
-      //     schoolContactDetailStartY + 9
-      //   ); 
       const contact = "Phone: " + SCHOOL_CONTACT;
       doc.text(
         contact,
         schoolHeaderStartX,
         schoolContactDetailStartY + 9
       );
-      // const contact2 = "+91-6205447024";
-      // doc.text(
-      //   contact2,
-      //   (pageWidth - doc.getTextWidth(contact2)) / 2,
-      //   schoolContactDetailStartY + 17
-      // );
       const websiteName = "" + SCHOOL_WEBSITE;
       doc.text(
         websiteName,
@@ -355,21 +355,7 @@ export const MarksheetDesign2 = {
         leftXStartContent,
         studentDetailsStartY + 24
       );
-      // doc.text("Address", leftXStart, studentDetailsStartY + 36);
-      // // doc.text(
-      // //   ": #" + data.student.address,
-      // //   leftXStartContent,
-      // //   studentDetailsStartY + 36
-      // // );
-      // let text = ": " + data.student.address;
-      // const wrapx = leftXStartContent;
-      // const wrapy = studentDetailsStartY + 36;
-      // const maxWidth = 90;
 
-      // Call the wrapText function
-      // wrapText(doc, text, wrapx, wrapy, maxWidth);
-
-      //right side
       const rightXStart = cardWidth - 60;
       const rightXStartContent = cardWidth - 24;
 
