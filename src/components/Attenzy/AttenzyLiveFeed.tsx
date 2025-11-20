@@ -4,8 +4,10 @@ import Draggable from "react-draggable";
 import { Chip, IconButton } from "@mui/material";
 import { keyframes } from "@emotion/react";
 import { ContentCopy } from "@mui/icons-material";
+import { doc, getDoc } from "firebase/firestore";
+import { useFirebase } from "context/firebaseContext";
 
-// Add animation keyframes
+// Animation
 const fadeInOut = keyframes`
   0% { background: #7cbf7eff; }
   50% { background: #338836ff; }
@@ -25,15 +27,42 @@ const AttenzyLiveFeed: React.FC<AttenzyLiveFeedProps> = ({
   bounds,
   maxEntries = 50,
 }) => {
-  const deviceId = "attenzy001";
-  const { message } = useIotWebSocket(isOpen ? deviceId : null);
+  const [deviceIds, setDeviceIds] = useState<string[]>([]);
+  const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null);
+
   const [entries, setEntries] = useState<IotMessage[]>([]);
   const [currentScan, setCurrentScan] = useState<IotMessage | null>(null);
 
-  // Update current scan and entries
+  const { db } = useFirebase();
+  // Load device IDs from Firestore
+  useEffect(() => {
+    const loadIds = async () => {
+      try {
+        const snap = await getDoc(doc(db, "CONFIG", "IOT_CONFIG"));
+        if (snap.exists()) {
+          const arr = snap.data()?.attenzyDeviceIds || [];
+          setDeviceIds(arr);
+          console.log("Loaded IoT device IDs:", arr);
+          if (arr.length > 0) {
+            setSelectedDeviceId(arr[0]); // auto select first
+          }
+        }
+      } catch (err) {
+        console.error("Error loading IoT device IDs:", err);
+      }
+    };
+
+    loadIds();
+  }, []);
+
+  // Initialize WS only when open AND deviceId selected
+  const { message } = useIotWebSocket(isOpen ? selectedDeviceId : null);
+
+  // Handle incoming messages
   useEffect(() => {
     if (message && message.rfidId) {
       setCurrentScan(message);
+
       setEntries((prev) => {
         const next = [message, ...prev];
         if (next.length > maxEntries) next.length = maxEntries;
@@ -74,12 +103,33 @@ const AttenzyLiveFeed: React.FC<AttenzyLiveFeedProps> = ({
             alignItems: "center",
           }}
         >
-          <div>
-            <strong>RFID Monitor</strong>{" "}
-            <span style={{ fontSize: 12, opacity: 0.8 }}>
-              {deviceId ? `📟 ${deviceId}` : ""}
-            </span>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <strong>RFID Monitor</strong>
+
+            {/* Device selector */}
+            {deviceIds.length > 0 && (
+              <select
+                value={selectedDeviceId || ""}
+                onChange={(e) => setSelectedDeviceId(e.target.value)}
+                style={{
+                  marginLeft: 10,
+                  padding: "4px 6px",
+                  borderRadius: 4,
+                  border: "1px solid #fff",
+                  background: "rgba(255,255,255,0.2)",
+                  color: "#fff",
+                  fontSize: 12,
+                }}
+              >
+                {deviceIds.map((id) => (
+                  <option key={id} value={id} style={{ color: "#000" }}>
+                    {id}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
+
           <button
             onClick={onClose}
             style={{
@@ -103,7 +153,7 @@ const AttenzyLiveFeed: React.FC<AttenzyLiveFeedProps> = ({
           }}
         >
           {currentScan ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               <Chip
                 label={`Last Scan: ${currentScan.rfidId}`}
                 color="primary"
@@ -123,10 +173,10 @@ const AttenzyLiveFeed: React.FC<AttenzyLiveFeedProps> = ({
               <IconButton
                 onClick={() => navigator.clipboard.writeText(currentScan.rfidId)}
                 style={{
-                  background: 'transparent',
-                  border: 'none',
-                  cursor: 'pointer',
-                  padding: '4px',
+                  background: "transparent",
+                  border: "none",
+                  cursor: "pointer",
+                  padding: "4px",
                 }}
                 title="Copy RFID"
               >
@@ -134,11 +184,7 @@ const AttenzyLiveFeed: React.FC<AttenzyLiveFeedProps> = ({
               </IconButton>
             </div>
           ) : (
-            <Chip
-              label="Waiting for scan..."
-              variant="outlined"
-              sx={{ width: "100%" }}
-            />
+            <Chip label="Waiting for scan..." variant="outlined" sx={{ width: "100%" }} />
           )}
         </div>
 
@@ -188,9 +234,7 @@ const AttenzyLiveFeed: React.FC<AttenzyLiveFeedProps> = ({
                 >
                   {entry.rfidId}
                 </div>
-                <div style={{ fontSize: 12, color: "#555" }}>
-                  {entry.deviceId}
-                </div>
+                <div style={{ fontSize: 12, color: "#555" }}>{entry.deviceId}</div>
               </div>
             ))
           )}
