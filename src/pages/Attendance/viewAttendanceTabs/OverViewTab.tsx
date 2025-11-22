@@ -34,8 +34,7 @@ function OverViewTab() {
     const fetchAttendanceSummary = async () => {
       try {
         const attendanceRef = collectionGroup(db, "MY_ATTENDANCE");
-        // const today = new Date().toISOString().split("T")[0];
-        const today = "2025-11-20";
+        const today = new Date().toISOString().split("T")[0];
         const q = query(
           attendanceRef,
           where("date", "==", today),
