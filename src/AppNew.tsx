@@ -32,6 +32,7 @@ import Reports from "pages/Reports/Reports";
 import Expenses from "pages/expenses/Expenses";
 import { SidebarProvider } from "context/SidebarContext";
 import StudentProfilePictureUpdater from "pages/ProfileUpdater/StudentProfilePictureUpdater";
+import ManualAttendance from "pages/Attendance/ManualAttendance";
 
 
 // Lazy Loaded Components
@@ -180,10 +181,10 @@ function AppNew() {
                                             path="attendance/view"
                                             element={<ViewAttendance />}
                                         />
-                                        {/* <Route
-                                        path="attendance/mark-manual-attendance"
-                                        element={<ManualAttendance />}
-                                    />  */}
+                                        <Route
+                                            path="attendance/manual"
+                                            element={<ManualAttendance />}
+                                        />
                                         {/* <Route
                                         path="attendance/generate-attendance-qr"
                                         element={<GenerateQrSticker />}

@@ -1,58 +1,37 @@
-import { Grid } from "@mui/joy";
-import { Typography } from "@mui/material";
+import { Grid, Sheet } from "@mui/joy";
+import { Box, Typography } from "@mui/material";
 import RoundIconCard from "components/Card/RoundIconCard";
-import { useFirebase } from "context/firebaseContext";
-import { collection, collectionGroup, getCountFromServer, query, where } from "firebase/firestore";
+import AttendanceBarChart from "components/Graph/AttendanceBarChart";
 import { Clock, Forbidden2, TickCircle } from "iconsax-react";
 import { useEffect, useState } from "react";
+import { getAttendanceSummary, getClassWiseAttendanceSummary } from "services/firestore.attendance";
+import { AttendanceSummary, ClassAttendanceSummary } from "types/AttendanceType";
 
 function OverViewTab() {
 
   const todaysDate = new Date().toLocaleString();
-  const [totalStudents, setTotalStudents] = useState(0);
-  const [attendanceSummary, setAttendanceSummary] = useState({
-    totalPresent: 0,
-    totalAbsent: 0,
-    totalOnLeave: 0,
-  });
+  const [attendanceSummary, setAttendanceSummary] = useState<AttendanceSummary>();
+  const [attendanceSummaryClassWise, setAttendanceSummaryClassWise] = useState<ClassAttendanceSummary[]>();
 
-  const { db } = useFirebase()
 
   useEffect(() => {
-    //students count from firestore STUDENTS collection
-    const fetchStudentCount = async () => {
-      try {
-        const studentsRef = collection(db, "STUDENTS");
-        const q = query(studentsRef);
-        const snapshot = await getCountFromServer(q);
-        setTotalStudents(snapshot.data().count);
-      } catch (error) {
-        console.error("Error fetching count:", error);
-      }
-    };
 
-    const fetchAttendanceSummary = async () => {
-      try {
-        const attendanceRef = collectionGroup(db, "MY_ATTENDANCE");
-        const today = new Date().toISOString().split("T")[0];
-        const q = query(
-          attendanceRef,
-          where("date", "==", today),
+    const init = async () => {
+      const d = new Date();
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      const localDate = `${yyyy}-${mm}-${dd}`;
 
-        );
-        const snapshot = await getCountFromServer(q);
-        const totalPresent = snapshot.data().count;
-        setAttendanceSummary((prev) => ({
-          ...prev,
-          totalPresent: totalPresent,
-        }));
-      } catch (error) {
-        console.error("Error fetching attendance summary:", error);
-      }
+      const attendanceSummaryData: AttendanceSummary = await getAttendanceSummary(
+        localDate
+      );
+      const classWiseSummary = await getClassWiseAttendanceSummary(localDate);
+      setAttendanceSummaryClassWise(classWiseSummary);
+      setAttendanceSummary(attendanceSummaryData);
     }
 
-    fetchStudentCount();
-    fetchAttendanceSummary();
+    init();
 
   }, [])
 
@@ -66,7 +45,7 @@ function OverViewTab() {
           <RoundIconCard
             iconPrimary={TickCircle}
             primary="Total Present"
-            secondary={"" + attendanceSummary.totalPresent}
+            secondary={"" + attendanceSummary?.totalPresent}
             content={todaysDate}
             color="#1b5e20"
             bgcolor="#c8e6c9"
@@ -77,7 +56,7 @@ function OverViewTab() {
           <RoundIconCard
             iconPrimary={Clock}
             primary="Total Absent"
-            secondary={"" + (totalStudents - attendanceSummary.totalPresent)}
+            secondary={"" + (attendanceSummary?.totalAbsent)}
             content={todaysDate}
             color="#b71c1c"
             bgcolor="#ffcdd2"
@@ -87,11 +66,27 @@ function OverViewTab() {
           <RoundIconCard
             iconPrimary={Forbidden2}
             primary="Total On Leave"
-            secondary={"" + attendanceSummary.totalOnLeave}
+            secondary={"" + attendanceSummary?.totalOnLeave}
             content={todaysDate}
             color="#01579b"
             bgcolor="#b3e5fc"
           />
+        </Grid>
+      </Grid>
+      <br />
+      <Grid container gap="1rem" >
+        <Grid md={12} sm={12} xs={12}>
+          <Sheet
+            variant="outlined"
+            sx={{ p: "1rem", borderRadius: "0.5rem" }}
+          >
+            <Box>
+              <Typography textAlign="center" mb="0.5rem">
+                Attendance Summary By Class - {new Date().toDateString().toString()}
+              </Typography>
+              <AttendanceBarChart data={attendanceSummaryClassWise!} />
+            </Box>
+          </Sheet>
         </Grid>
       </Grid>
     </>

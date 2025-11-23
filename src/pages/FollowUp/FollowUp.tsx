@@ -15,7 +15,9 @@ function FollowUp() {
         <>
             <PageHeaderWithHelpButton title="Follow Up With the Parents" />
             <br />
-            <Stack direction={"row"} sx={{ border: "1px solid oklch(.900 .013 255.508)", p: "14px", borderRadius: "10px", justifyContent: "space-between" }}>
+            <Stack direction={"row"} 
+            sx={{ border: "1px solid oklch(.900 .013 255.508)", p: "14px", borderRadius: "10px", justifyContent: "space-between" }}
+            >
                 <Stack direction={"row"} sx={{ alignItems: "center", height: "140px" }}>
                     <img src={FollowUpImage} alt="follow-up-image" height={"110%"} />
                     <Stack>
