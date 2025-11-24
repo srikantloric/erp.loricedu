@@ -42,3 +42,32 @@ export interface ClassAttendanceSummary {
   holiday: number;
   total: number;
 }
+
+
+
+export type StudentType = {
+    id: string;
+    student_name: string;
+    class_roll: number;
+    student_id: string;
+    contact_number: string;
+    father_name: string;
+    admission_no: string;
+    profil_url?: string;
+};
+
+export type AttendanceType = {
+    studentId: string;
+    status: "PRESENT" | "ABSENT";
+};
+
+export type AttendanceRowType = {
+    studentId: string;
+    name: string;
+    rollNo: number;
+    mobileNo: string;
+    fatherName: string;
+    status: string;
+    profilePicUrl: string;
+    admissionNo: string;
+};

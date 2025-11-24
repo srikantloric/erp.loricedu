@@ -26,6 +26,7 @@ function DashboardLayout() {
   return (
     <>
       <SearchDialog />
+      
       <Sidebar />
       <PlanExpiredDialog/>
       <Outlet />

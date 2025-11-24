@@ -3,7 +3,7 @@
 import { SCHOOL_CLASSES } from "config/schoolConfig";
 import { getFirestoreInstance } from "context/firebaseUtility";
 import { collection, doc, getCountFromServer, getDoc, getDocs, query, where } from "firebase/firestore";
-import { AttendanceStatus, AttendanceSummary, ClassAttendanceSummary, StudentAttendance } from "types/AttendanceType";
+import { AttendanceRowType, AttendanceStatus, AttendanceSummary, AttendanceType, ClassAttendanceSummary, StudentAttendance, StudentType } from "types/AttendanceType";
 
 export async function getStudentsWithAttendance(
     classId: number,
@@ -124,10 +124,12 @@ export async function getAttendanceSummary(
     }
 }
 
-export async function getClassWiseAttendanceSummary(date: string): Promise<ClassAttendanceSummary[]> {
+export async function getClassWiseAttendanceSummary(date: string, classId?: number): Promise<ClassAttendanceSummary[]> {
     const db = await getFirestoreInstance();
 
     const results: ClassAttendanceSummary[] = [];
+
+
 
     for (const cls of SCHOOL_CLASSES) {
         const classRef = doc(
@@ -170,3 +172,116 @@ export async function getClassWiseAttendanceSummary(date: string): Promise<Class
 
     return results;
 }
+
+export async function getClassAttendanceSummary(date: string, classId: number): Promise<ClassAttendanceSummary> {
+
+    const db = await getFirestoreInstance();
+
+    let totalStudents = 0;
+    try {
+        const studentsRef = collection(db, "STUDENTS");
+        const q = query(studentsRef, where("class", "==", classId));
+        const snapshot = await getCountFromServer(q);
+        totalStudents = snapshot.data().count;
+    } catch (error) {
+        console.error("Error fetching count:", error);
+        throw error;
+    }
+
+    const classRef = doc(
+        db,
+        "ATTENDANCE_SUMMARY_DAILY",
+        date,
+        "CLASSES",
+        classId.toString()
+    );
+
+    const snap = await getDoc(classRef);
+    if (snap.exists()) {
+        const data = snap.data() as any;
+        return Promise.resolve({
+            classId: classId,
+            className: SCHOOL_CLASSES.find(c => c.value === classId)?.title || '',
+            present: data.present || 0,
+            absent: totalStudents - (data.present || 0),
+            leave: data.leave || 0,
+            half_day: data.half_day || 0,
+            holiday: data.holiday || 0,
+            total: data.total || 0,
+        });
+    } else {
+        return Promise.resolve({
+            classId: classId,
+            className: SCHOOL_CLASSES.find(c => c.value === classId)?.title || '',
+            present: 0,
+            absent: 0,
+            leave: 0,
+            half_day: 0,
+            holiday: 0,
+            total: 0,
+        });
+    }
+}
+
+
+/**
+ * Fetch students + attendance → merge → return final table rows
+ */
+export const getClassAttendanceForDate = async (
+    classId: number,
+    date: string
+): Promise<AttendanceRowType[]> => {
+
+    const db = await getFirestoreInstance();
+
+    // -------------------------
+    // 1. GET ALL STUDENTS
+    // -------------------------
+    const stuQuery = query(
+        collection(db, "STUDENTS"),
+        where("class", "==", classId)
+    );
+
+    const stuSnap = await getDocs(stuQuery);
+
+    const students: StudentType[] = stuSnap.docs.map((d) => ({
+        id: d.id,
+        ...(d.data() as any),
+    }));
+
+    // -------------------------
+    // 2. GET ATTENDANCE FOR DATE
+    // -------------------------
+    const attQuery = query(
+        collection(db, "ATTENDANCE_DAILY", date, "CLASSES", classId.toString(), "STUDENTS")
+    );
+
+    const attSnap = await getDocs(attQuery);
+
+    const attendanceMap: Record<string, AttendanceType> = {};
+
+    attSnap.docs.forEach((d) => {
+        const data = d.data() as any;
+        attendanceMap[data.studentId] = {
+            studentId: data.studentId,
+            status: data.status || "ABSENT",
+        };
+    });
+
+
+    // -------------------------
+    // 3. MERGE STUDENTS + ATTENDANCE
+    // -------------------------
+    const finalRows = students.map((stu) => ({
+        studentId: stu.id,
+        name: stu.student_name,
+        rollNo: stu.class_roll,
+        mobileNo: stu.contact_number,
+        fatherName: stu.father_name,
+        admissionNo: stu.admission_no,
+        profilePicUrl: stu.profil_url || '',
+        status: attendanceMap[stu.id]?.status ?? "ABSENT",
+    }));
+
+    return finalRows;
+};
