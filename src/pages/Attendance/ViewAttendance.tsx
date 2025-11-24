@@ -1,10 +1,9 @@
 
 import FingerprintIcon from "@mui/icons-material/Fingerprint";
 import BreadCrumbsV2 from "components/Breadcrumbs/BreadCrumbsV2";
-import { Tab, TabList, TabPanel, Tabs } from "@mui/joy";
+import { Chip, Tab, TabList, TabPanel, Tabs } from "@mui/joy";
 
 import OverViewTab from "./viewAttendanceTabs/OverViewTab";
-import AttendanceByStudentId from "./viewAttendanceTabs/AttendanceByStudentId";
 import AttendanceByClass from "./viewAttendanceTabs/AttendanceByClass";
 
 function ViewAttendance() {
@@ -19,8 +18,17 @@ function ViewAttendance() {
       <Tabs aria-label="Basic tabs" defaultValue={0}>
         <TabList>
           <Tab>Overview</Tab>
-          <Tab>By Class</Tab>
-          <Tab>By Student ID</Tab>
+          <Tab>
+            Attendance Class Wise
+            <Chip
+              size="sm"
+              color="danger"
+              variant="solid"
+              sx={{ ml: 0.4, fontSize: "0.65rem", px: "0.4rem" }}
+            >
+              NEW
+            </Chip>
+          </Tab>
         </TabList>
         <TabPanel value={0}>
           <OverViewTab />
@@ -28,9 +36,7 @@ function ViewAttendance() {
         <TabPanel value={1}>
           <AttendanceByClass />
         </TabPanel>
-        <TabPanel value={2}>
-          <AttendanceByStudentId />
-        </TabPanel>
+
       </Tabs>
     </>
   );

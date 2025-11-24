@@ -1,7 +1,6 @@
 import {
   Avatar,
   Box,
-  Button,
   Card,
   CardContent,
   FormControl,
@@ -10,265 +9,277 @@ import {
   LinearProgress,
   Option,
   Select,
-  Table,
   Typography,
+  Skeleton
 } from "@mui/joy";
-import { Paper } from "@mui/material";
-import { enqueueSnackbar } from "notistack";
-import { useState } from "react";
-import { StudentAttendanceGlobalSchema } from "types/attendance";
+import { useEffect, useState } from "react";
 import {
-  getAttendanceStatusByCode,
+  getClassNameByValue,
   getCurrentDate,
-  makeDoubleDigit,
 } from "utilities/UtilitiesFunctions";
 import { SCHOOL_CLASSES } from "config/schoolConfig";
-import { Print } from "@mui/icons-material";
-import { AttendanceReportGenerator } from "components/AttendanceReport/AttendanceReportGenerator";
-import { doc, getDoc } from "firebase/firestore";
-import { useFirebase } from "context/firebaseContext";
-
-type AttendanceHeaderDataType = {
-  totalStudent: number;
-  totalAbsent: number;
-  totalPresent: number;
-  totalLeave: number;
-  totalHoliday: number;
-};
+import { AttendanceRowType, ClassAttendanceSummary } from "types/AttendanceType";
+import {
+  getClassAttendanceForDate,
+  getClassAttendanceSummary,
+} from "services/firestore.attendance";
+import MaterialTable from "@material-table/core";
+import { Chip } from "@mui/material";
+import { ExportCsv, ExportPdf } from "@material-table/exporters";
 
 function AttendanceByClass() {
-  ///Form Input State
   const [selectedDate, setSelectedDate] = useState<string>(getCurrentDate());
   const [selectedClass, setSelectedClass] = useState<number | null>(null);
 
-  const [loading, setLoading] = useState<boolean>(false);
-  const [attendanceHeaderData, setAttendanceHeaderData] =
-    useState<AttendanceHeaderDataType | null>(null);
+  const [summaryLoading, setSummaryLoading] = useState<boolean>(false);
+  const [tableLoading, setTableLoading] = useState<boolean>(false);
 
-  const [individualAttendanceData, setIndividualAttendanceData] = useState<
-    StudentAttendanceGlobalSchema[]
-  >([]);
+  const [attendanceDataSummary, setAttendanceDataSummary] =
+    useState<ClassAttendanceSummary | null>(null);
+  const [attendanceForClass, setAttendanceForClass] =
+    useState<AttendanceRowType[]>([]);
 
-   //Get Firebase DB instance
-   const {db} = useFirebase();
+  useEffect(() => {
+    async function initAttendance() {
+      if (selectedClass === null) return;
 
-  const fetchStudentAtt = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!selectedClass) {
-      enqueueSnackbar("Please select a class!", { variant: "error" });
-      return;
+      // -------------------
+      // LOAD SUMMARY FIRST
+      // -------------------
+      setSummaryLoading(true);
+      setAttendanceDataSummary(null);
+
+      const summary = await getClassAttendanceSummary(
+        selectedDate,
+        selectedClass
+      );
+      setAttendanceDataSummary(summary);
+      setSummaryLoading(false);
+
+      // -------------------
+      // LOAD TABLE AFTER SUMMARY
+      // -------------------
+      setTableLoading(true);
+      setAttendanceForClass([]);
+
+      const attendance = await getClassAttendanceForDate(
+        selectedClass,
+        selectedDate
+      );
+      setAttendanceForClass(attendance);
+      setTableLoading(false);
     }
 
-    setLoading(true);
-    const classDate = `${makeDoubleDigit(selectedClass.toString())}_${selectedDate}`;
+    initAttendance();
+  }, [selectedDate, selectedClass]);
 
-    setIndividualAttendanceData([]);
-    setAttendanceHeaderData(null);
+  const attendanceColumns = [
+    {
+      field: "profilePicUrl",
+      title: "Profile",
+      render: (rowData: AttendanceRowType) => (
+        <Avatar src={rowData.profilePicUrl}>
+          {rowData.name.charAt(0)}
+        </Avatar>
+      ),
+      width: 80,
+      export: false,
+    },
+    {
+      field: "admissionNo",
+      title: "ID",
+      width: 150,
+    },
+    {
+      field: "name",
+      title: "Student Name",
+      width: 200,
+    },
+    {
+      field: "rollNo",
+      title: "Roll No",
+      width: 110,
+    },
+    {
+      field: "mobileNo",
+      title: "Mobile No",
+      width: 150,
+    },
+    {
+      field: "fatherName",
+      title: "Father Name",
+      width: 200,
+    },
+    {
+      field: "status",
+      title: "Status",
+      width: 140,
+      render: (row: AttendanceRowType) => (
+        <Chip
+          label={row.status}
+          color={row.status === "PRESENT" ? "success" : "error"}
+          variant="outlined"
+        />
+      ),
+    },
+  ];
 
-    try {
-      const attendanceRef = doc(db, "ATTENDANCE", classDate);
-      const snapshot = await getDoc(attendanceRef);
-
-      if (snapshot.exists()) {
-        const data = snapshot.data() as any;
-        const total_student = data.total_student;
-
-        const headerData: AttendanceHeaderDataType = {
-          totalStudent: data.total_student,
-          totalAbsent: data.total_absent,
-          totalLeave: data.total_leave,
-          totalPresent: data.total_present,
-          totalHoliday: data.total_holiday,
-        };
-        setAttendanceHeaderData(headerData);
-
-        const attendanceDataTempArr: StudentAttendanceGlobalSchema[] = Array.from(
-          { length: total_student },
-          (_, i) => ({
-            studentName: data[`student_${i}_name`],
-            studentId: data[`student_${i}_id`],
-            studentFatherName: data[`student_${i}_father`],
-            studentProfile: data[`student_${i}_profile`],
-            studentRegId: data[`student_${i}_regId`],
-            studentContact: data[`student_${i}_contact`],
-            attendanceStatus: data[`student_${i}_status`],
-            isSmartAttendance: false,
-            createdAt: data[`student_${i}_timestamp`]?.toDate()?.toLocaleString(),
-            comment: data[`student_${i}_comment`],
-          })
-        );
-
-        setIndividualAttendanceData(attendanceDataTempArr);
-      }
-    } catch (error) {
-      console.error("Error fetching attendance:", error);
-      enqueueSnackbar("Failed to fetch attendance!", { variant: "error" });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleNewWindowOpen = async () => {
-    const attendanceHeaderDataa = attendanceHeaderData!;
-    const pdfRes = await AttendanceReportGenerator(
-      attendanceHeaderDataa,
-      individualAttendanceData
-    );
-    const features =
-      "width=600,height=400,toolbar=no,location=no,status=no,menubar=no,scrollbars=yes,resizable=yes";
-    window.open(pdfRes, "_blank", features);
-  };
   return (
-    <Paper sx={{ p: 2, border: "1px solid var(--bs-gray-300)" }}>
+    <Box
+      sx={{
+        border: "1px solid oklch(.900 .013 255.508)",
+        borderRadius: "10px",
+        padding: 4,
+      }}
+    >
+      {/* ---------------- FILTER ---------------- */}
       <Box
         component="form"
-        onSubmit={fetchStudentAtt}
         sx={{
           display: "flex",
-          alignItems: "center",
           justifyContent: "space-between",
+          gap: 2,
+          alignItems: "center",
         }}
       >
-        <div style={{ display: "flex", gap: 10 }}>
+        <Typography level="body-md">
+          Filter Attendance (Please select date and class)
+        </Typography>
+
+        <Box sx={{ display: "flex", gap: 2 }}>
           <FormControl>
             <FormLabel>Select Date</FormLabel>
             <Input
               required
-              placeholder="Placeholder"
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
             />
           </FormControl>
+
           <FormControl>
             <FormLabel>Class</FormLabel>
             <Select
               required
               placeholder="Class"
-              defaultValue={null}
               value={selectedClass}
               onChange={(e, val) => setSelectedClass(val)}
               sx={{ minWidth: 200 }}
             >
-              {SCHOOL_CLASSES.map((item, i) => {
-                return (
-                  <Option value={item.value} key={item.id}>
-                    {item.title}{" "}
-                  </Option>
-                );
-              })}
+              {SCHOOL_CLASSES.map((item) => (
+                <Option key={item.id} value={item.value}>
+                  {item.title}
+                </Option>
+              ))}
             </Select>
           </FormControl>
-        </div>
-
-        <div style={{ display: "flex", gap: "10px" }}>
-          <Button sx={{ height: 20 }} type="submit">
-            Fetch
-          </Button>
-          {individualAttendanceData.length > 0 ? (
-            <Button
-              sx={{ height: 20 }}
-              endDecorator={<Print />}
-              color="primary"
-              onClick={handleNewWindowOpen}
-            >
-              Export
-            </Button>
-          ) : null}
-        </div>
+        </Box>
       </Box>
-      <br />
-      {loading ? <LinearProgress /> : null}
 
-      {individualAttendanceData.length > 0 ? (
+      <br />
+
+      {/* ---------------- SUMMARY LOADER ---------------- */}
+      {summaryLoading && (
+        <Card variant="soft" color="neutral">
+          <CardContent>
+            <Skeleton height={30} width={200} />
+            <Skeleton height={30} width={200} />
+            <Skeleton height={30} width={200} />
+          </CardContent>
+        </Card>
+      )}
+
+      {/* ---------------- SUMMARY SECTION ---------------- */}
+      {!summaryLoading && attendanceDataSummary && (
         <>
           <Card variant="soft" color="primary" invertedColors>
             <CardContent orientation="horizontal">
               <CardContent>
                 <Typography level="body-md">Total Student</Typography>
-                <Typography level="h2">
-                  {attendanceHeaderData?.totalStudent}
-                </Typography>
+                <Typography level="h2">{attendanceDataSummary.total}</Typography>
               </CardContent>
+
               <CardContent>
                 <Typography level="body-md">Total Present</Typography>
-                <Typography level="h2">
-                  {attendanceHeaderData?.totalPresent}
-                </Typography>
+                <Typography level="h2">{attendanceDataSummary.present}</Typography>
               </CardContent>
+
               <CardContent>
                 <Typography level="body-md">Total Absent</Typography>
-                <Typography level="h2">
-                  {attendanceHeaderData?.totalAbsent}
-                </Typography>
+                <Typography level="h2">{attendanceDataSummary.absent}</Typography>
               </CardContent>
+
               <CardContent>
                 <Typography level="body-md">Total On Leave</Typography>
-                <Typography level="h2">
-                  {attendanceHeaderData?.totalLeave}
-                </Typography>
+                <Typography level="h2">{attendanceDataSummary.leave}</Typography>
               </CardContent>
+
               <CardContent>
                 <Typography level="body-md">Total On Holiday</Typography>
-                <Typography level="h2">
-                  {attendanceHeaderData?.totalHoliday}
-                </Typography>
+                <Typography level="h2">{attendanceDataSummary.holiday}</Typography>
               </CardContent>
             </CardContent>
           </Card>
+
           <br />
-          <Table
-            aria-label="table variants"
-            variant="plain"
-            color="neutral"
-            stripe={"odd"}
+
+          {/* ---------------- TABLE ---------------- */}
+          <Box
+            sx={{
+              border: "1px solid oklch(.900 .013 255.508)",
+              borderRadius: "10px",
+              padding: "2px",
+            }}
           >
-            <thead>
-              <tr>
-                <th>STUDENT</th>
-                <th>FATHER</th>
-                <th>CONTACT</th>
-                <th>STATUS</th>
-                <th style={{ textAlign: "center", width: "190px" }}>COMMENT</th>
-                <th style={{ textAlign: "end", width: "190px" }}>TIMESTAMP</th>
-              </tr>
-            </thead>
-            <tbody>
-              {individualAttendanceData &&
-                individualAttendanceData.map((student, i) => {
-                  return (
-                    <tr key={student.studentRegId}>
-                      <td>
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "10px",
-                          }}
-                        >
-                          <Avatar src={student.studentProfile} />
-                          {student.studentName}
-                        </div>
-                      </td>
-                      <td>{student.studentFatherName}</td>
-                      <td>{student.studentContact}</td>
-                      <td>
-                        {getAttendanceStatusByCode(student.attendanceStatus)}
-                      </td>
-                      <td style={{ textAlign: "center", width: "190px" }}>
-                        {student.comment !== "" ? student.comment : "_"}
-                      </td>
-                      <td style={{ textAlign: "end", width: "190px" }}>
-                        {"" + student.createdAt}
-                      </td>
-                    </tr>
-                  );
-                })}
-            </tbody>
-          </Table>
+            {tableLoading && <LinearProgress />}
+
+            <MaterialTable
+              style={{
+                display: tableLoading ? "none" : "grid",
+                boxShadow: "none",
+                fontSize: "0.92rem",
+              }}
+              columns={attendanceColumns}
+              data={attendanceForClass}
+              title="Attendance Details"
+              options={{
+                grouping: true,
+                pageSizeOptions: [5, 10, 20, 50, 100],
+                pageSize: 10,
+                headerStyle: {
+                  backgroundColor: "#5d87ff",
+                  color: "#FFF",
+                },
+                rowStyle: {
+                  fontSize: "0.92rem",
+                  height: 34,
+                },
+                exportMenu: [
+                  {
+                    label: "Export PDF",
+                    exportFunc: (cols, data) =>
+                      ExportPdf(
+                        cols,
+                        data,
+                        `Attendance-${getClassNameByValue(selectedClass!)}-${selectedDate}`
+                      ),
+                  },
+                  {
+                    label: "Export CSV",
+                    exportFunc: (cols, data) =>
+                      ExportCsv(
+                        cols,
+                        data,
+                        `Attendance-${getClassNameByValue(selectedClass!)}-${selectedDate}`
+                      ),
+                  },
+                ],
+              }}
+            />
+          </Box>
         </>
-      ) : null}
-    </Paper>
+      )}
+    </Box>
   );
 }
 
