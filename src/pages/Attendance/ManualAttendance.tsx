@@ -1,17 +1,10 @@
+// pages/ManualAttendance.tsx
 
-import FingerprintIcon from "@mui/icons-material/Fingerprint";
-
-import { Divider, LinearProgress, Paper } from "@mui/material";
-
-
-
-import SaveIcon from "@mui/icons-material/Save";
-
+import { Divider, LinearProgress } from "@mui/material";
 import {
   Avatar,
   Box,
   Button,
-  Chip,
   FormControl,
   FormLabel,
   Input,
@@ -22,438 +15,312 @@ import {
   Sheet,
   Table,
 } from "@mui/joy";
-import { Search } from "@mui/icons-material";
-import BreadCrumbsV2 from "../../components/Breadcrumbs/BreadCrumbsV2";
-import HeaderTitleCard from "components/Card/HeaderTitleCard";
-import { SCHOOL_CLASSES} from "config/schoolConfig";
-import { enqueueSnackbar } from "notistack";
-import { StudentDetailsType } from "types/student";
+
+import { Refresh, Save, Search } from "@mui/icons-material";
+import { SCHOOL_CLASSES } from "config/schoolConfig";
 import { useState } from "react";
-import { StudentAttendanceSchema } from "types/attendance";
-import { getCurrentDate, makeDoubleDigit } from "utilities/UtilitiesFunctions";
-import { collection, doc, getDoc, onSnapshot, query, serverTimestamp, setDoc, where } from "firebase/firestore";
+import { getClassNameByValue, getCurrentDate } from "utilities/UtilitiesFunctions";
+import PageHeaderWithHelpButton from "components/Breadcrumbs/PageHeaderWithHelpButton";
+import Calendar from "react-calendar";
+import "react-calendar/dist/Calendar.css";
+import { getStudentsWithAttendance } from "services/firestore.attendance";
+
+import { enqueueSnackbar } from "notistack";
+import { AttendanceStatus, StudentAttendance } from "types/AttendanceType";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { useFirebase } from "context/firebaseContext";
 
-interface StudentAttendanceType extends StudentDetailsType {
-  selected_option?: string | null;
-  comment?: string;
-}
+const statusMapping: Record<string, AttendanceStatus> = {
+  P: "PRESENT",
+  A: "ABSENT",
+  H: "HOLIDAY",
+  L: "LEAVE",
+  S: "HALF_DAY",
+};
 
 function ManualAttendance() {
   const [selectedClass, setSelectedClass] = useState<number | null>(null);
-
-  const [studentData, setStudentData] = useState<StudentAttendanceType[]>([]);
   const [selectedDate, setSelectedDate] = useState<string>(getCurrentDate());
-  const [searchTerm, setSearchTerm] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
-  const [isSaving, setIsSaving] = useState<boolean>(false);
-  const [isSavingDone, setSavingDone] = useState<boolean>(false);
-  const [messageText, setMessageText] = useState<string>("");
+  const [searchTerm, setSearchTerm] = useState("");
 
-   //Get Firebase DB instance
-   const {db} = useFirebase();
+  const [students, setStudents] = useState<StudentAttendance[]>([]);
 
-  const fetchStudent = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (selectedClass === null) {
-      enqueueSnackbar("Please select class", { variant: "error" });
+  const { db } = useFirebase()
+
+  // -------------------------------
+  // LOAD STUDENTS + ATTENDANCE
+  // -------------------------------
+  const fetchStudent = async () => {
+
+    if (!selectedClass) {
+      enqueueSnackbar("Select a class", { variant: "error" });
       return;
     }
-  
+
     setLoading(true);
-    setStudentData([]);
-    setMessageText("");
-  
-    const selectedDateClass = `${makeDoubleDigit(selectedClass!.toString())}_${selectedDate}`;
-    console.log(selectedDateClass);
-  
-    // Check if attendance is already marked
-    const attendanceRef = doc(db, "ATTENDANCE", selectedDateClass);
-    const result = await getDoc(attendanceRef);
-  
-    if (result.exists()) {
-      setMessageText(
-        "Attendance for this class already marked, you can again save with updated attendance."
-      );
-      console.log("Attendance exists");
-    }
-  
-    // Fetch students of selected class
-    const studentsRef = collection(db, "STUDENTS");
-    const studentsQuery = query(studentsRef, where("class", "==", selectedClass));
-  
-    onSnapshot(studentsQuery, (documentSnap) => {
-      if (!documentSnap.empty) {
-        const tempArr: StudentAttendanceType[] = [];
-        documentSnap.forEach((student) => {
-          const resData = student.data() as StudentAttendanceType;
-          resData["selected_option"] = "P";
-          resData["comment"] = "";
-          tempArr.push(resData);
-        });
-  
-        setStudentData(tempArr);
-        console.log(tempArr);
-        setLoading(false);
-        setSavingDone(false);
-      } else {
-        enqueueSnackbar("No record found for selected class/section", {
-          variant: "info",
-        });
-        setLoading(false);
-      }
-    });
+
+    const data = await getStudentsWithAttendance(selectedClass, selectedDate);
+    setStudents(data);
+
+    setLoading(false);
   };
 
-  const filteredStudents = studentData.filter((student) => {
-    const isMatchedByName = student.student_name
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase());
-    return isMatchedByName;
-  });
+  // Search filter
+  const filteredStudents = students.filter((s) =>
+    s.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
+  // -------------------------------
+  // UPDATE INDIVIDUAL STUDENT
+  // -------------------------------
   const handleRadioSelect = (
     e: React.ChangeEvent<HTMLInputElement>,
-    student: StudentAttendanceType
+    student: StudentAttendance
   ) => {
-    const updatedStudents = studentData.map((item) =>
-      item.id === student.id
-        ? { ...student, selected_option: e.target.value }
-        : item
-    );
-    setStudentData(updatedStudents);
-  };
+    const newValue = e.target.value;
 
+    const updated = students.map((item) => {
+      if (item.studentId !== student.studentId) return item;
+
+      const hasChanged = item.originalStatus !== newValue;
+
+      return {
+        ...item,
+        selected_option: newValue,
+        hasChanged: hasChanged,
+      };
+    });
+
+    setStudents(updated);
+  };
+  // -------------------------------
+  // MARK ALL
+  // -------------------------------
   const handleMarkAll = (val: string | null) => {
-    const updatedStudent = studentData.map((item) => {
-      return { ...item, selected_option: val };
-    });
-    setStudentData(updatedStudent);
+    if (!val || val === "none") return;
+
+    const updated = students.map((stu) => ({
+      ...stu,
+      selected_option: val,
+    }));
+
+    setStudents(updated);
   };
 
-  const handleAttendanceComment = (comment: string, studentId: string) => {
-    const updatedStudents = studentData.map((item) =>
-      item.id === studentId ? { ...item, comment } : item
-    );
-    setStudentData(updatedStudents);
-  };
-
-  const handleSaveAttendance = async () => {
-    /// Building final attendance
-    let tempAttArr: StudentAttendanceSchema[] = [];
-    let tempAttArrGlobalSave: StudentAttendanceSchema[] = [];
-    let totalPresent = 0;
-    let totalAbsent = 0;
-    let totalOnLeave = 0;
-    let totalOnHoliday = 0;
-  
-    studentData.forEach((student) => {
-      if (student.selected_option === "P") totalPresent++;
-      if (student.selected_option === "A") totalAbsent++;
-      if (student.selected_option === "L") totalOnLeave++;
-      if (student.selected_option === "H") totalOnHoliday++;
-  
-      const attendanceDataForSave: StudentAttendanceSchema = {
-        isSmartAttendance: false,
-        studentId: student.id,
-        createdAt: serverTimestamp(),
-        comment: student.comment,
-        attendanceDate: selectedDate,
-        attendanceStatus: student.selected_option!,
-        studentRegId: student.admission_no,
-      };
-  
-      const attendanceDataForGlobalSave: StudentAttendanceSchema = {
-        isSmartAttendance: false,
-        studentId: student.id,
-        createdAt: serverTimestamp(),
-        comment: student.comment,
-        attendanceDate: selectedDate,
-        attendanceStatus: student.selected_option!,
-        studentRegId: student.admission_no,
-        studentName: student.student_name,
-        studentFatherName: student.father_name,
-        studentProfile: student.profil_url,
-        studentContact: student.contact_number,
-      };
-  
-      tempAttArr.push(attendanceDataForSave);
-      tempAttArrGlobalSave.push(attendanceDataForGlobalSave);
-    });
-  
-    setIsSaving(true);
-  
-    // Format date for Firestore document ID
-    const dateWithoutHyphen = selectedDate.replace(/-/g, "");
-  
-    // Save each attendance record for individual students
-    for (let item of tempAttArr) {
-      const studentAttendanceDocId = `${item.studentRegId}${dateWithoutHyphen}`;
-      const attendanceRef = doc(
-        db,
-        "STUDENTS",
-        item.studentId,
-        "ATTENDANCE",
-        studentAttendanceDocId
-      );
-      await setDoc(attendanceRef, item);
+  // -------------------------------
+  // SAVE (EVENT-DRIVEN)
+  // -------------------------------
+  const handleSave = async () => {
+    if (!selectedClass) {
+      enqueueSnackbar("Select a class first!", { variant: "error" });
+      return;
     }
-  
-    //// Setup data for global attendance collection
-    const consolidatedObject: Record<string, string | number | ReturnType<typeof serverTimestamp>> = {};
-  
-    const classDate = `${makeDoubleDigit(selectedClass!.toString())}_${selectedDate}`;
-  
-    consolidatedObject["attendance_class_date"] = classDate;
-    consolidatedObject["total_present"] = totalPresent;
-    consolidatedObject["total_absent"] = totalAbsent;
-    consolidatedObject["total_leave"] = totalOnLeave;
-    consolidatedObject["total_holiday"] = totalOnHoliday;
-    consolidatedObject["total_student"] = studentData.length;
-  
-    tempAttArrGlobalSave.forEach((item, index) => {
-      consolidatedObject[`student_${index}_id`] = item.studentId;
-      consolidatedObject[`student_${index}_status`] = item.attendanceStatus;
-      consolidatedObject[`student_${index}_name`] = item.studentName!;
-      consolidatedObject[`student_${index}_father`] = item.studentFatherName!;
-      consolidatedObject[`student_${index}_profile`] = item.studentProfile!;
-      consolidatedObject[`student_${index}_contact`] = item.studentContact!;
-      consolidatedObject[`student_${index}_regId`] = item.studentRegId;
-      consolidatedObject[`student_${index}_comment`] = item.comment!;
-      consolidatedObject[`student_${index}_timestamp`] = serverTimestamp();
-    });
-  
-    const attendanceRef = doc(db, "ATTENDANCE", classDate);
-    await setDoc(attendanceRef, consolidatedObject);
-  
-    console.log("Attendance Marked for all students..");
-    setSavingDone(true);
-    setIsSaving(false);
-    enqueueSnackbar("Attendance Saved Successfully!", { variant: "success" });
+    if (students.length === 0) {
+      enqueueSnackbar("No students loaded!", { variant: "warning" });
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const eventsRef = collection(db, "ATTENDANCE_EVENTS");
+
+      const changedStudents = students.filter((stu) => stu.hasChanged);
+      if (changedStudents.length === 0) {
+        enqueueSnackbar("No changes to save.", { variant: "info" });
+        return;
+      }
+
+      const promises = students.map((stu) =>
+        addDoc(eventsRef, {
+          studentId: stu.studentId,
+          classId: selectedClass,
+          date: selectedDate,
+          status: statusMapping[stu.selected_option || "P"],
+          timestamp: serverTimestamp(),
+          source: "MANUAL",
+        })
+      );
+
+      await Promise.all(promises);
+
+      // // 1️⃣ Create and process each event
+      // for (const stu of students) {
+      //   const status = statusMapping[stu.selected_option || "P"];
+
+      //   const event = {
+      //     studentId: stu.studentId,
+      //     classId: selectedClass,
+      //     date: selectedDate,
+      //     status,
+      //     timestamp: serverTimestamp(),
+      //     source: "MANUAL" as const,
+      // };
+
+      // await processAttendanceEvent(event);
+      // }
+
+
+
+      enqueueSnackbar("Attendance saved!", { variant: "success" });
+
+      await fetchStudent(); // Reload
+
+    } catch (err) {
+      console.error(err);
+      enqueueSnackbar("Error saving attendance", { variant: "error" });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <>
-      
-          <BreadCrumbsV2
-            Icon={FingerprintIcon}
-            Path="Attendance Management/Test/Mark Attendance"
-          />
+      <PageHeaderWithHelpButton title="Mark Attendance Manually" />
+      <br />
 
-          <HeaderTitleCard Title="Mark Attendance Manually" />
-          <Paper sx={{ p: 2, border: "1px solid var(--bs-gray-300)" }}>
-            <Box
-              component="form"
-              onSubmit={fetchStudent}
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <div style={{ display: "flex", gap: 10 }}>
-                <FormControl>
-                  <FormLabel>Select Date</FormLabel>
-                  <Input
-                    required
-                    placeholder="Placeholder"
-                    type="date"
-                    value={selectedDate}
-                    onChange={(e) => setSelectedDate(e.target.value)}
-                  />
-                  {/* <FormHelperText>This is a helper text.</FormHelperText> */}
-                </FormControl>
-                <FormControl>
-                  <FormLabel>Class</FormLabel>
-                  <Select
-                    required
-                    placeholder="Class"
-                    defaultValue={null}
-                    value={selectedClass}
-                    onChange={(e, val) => setSelectedClass(val)}
-                    sx={{ minWidth: 200 }}
-                  >
-                    {SCHOOL_CLASSES.map((item, i) => {
-                      return (
-                        <Option value={item.value} key={item.id}>
-                          {item.title}{" "}
-                        </Option>
-                      );
-                    })}
-                  </Select>
-                </FormControl>
-               
-              </div>
-              <div style={{ display: "flex", gap: "10px" }}>
-                <Button sx={{ height: 20 }} type="submit">
-                  Fetch
-                </Button>
-                {studentData.length > 0 ? (
-                  <Button
-                    startDecorator={<SaveIcon />}
-                    sx={{ height: 20 }}
-                    onClick={handleSaveAttendance}
-                    color="success"
-                    loading={isSaving}
-                    disabled={isSavingDone}
-                  >
-                    Save
-                  </Button>
-                ) : null}
-              </div>
-            </Box>
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: { xs: "1fr", md: "1fr 300px" },
+          gap: 3,
+        }}
+      >
+        {/* LEFT PANEL */}
+        <Box>
+          {loading && <LinearProgress />}
 
-            {messageText !== "" ? (
-              <>
-                <br />
-                <Chip color="warning" variant="soft">
-                  Info: {messageText}
-                </Chip>
-                <br />
-              </>
-            ) : null}
-            <br />
-            {loading ? <LinearProgress /> : null}
-            {studentData.length !== 0 ? (
-              <>
-                <Divider />
-                <br />
-                <div
-                  style={{ display: "flex", justifyContent: "space-between" }}
-                >
-                  <Input
-                    startDecorator={<Search />}
-                    sx={{ flex: 0.6 }}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
+          {students.length > 0 && (
+            <>
+              <Divider />
+              <br />
+
+              {/* SEARCH + MARK ALL + SAVE */}
+              <Box display="flex" justifyContent="space-between" mb={2}>
+                <Input
+                  startDecorator={<Search />}
+                  placeholder="Search student"
+                  sx={{ flex: 0.6 }}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+
+                <Box sx={{ display: "flex", gap: 2 }}>
                   <Select
                     defaultValue="P"
-                    placeholder="Mark all as"
                     sx={{ minWidth: "200px" }}
                     onChange={(e, val) => handleMarkAll(val)}
                   >
-                    <Option value="none">None </Option>
+                    <Option value="none">None</Option>
                     <Option value="P">Present</Option>
-                    <Option value="A">Absent </Option>
+                    <Option value="A">Absent</Option>
                     <Option value="H">Holiday</Option>
-                    <Option value="S">Sunday</Option>
+                    <Option value="L">Leave</Option>
+                    <Option value="S">Half Day</Option>
                   </Select>
-                </div>
-                <br />
-                <div>
-                  <Table
-                    aria-label="table variants"
-                    variant="plain"
-                    color="neutral"
-                  >
-                    <thead>
-                      <tr>
-                        <th style={{ width: "150px" }}>ID</th>
-                        <th>Students</th>
-                        <th>Action</th>
-                        <th style={{ textAlign: "right", width: "190px" }}>
-                          Comments
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredStudents &&
-                        filteredStudents.map((student, i) => {
-                          return (
-                            <tr key={student.id}>
-                              <td>{student.admission_no}</td>
-                              <td>
-                                <div
-                                  style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: "10px",
-                                  }}
-                                >
-                                  <Avatar src={student.profil_url} />
-                                  {student.student_name}
-                                </div>
-                              </td>
-                              <td>
-                                <RadioGroup
-                                  aria-labelledby="storage-label"
-                                  value={student.selected_option}
-                                  defaultValue="P"
-                                  onChange={(e) =>
-                                    handleRadioSelect(e, student)
-                                  }
-                                  size="sm"
-                                  sx={{
-                                    display: "flex",
-                                    flexDirection: "row",
-                                    gap: 3,
-                                  }}
-                                >
-                                  {["P", "A", "H", "L", "S"].map((value) => (
-                                    <Sheet
-                                      key={value}
-                                      sx={{
-                                        p: 1.5,
-                                        borderRadius: "md",
-                                        boxShadow: "sm",
-                                      }}
-                                    >
-                                      <Radio
-                                        label={value}
-                                        overlay
-                                        disableIcon
-                                        value={value}
-                                        slotProps={{
-                                          label: ({ checked }) => ({
-                                            sx: {
-                                              fontWeight: "lg",
-                                              fontSize: "sm",
 
-                                              color: checked
-                                                ? "text.primary"
-                                                : "text.secondary",
-                                            },
-                                          }),
-                                          action: ({ checked }) => ({
-                                            sx: (theme) => ({
-                                              ...(checked && {
-                                                "--variant-borderWidth": "2px",
-                                                "&&": {
-                                                  // && to increase the specificity to win the base :hover styles
-                                                  borderColor:
-                                                    theme.vars.palette
-                                                      .primary[500],
-                                                },
-                                              }),
-                                            }),
-                                          }),
-                                        }}
-                                      />
-                                    </Sheet>
-                                  ))}
-                                </RadioGroup>
-                              </td>
-                              <td>
-                                <Input
-                                  type="text"
-                                  onChange={(e) =>
-                                    handleAttendanceComment(
-                                      e.target.value,
-                                      student.id
-                                    )
-                                  }
-                                />
-                              </td>
-                            </tr>
-                          );
-                        })}
-                    </tbody>
-                  </Table>
-                </div>
-              </>
-            ) : null}
-          </Paper>
+                  <Button startDecorator={<Save />} onClick={handleSave}>
+                    Save
+                  </Button>
+                </Box>
+              </Box>
 
+              {/* TABLE */}
+              <Table variant="plain">
+                <thead>
+                  <tr>
+                    <th style={{ width: "150px" }}>ID</th>
+                    <th>Student</th>
+                    <th>Class Id</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {filteredStudents.map((stu) => (
+                    <tr key={stu.studentId}>
+                      <td>{stu.admissionNo}</td>
+
+                      <td>
+                        <Box display="flex" alignItems="center" gap={1}>
+                          <Avatar src={stu.profilePicUrl || ""} />
+                          {stu.name}
+                        </Box>
+                      </td>
+                      <td>{getClassNameByValue(stu.classId)}</td>
+
+                      <td>
+                        <RadioGroup
+                          value={stu.selected_option}
+                          onChange={(e) => handleRadioSelect(e, stu)}
+                          orientation="horizontal"
+                          sx={{ gap: 1 }}
+                        >
+                          {["P", "A", "H", "L", "S"].map((val) => (
+                            <Sheet
+                              key={val}
+                              sx={{ p: 1, borderRadius: "md", boxShadow: "sm" }}
+                            >
+                              <Radio label={val} overlay disableIcon value={val} />
+                            </Sheet>
+                          ))}
+                        </RadioGroup>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+            </>
+          )}
+        </Box>
+
+        {/* RIGHT PANEL (CLASS + DATE) */}
+        <Box
+          sx={{
+            border: "1px solid #ddd",
+            p: 2,
+            borderRadius: "12px",
+            height: "100vh",
+            position: "sticky",
+            top: 80,
+            display: "flex",
+            flexDirection: "column",
+            gap: 2,
+          }}
+        >
+          {/* CLASS */}
+          <FormControl>
+            <FormLabel>Select Class</FormLabel>
+            <Select
+              value={selectedClass}
+              onChange={(e, val) => setSelectedClass(val)}
+            >
+              {SCHOOL_CLASSES.map((c) => (
+                <Option value={c.value} key={c.value}>
+                  {c.title}
+                </Option>
+              ))}
+            </Select>
+          </FormControl>
+
+          {/* DATE PICKER */}
+          <FormControl>
+            <FormLabel>Select Date</FormLabel>
+            <Calendar
+              onChange={(date: any) => {
+                const yyyy = date.getFullYear();
+                const mm = String(date.getMonth() + 1).padStart(2, "0");
+                const dd = String(date.getDate()).padStart(2, "0");
+                setSelectedDate(`${yyyy}-${mm}-${dd}`);
+              }}
+              value={new Date(selectedDate)}
+            />
+          </FormControl>
+
+          <Button startDecorator={<Refresh />} onClick={fetchStudent}>
+            Load Students
+          </Button>
+        </Box>
+      </Box>
     </>
   );
 }

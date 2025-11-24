@@ -7,7 +7,10 @@ interface SidebarHeaderProps {
 }
 
 const SidebarHeader: React.FC<SidebarHeaderProps> = ({ isMini }) => {
-  const { schoolLogo, schoolSidebarLogo } = getAppConfig();
+  const config = getAppConfig() || {};
+
+  const { schoolLogo, schoolSidebarLogo } = config;
+
 
   return (
     <Box display="flex" justifyContent="center" alignItems="center" overflow="hidden">

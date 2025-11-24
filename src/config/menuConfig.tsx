@@ -74,8 +74,9 @@ export const menuItems: MenuItem[] = [
     label: 'Attendance ',
     icon: <IconFingerprint />,
     subMenu: [
-      { label: 'Show Attendance', path: '/attendance/view', permission: 'view_attendance' },
-      { label: 'IOT Attendance', path: '/attendance/iot', permission: 'iot_attendance' },
+      { label: 'Show Attendance', path: '/attendance/view', permission: 'viewAttendance' },
+      { label: 'Manual Attendance', path: '/attendance/manual', permission: 'manualAttendance' },
+      { label: 'IOT Attendance', path: '/attendance/iot', permission: 'iotAttendance' },
     ],
     group: "manager"
   },

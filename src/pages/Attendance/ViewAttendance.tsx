@@ -4,7 +4,6 @@ import BreadCrumbsV2 from "components/Breadcrumbs/BreadCrumbsV2";
 import { Tab, TabList, TabPanel, Tabs } from "@mui/joy";
 
 import OverViewTab from "./viewAttendanceTabs/OverViewTab";
-import AttendanceIndex from "./viewAttendanceTabs/AttendanceIndex";
 import AttendanceByStudentId from "./viewAttendanceTabs/AttendanceByStudentId";
 import AttendanceByClass from "./viewAttendanceTabs/AttendanceByClass";
 
@@ -25,7 +24,6 @@ function ViewAttendance() {
         </TabList>
         <TabPanel value={0}>
           <OverViewTab />
-          <AttendanceIndex />
         </TabPanel>
         <TabPanel value={1}>
           <AttendanceByClass />
