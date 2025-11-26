@@ -4,6 +4,7 @@ import { SCHOOL_CLASSES } from "config/schoolConfig";
 import { getFirestoreInstance } from "context/firebaseUtility";
 import { collection, doc, getCountFromServer, getDoc, getDocs, query, where } from "firebase/firestore";
 import { AttendanceRowType, AttendanceStatus, AttendanceSummary, AttendanceType, ClassAttendanceSummary, StudentAttendance, StudentType } from "types/AttendanceType";
+import { StudentDetailsType } from "types/student";
 
 export async function getStudentsWithAttendance(
     classId: number,
@@ -80,9 +81,9 @@ function reverseMapping(status?: AttendanceStatus): string {
         case "LEAVE":
             return "L";
         case "HALF_DAY":
-            return "S"; // Sunday/Half Day
+            return "S";
         default:
-            return "P";
+            return "-";
     }
 }
 
@@ -285,3 +286,94 @@ export const getClassAttendanceForDate = async (
 
     return finalRows;
 };
+
+function isSunday(dateString: string) {
+    return new Date(dateString).getDay() === 0; // Sunday = 0
+}
+
+
+export async function getMonthlyAttendanceForClass(
+    classId: number,
+    monthId: string,
+    dateList: string[]
+) {
+    const db = await getFirestoreInstance();
+    const studentsQuery = query(
+        collection(db, "STUDENTS"),
+        where("class", "==", classId)
+    );
+
+    const studentSnapshot = await getDocs(studentsQuery);
+
+    const students: StudentDetailsType[] = studentSnapshot.docs.map((doc) => ({
+        ...doc.data(),
+    })) as StudentDetailsType[];
+
+    // If no students → return empty list
+    if (students.length === 0) return [];
+
+    // ----------------------------
+    // STEP 2: Fetch MONTH documents for all students (PARALLEL)
+    // ----------------------------
+    const attendancePromises = students.map((student) =>
+        getDoc(
+            doc(db, "ATTENDANCE_MONTHLY", student.id, "MONTHS", monthId)
+        )
+    );
+
+    const attendanceDocs = await Promise.all(attendancePromises);
+
+    const finalResult: any[] = [];
+
+
+
+    attendanceDocs.forEach((monthSnap, i) => {
+        const student = students[i];
+
+        const daysMap = monthSnap.exists()
+            ? monthSnap.data().days || {}
+            : {};
+
+        const row: any = {
+            studentId: student.id || "",
+            admissionNo: student.admission_no || "",
+            name: student.student_name || "",
+            rollNo: student.class_roll || "",
+            fatherName: student.father_name || "",
+            profilePicUrl: student.profil_url || "",
+            totalPresent: 0,
+            totalAbsent: 0,
+            totalLeave: 0,
+            totalHoliday: 0,
+            totalWorkingDays: 0,
+        };
+
+        // Fill date columns + summary counts
+        dateList.forEach((date) => {
+
+            const firestoreStatus = daysMap[date] || undefined;
+            let uiStatus = reverseMapping(firestoreStatus);
+
+            if (isSunday(date)) {
+                uiStatus = "H";
+            }
+
+            row[date] = uiStatus;
+            // 4. Count summary
+            if (uiStatus === "P") row.totalPresent++;
+            else if (uiStatus === "A") row.totalAbsent++;
+            else if (uiStatus === "H") row.totalHoliday++;
+            else if (uiStatus === "L") row.totalLeave++;
+            else if (uiStatus === "S") row.totalHalfDay++;
+            if (!isSunday(date) && uiStatus !== "H") {
+                row.totalWorkingDays++;
+            }
+        });
+        row.presentSummary = `${row.totalPresent}/${row.totalWorkingDays}`;
+
+
+        finalResult.push(row);
+    });
+
+    return finalResult;
+}

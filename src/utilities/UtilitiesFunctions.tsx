@@ -289,3 +289,26 @@ export function numberToWords(n: number): string {
 
   return result.trim() + " Only";
 }
+
+export function getSessionMonths(session: string) {
+  // session = "2025-26"
+  const [startYearStr, endYearTwoDigit] = session.split("-");
+  const startYear = Number(startYearStr);
+  const endYear = Number(startYearStr.slice(0, 2) + endYearTwoDigit); // "20" + "26" → 2026
+
+  const months: string[] = [];
+
+  const sessionMonths = [
+    { year: startYear, months: [4,5,6,7,8,9,10,11,12] },   // Apr–Dec of start year
+    { year: endYear, months: [1,2,3] }                     // Jan–Mar of next year
+  ];
+
+  sessionMonths.forEach((block) => {
+    block.months.forEach((m) => {
+      const mm = String(m).padStart(2, "0");
+      months.push(`${block.year}-${mm}`);
+    });
+  });
+
+  return months;
+}
