@@ -6,6 +6,7 @@ import { keyframes } from "@emotion/react";
 import { ContentCopy } from "@mui/icons-material";
 import { doc, getDoc } from "firebase/firestore";
 import { useFirebase } from "context/firebaseContext";
+import BeepAudio from "assets/beep_scan.mp3";
 
 // Animation
 const fadeInOut = keyframes`
@@ -34,7 +35,13 @@ const AttenzyLiveFeed: React.FC<AttenzyLiveFeedProps> = ({
   const [currentScan, setCurrentScan] = useState<IotMessage | null>(null);
 
   const { db } = useFirebase();
-  // Load device IDs from Firestore
+
+  const playBeep = () => {
+    const audio = new Audio(BeepAudio);
+    audio.play();
+  };
+
+
   useEffect(() => {
     const loadIds = async () => {
       try {
@@ -62,7 +69,7 @@ const AttenzyLiveFeed: React.FC<AttenzyLiveFeedProps> = ({
   useEffect(() => {
     if (message && message.rfidId) {
       setCurrentScan(message);
-
+      playBeep();
       setEntries((prev) => {
         const next = [message, ...prev];
         if (next.length > maxEntries) next.length = maxEntries;
