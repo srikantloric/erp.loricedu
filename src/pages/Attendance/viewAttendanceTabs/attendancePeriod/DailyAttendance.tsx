@@ -146,7 +146,7 @@ function DailyAttendance() {
             <br />
 
             {/* IF NO SELECTION — SHOW GUIDE TEXT */}
-            {!summaryLoading && (
+            {!summaryLoading && !attendanceDataSummary && (
 
                 <Box
                     sx={{

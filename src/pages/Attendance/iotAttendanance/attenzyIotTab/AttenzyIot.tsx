@@ -2,7 +2,7 @@ import { Refresh, Search } from "@mui/icons-material"
 import { Box, Divider, IconButton, Input, Stack, Tooltip, Typography } from "@mui/joy"
 import IotAttendanceCard from "components/Card/IotAttendanceCard"
 import { useFirebase } from "context/firebaseContext"
-import { collectionGroup, onSnapshot, orderBy, query, Timestamp } from "firebase/firestore"
+import { collectionGroup, limit, onSnapshot, orderBy, query, Timestamp } from "firebase/firestore"
 import { enqueueSnackbar } from "notistack"
 import { useEffect, useState } from "react"
 
@@ -33,7 +33,8 @@ function AttenzyIot() {
     useEffect(() => {
         const attendanceRef = query(
             collectionGroup(db, "MY_ATTENDANCE"),
-            orderBy("timestamp", "desc")
+            orderBy("timestamp", "desc"),
+            limit(300)
         );
 
         const unsubscribe = onSnapshot(

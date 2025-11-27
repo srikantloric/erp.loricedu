@@ -65,7 +65,7 @@ export async function getStudentsWithAttendance(
             hasChanged: false,
             comment: "",
         };
-    });
+    }).filter((row) => row.present !== true);
 
     return merged;
 }
