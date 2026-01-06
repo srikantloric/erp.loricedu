@@ -23,7 +23,7 @@ import { getClassNameByValue, getCurrentDate } from "utilities/UtilitiesFunction
 import PageHeaderWithHelpButton from "components/Breadcrumbs/PageHeaderWithHelpButton";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
-import { getStudentsWithAttendance } from "services/firestore.attendance";
+import { getStudentsWithAttendance } from "services/attendance/firestore.attendance";
 
 import { enqueueSnackbar } from "notistack";
 import { AttendanceStatus, StudentAttendance } from "types/AttendanceType";

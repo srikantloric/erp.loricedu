@@ -17,7 +17,7 @@ import { SCHOOL_CLASSES } from "config/schoolConfig";
 import { getClassNameByValue, getSessionMonths } from "utilities/UtilitiesFunctions";
 import { useNavbar } from "context/NavbarContext";
 
-import { getMonthlyAttendanceForClass } from "services/firestore.attendance";
+import { getMonthlyAttendanceForClass } from "services/attendance/firestore.attendance";
 
 function MonthlyAttendance() {
     const [selectedClass, setSelectedClass] = useState<number | null>(null);

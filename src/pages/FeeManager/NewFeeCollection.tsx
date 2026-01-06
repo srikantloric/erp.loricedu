@@ -9,7 +9,7 @@ import CurrencyRupeeIcon from '@mui/icons-material/CurrencyRupee';
 import { useParams } from "react-router-dom"
 import { StudentDetailsType } from "types/student"
 import { enqueueSnackbar } from "notistack"
-import { doc, getDoc, getDocs, Timestamp } from "firebase/firestore"
+import { doc, getDocs, Timestamp } from "firebase/firestore"
 import { useFirebase } from "context/firebaseContext"
 import StudentDetailsFeeHeader from "components/Headers/StudentDetailsFeeHeader"
 import TransportIcon from "assets/bus-stop-icon.png"
@@ -23,6 +23,7 @@ import { TransportLocationType, TransportVehicleType } from "types/transport"
 import { useNavbar } from "context/NavbarContext"
 import { collection, addDoc } from "firebase/firestore";
 import { arrayUnion, updateDoc } from "firebase/firestore";
+import { fetchStudentDetails, fetchStudentTransportDetails } from "services/feeCollection/firestore.feeCollection"
 
 
 // Use a schema that allows concessionTotal to be validated against the current calculated amountTotal
@@ -33,8 +34,6 @@ const schema = Z.object({
     amountTotal: Z.coerce.number().default(0),
     consessionReason: Z.string().optional(),
     payableAmount: Z.coerce.number(),
-    miscTotal: Z.coerce.number(),
-    posCharge: Z.coerce.number(),
     paymentMethod: Z.string(),
     printPDF: Z.boolean().default(true),
 }).superRefine((data, ctx) => {
@@ -92,8 +91,6 @@ function NewFeeCollection() {
             paidAmount: 0,
             consessionReason: "",
             payableAmount: 0,
-            miscTotal: 0,
-            posCharge: 0,
             paymentMethod: "",
             printPDF: true,
 
@@ -108,34 +105,26 @@ function NewFeeCollection() {
 
     // Watch the form fields to get their current values
     const lateFine = watch("lateFine");
-    const posCharge = watch("posCharge");
-    const miscTotal = watch("miscTotal");
     const payableAmount = watch("payableAmount");
     const paidAmount = watch("paidAmount");
     const amountTotal = watch("amountTotal");
     const concessionTotal = Number(watch("concessionTotal") || 0);
-
-
-
-    const fetchStudentDetails = async (studentId: string) => {
-        // Fetch student details from the Firestore
-        const docPath = doc(db, "STUDENTS", studentId);
-        const studentData = await getDoc(docPath);
-        setStudentDetails(studentData.data() as StudentDetailsType);
-        return studentData.data() as StudentDetailsType;
-    }
 
     const initAll = async () => {
         if (!studentId) {
             enqueueSnackbar("Student ID not found", { variant: "error" });
             return;
         }
-
         // Fetch student details
         const studentDetails = await fetchStudentDetails(studentId);
-
+        setStudentDetails(studentDetails);
         //Fetch transport details
-        fetchStudentTransportDetails(studentDetails.transport_location!, studentDetails.transport_vehicle!);
+        try {
+            const transportDetails = await fetchStudentTransportDetails(studentDetails.transport_location!, studentDetails.transport_vehicle!);
+            setStudentTransportDetails(transportDetails);
+        } catch (error) {
+            console.error("Error fetching transport details:", error);
+        }
 
         // Setup Fee Headers based on installments
 
@@ -182,7 +171,7 @@ function NewFeeCollection() {
 
         feeCollectionSnap.forEach((doc) => {
             const data = doc.data()
-            console.log("Fee Collection Data:", data,doc.id);
+            console.log("Fee Collection Data:", data, doc.id);
             if (data.dueAmount && data.dueAmount > 0) {
                 setPreDuesTotal((prev) => prev + data.dueAmount);
                 const headers = data.headers as FeeHeadType[];
@@ -267,7 +256,7 @@ function NewFeeCollection() {
         const totalInstallmentAmount: number = feeHeaders.reduce((sum, header) => sum + (header.amount || 0), 0);
         setInstallmentTotal(totalInstallmentAmount);
 
-        const totalAmount = totalInstallmentAmount + preDuesTotal + posCharge + miscTotal + lateFine;
+        const totalAmount = totalInstallmentAmount + preDuesTotal + lateFine;
 
         setValue("amountTotal", totalAmount);
         const concessionAmount = watch("concessionTotal");
@@ -276,7 +265,7 @@ function NewFeeCollection() {
         //set current due based on payable and paid amounts
         setCurrentDue(watch("payableAmount") - watch("paidAmount"));
 
-    }, [installments, feeHeaders, watch("concessionTotal"), watch("paidAmount"), preDuesTotal, posCharge, miscTotal, lateFine, setValue]);
+    }, [installments, feeHeaders, watch("concessionTotal"), watch("paidAmount"), preDuesTotal, lateFine, setValue]);
 
 
     useEffect(() => {
@@ -287,37 +276,6 @@ function NewFeeCollection() {
 
 
     //fetch transport details
-
-    const fetchStudentTransportDetails = async (trasportLocationId: string, transportVehicleId: string) => {
-        try {
-            setStudentTransportDetails(null);
-            console.log("Fetching student transport details...");
-            setLoading(true);
-            const transportLocationDoc = await getDoc(doc(db, "TRANSPORT", "transportLocations"));
-            if (transportLocationDoc.exists()) {
-                const { locations, vehicles } = transportLocationDoc.data() || {};
-                const location = locations?.find((loc: TransportLocationType) => loc.locationId === trasportLocationId);
-                const vehicle = vehicles?.find((veh: TransportVehicleType) => veh.vehicleId === transportVehicleId);
-
-
-                setStudentTransportDetails({ ...location, ...vehicle });
-
-
-                setLoading(false);
-
-            } else {
-                setLoading(false);
-                console.log("No transport details found!");
-            }
-        } catch (error) {
-            setLoading(false);
-            console.error("Error fetching student transport details:", error);
-        }
-    };
-
-
-
-
     const onSubmit = (data: PayableFormFields) => {
 
         if (!studentDetails) {
@@ -346,8 +304,6 @@ function NewFeeCollection() {
                     dueAmount: dueAmount,
                     concessionTotal: data.concessionTotal,
                     lateFine: data.lateFine,
-                    posCharge: data.posCharge,
-                    miscTotal: data.miscTotal,
                     consessionReason: data.consessionReason,
                     headers: finalHeaders,
                     paymentMethod: data.paymentMethod,
@@ -400,8 +356,6 @@ function NewFeeCollection() {
         setValue("paidAmount", 0);
         setValue("consessionReason", "");
         setValue("payableAmount", 0);
-        setValue("miscTotal", 0);
-        setValue("posCharge", 0);
         setValue("paymentMethod", "");
         setValue("printPDF", true);
         // Reset all installments to Pending except Paid
@@ -422,290 +376,267 @@ function NewFeeCollection() {
 
     return (
         <>
-            
-                    <PageHeaderWithHelpButton title="Students Fee Collection" />
 
+            <PageHeaderWithHelpButton title="Students Fee Collection" />
+
+            <br />
+            <Stack direction={{ xs: "column", lg: "row" }} flex={1} spacing={2}>
+                <Stack sx={{ flex: 1, }} spacing={2} >
+
+                    <Box>
+                        <Typography level="title-lg" startDecorator={<InfoOutlined />} color="primary" mt={2.5}>Student Details</Typography>
+                        <Box sx={{ border: "1px solid oklch(.900 .013 255.508)", borderRadius: "10px", padding: "6px", mt: 1, display: "flex", gap: 1, }}>
+                            {studentDetails && (
+                                <StudentDetailsFeeHeader
+                                    studentMasterData={studentDetails}
+
+                                />
+                            )}
+
+                        </Box>
+                    </Box>
+                    {loading && <CircularProgress />}
+                    <Box>
+                        <Typography level="title-lg" startDecorator={<InfoOutlined />} color="primary">Transport Details</Typography>
+                        <Box sx={{ border: "1px solid oklch(.900 .013 255.508)", borderRadius: "10px", padding: "8px", display: "flex", mt: 1, gap: 1, }}>
+                            <img src={TransportIcon} alt="Transport" width={50} height={50} />
+                            <Stack direction={"row"} spacing={2} justifyContent={"space-between"} sx={{ flex: 1 }}>
+                                <Stack direction={"column"}>
+                                    <Typography level="body-sm">Transport Pickup Point</Typography>
+                                    <Typography
+                                        level="title-lg"
+                                        onClick={() => alert('Van 1 clicked')}
+                                        sx={{ cursor: 'pointer' }}
+
+                                        endDecorator={<Pageview sx={{ mt: 0.5 }} color="primary" />}
+                                    >
+                                        {studentTransportDetails?.pickupPointName || "N/A"}
+                                    </Typography>
+                                </Stack>
+                                <Stack direction={"column"}>
+                                    <Typography level="body-sm">Distance From School</Typography>
+                                    <Typography level="title-lg" >{studentTransportDetails?.distance}KM</Typography>
+                                </Stack>
+                                <Stack direction={"column"}>
+                                    <Typography level="body-sm">Vehicle</Typography>
+                                    <Typography
+                                        level="title-lg"
+                                        onClick={() => alert('Van 1 clicked')}
+                                        sx={{ cursor: 'pointer' }}
+                                        // color="primary"
+                                        endDecorator={<Pageview sx={{ mt: 0.5 }} color="primary" />}
+                                    >
+                                        {studentTransportDetails?.vehicleName || "N/A"}
+                                    </Typography>
+                                </Stack>
+                                <Stack direction={"column"}>
+                                    <Typography level="body-sm">Driver</Typography>
+                                    <Typography level="title-lg" >{studentTransportDetails?.driverName || "N/A"} </Typography>
+                                </Stack>
+                                <Stack direction={"column"}>
+                                    <Typography level="body-sm">Transport Fee</Typography>
+                                    <Typography level="title-lg" >₹{studentTransportDetails?.monthlyCharge || "N/A"}</Typography>
+                                </Stack>
+                            </Stack>
+                        </Box>
+                    </Box>
+                    <Box>
+                        <FeeHeadersTable
+                            heads={feeHeaders}
+                            dueAmount={currentDue}
+                            consessionAmount={concessionTotal}
+                            onChangeHeads={(updatedHeads) => {
+                                setFinalHeaders(updatedHeads);
+                            }}
+                        />
+                    </Box>
+
+                </Stack>
+                <Box sx={{ width: "550px" }}  >
+                    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: "0px" }}>
+                        <Typography level="title-lg" startDecorator={<InfoOutlined />} color="primary">Installement/Fee Months Selection</Typography>
+                        {session}
+                        <Box
+                            sx={{
+                                borderTop: "1px solid var(--bs-gray-300)",
+                                borderLeft: "1px solid var(--bs-gray-300)",
+                                borderRight: "1px solid var(--bs-gray-300)",
+                                borderRadius: "10px 10px 0px 0px",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "8px",
+                            }}
+                            padding="8px"
+                        >
+                            <Button
+                                variant="soft"
+                                color="danger"
+                                startDecorator={<Restore />}
+                                onClick={() =>
+                                    resetFeeHeaders()
+                                }
+                            >
+                                Reset Selection
+                            </Button>
+
+                        </Box>
+                    </Box>
+                    <Box sx={{
+                        border: "1px solid oklch(.900 .013 255.508)", borderRadius: '10px',
+                        borderTopRightRadius: 0,
+                        borderTopRight: 'none', padding: "6px", display: "flex", flexWrap: "wrap", gap: 0.5
+                    }}>
+                        {installments.map((installment, index) => (
+                            <MonthCard
+                                key={index}
+                                label={installment.month}
+                                status={installment.status}
+                                onClick={() => handleInstallmentSelection(installment)}
+                            />
+                        ))}
+                    </Box>
                     <br />
-                    <Stack direction={{ xs: "column", lg: "row" }} flex={1} spacing={2}>
-                        <Stack sx={{ flex: 1, }} spacing={2} >
+                    <Typography level="title-lg" startDecorator={<InfoOutlined />} color="primary">Payable Summary</Typography>
+                    <form onSubmit={handleSubmit(onSubmit)}>
+                        <Box sx={{ border: "1px solid oklch(.900 .013 255.508)", borderRadius: "10px", padding: "12px", display: "flex", flexDirection: "column", gap: 1, flex: 1, mt: 1 }}>
 
-                            <Box>
-                                <Typography level="title-lg" startDecorator={<InfoOutlined />} color="primary" mt={2.5}>Student Details</Typography>
-                                <Box sx={{ border: "1px solid oklch(.900 .013 255.508)", borderRadius: "10px", padding: "6px", mt: 1, display: "flex", gap: 1, }}>
-                                    {studentDetails && (
-                                        <StudentDetailsFeeHeader
-                                            studentMasterData={studentDetails}
+                            <Stack direction={"row"} spacing={2} >
+                                <FormControl>
+                                    <FormLabel>Pre. Dues</FormLabel>
+                                    <Typography level="title-sm" color="danger" sx={{ fontSize: "21px", fontWeight: "bold" }}>₹{preDuesTotal}</Typography>
+                                </FormControl>
+                                <FormControl>
+                                    <FormLabel>Installment Total</FormLabel>
+                                    <Typography level="title-sm" color="danger" sx={{ fontSize: "21px", fontWeight: "bold" }}>₹{installmentTotal}</Typography>
+
+                                </FormControl>
+                                <Box sx={{ border: "1px solid oklch(.900 .013 255.508)", borderRadius: "10px", padding: "12px", display: "flex", gap: 1 }}>
+                                    <FormControl>
+                                        <FormLabel>Late Fine</FormLabel>
+                                        <Typography level="title-sm" color="danger" sx={{ fontSize: "21px", fontWeight: "bold" }}>₹{lateFine}</Typography>
+                                    </FormControl>
+                                    <FormControl>
+                                        <FormLabel>Consession</FormLabel>
+                                        <Input sx={{
+                                            width: "100px",
+                                        }}
+                                            value={0}
+                                            startDecorator={<CurrencyRupeeIcon fontSize="small" />}
 
                                         />
-                                    )}
-
-                                </Box>
-                            </Box>
-                            {loading && <CircularProgress />}
-                            <Box>
-                                <Typography level="title-lg" startDecorator={<InfoOutlined />} color="primary">Transport Details</Typography>
-                                <Box sx={{ border: "1px solid oklch(.900 .013 255.508)", borderRadius: "10px", padding: "8px", display: "flex", mt: 1, gap: 1, }}>
-                                    <img src={TransportIcon} alt="Transport" width={50} height={50} />
-                                    <Stack direction={"row"} spacing={2} justifyContent={"space-between"} sx={{ flex: 1 }}>
-                                        <Stack direction={"column"}>
-                                            <Typography level="body-sm">Transport Pickup Point</Typography>
-                                            <Typography
-                                                level="title-lg"
-                                                onClick={() => alert('Van 1 clicked')}
-                                                sx={{ cursor: 'pointer' }}
-
-                                                endDecorator={<Pageview sx={{ mt: 0.5 }} color="primary" />}
-                                            >
-                                                {studentTransportDetails?.pickupPointName || "N/A"}
-                                            </Typography>
-                                        </Stack>
-                                        <Stack direction={"column"}>
-                                            <Typography level="body-sm">Distance From School</Typography>
-                                            <Typography level="title-lg" >{studentTransportDetails?.distance}KM</Typography>
-                                        </Stack>
-                                        <Stack direction={"column"}>
-                                            <Typography level="body-sm">Vehicle</Typography>
-
-                                            <Typography
-                                                level="title-lg"
-                                                onClick={() => alert('Van 1 clicked')}
-                                                sx={{ cursor: 'pointer' }}
-                                                // color="primary"
-                                                endDecorator={<Pageview sx={{ mt: 0.5 }} color="primary" />}
-                                            >
-                                                {studentTransportDetails?.vehicleName || "N/A"}
-                                            </Typography>
-                                        </Stack>
-                                        <Stack direction={"column"}>
-                                            <Typography level="body-sm">Driver</Typography>
-                                            <Typography level="title-lg" >{studentTransportDetails?.driverName || "N/A"} </Typography>
-                                        </Stack>
-                                        <Stack direction={"column"}>
-                                            <Typography level="body-sm">Transport Fee</Typography>
-                                            <Typography level="title-lg" >₹{studentTransportDetails?.monthlyCharge || "N/A"}</Typography>
-                                        </Stack>
-                                    </Stack>
-                                </Box>
-                            </Box>
-                            <Box>
-                                <FeeHeadersTable
-                                    heads={feeHeaders}
-                                    dueAmount={currentDue}
-                                    consessionAmount={concessionTotal}
-                                    onChangeHeads={(updatedHeads) => {
-                                        setFinalHeaders(updatedHeads);
-                                    }}
-                                />
-                            </Box>
-
-                        </Stack>
-                        <Box sx={{ width: "550px" }}  >
-                            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: "0px" }}>
-                                <Typography level="title-lg" startDecorator={<InfoOutlined />} color="primary">Installement/Fee Months Selection</Typography>
-                                {session}
-                                <Box
-                                    sx={{
-                                        borderTop: "1px solid var(--bs-gray-300)",
-                                        borderLeft: "1px solid var(--bs-gray-300)",
-                                        borderRight: "1px solid var(--bs-gray-300)",
-                                        borderRadius: "10px 10px 0px 0px",
-                                        display: "flex",
-                                        alignItems: "center",
-                                        gap: "8px",
-                                    }}
-                                    padding="8px"
-                                >
-                                    <Button
-                                        variant="soft"
-                                        color="danger"
-                                        startDecorator={<Restore />}
-                                        onClick={() =>
-                                            resetFeeHeaders()
-                                        }
-                                    >
-                                        Reset Selection
-                                    </Button>
-
-                                </Box>
-                            </Box>
-                            <Box sx={{
-                                border: "1px solid oklch(.900 .013 255.508)", borderRadius: '10px',
-                                borderTopRightRadius: 0,
-                                borderTopRight: 'none', padding: "6px", display: "flex", flexWrap: "wrap", gap: 0.5
-                            }}>
-                                {installments.map((installment, index) => (
-                                    <MonthCard
-                                        key={index}
-                                        label={installment.month}
-                                        status={installment.status}
-                                        onClick={() => handleInstallmentSelection(installment)}
-                                    />
-                                ))}
-                            </Box>
-                            <br />
-                            <Typography level="title-lg" startDecorator={<InfoOutlined />} color="primary">Payable Amount</Typography>
-                            <form onSubmit={handleSubmit(onSubmit)}>
-                                <Box sx={{ border: "1px solid oklch(.900 .013 255.508)", borderRadius: "10px", padding: "12px", display: "flex", flexDirection: "column", gap: 1, flex: 1, mt: 1 }}>
-
-                                    <Stack direction={"row"} spacing={2} >
-                                        <FormControl>
-                                            <FormLabel>Pre. Dues</FormLabel>
-                                            <Typography level="title-sm" color="danger" sx={{ fontSize: "21px", fontWeight: "bold" }}>₹{preDuesTotal}</Typography>
-                                        </FormControl>
-                                        <FormControl>
-                                            <FormLabel>Installment Total</FormLabel>
-                                            <Typography level="title-sm" color="danger" sx={{ fontSize: "21px", fontWeight: "bold" }}>₹{installmentTotal}</Typography>
-
-                                        </FormControl>
-                                        <Box sx={{ border: "1px solid oklch(.900 .013 255.508)", borderRadius: "10px", padding: "12px", display: "flex", gap: 1 }}>
-                                            <FormControl>
-                                                <FormLabel>Late Fine</FormLabel>
-                                                <Typography level="title-sm" color="danger" sx={{ fontSize: "21px", fontWeight: "bold" }}>₹{lateFine}</Typography>
-                                            </FormControl>
-                                            <FormControl>
-                                                <FormLabel>Consession</FormLabel>
-                                                <Input sx={{
-                                                    width: "100px",
-                                                }}
-                                                    value={0}
-                                                    startDecorator={<CurrencyRupeeIcon fontSize="small" />}
-
-                                                />
-                                            </FormControl>
-                                        </Box>
-                                    </Stack>
-
-                                    <Stack direction={"row"} spacing={2} >
-                                        <FormControl>
-                                            <FormLabel>POS Charge</FormLabel>
-                                            <Input sx={{
-                                                width: "100px",
-                                            }}
-                                                value={0}
-                                                disabled
-                                                startDecorator={<CurrencyRupeeIcon fontSize="small" />}
-                                                error={errors.posCharge ? true : false}
-                                                {...register("posCharge")}
-                                            />
-                                        </FormControl>
-                                        <FormControl>
-                                            <FormLabel>Misc.</FormLabel>
-                                            <Input sx={{
-                                                width: "120px",
-
-                                            }}
-                                                disabled
-                                                startDecorator={<CurrencyRupeeIcon fontSize="small" />}
-                                                error={errors.miscTotal ? true : false}
-                                                {...register("miscTotal")}
-                                            />
-                                        </FormControl>
-                                        <Stack direction={"column"}>
-                                            <Typography level="title-sm">Total Amount</Typography>
-                                            <Typography level="title-lg" color="primary" sx={{ fontSize: "24px" }}>₹{amountTotal}/-</Typography>
-                                        </Stack>
-                                    </Stack>
-                                    <Box sx={{ border: "1px solid oklch(.900 .013 255.508)", borderRadius: "10px", padding: "12px", display: "flex", gap: 1, justifyContent: "space-between" }} mt={1}>
-                                        <FormControl>
-                                            <FormLabel>Consession</FormLabel>
-                                            <Input sx={{
-                                                width: "100px",
-                                                fontWeight: "bold"
-                                            }}
-                                                color="success"
-                                                startDecorator={<CurrencyRupeeIcon fontSize="small" />}
-                                                error={errors.concessionTotal ? true : false}
-                                                {...register("concessionTotal", {
-                                                    onChange: (e) => {
-                                                        const val = e.target.value;
-                                                        console.log("Concession Value:", val);
-                                                        setValue("concessionTotal", val === "" ? 0 : Number(val) || 0, {
-                                                            shouldValidate: true,
-                                                            shouldDirty: true,
-                                                        });
-                                                    },
-                                                })}
-                                            />
-                                            <FormHelperText sx={{ color: "red" }} >{errors.concessionTotal && errors.concessionTotal.message}</FormHelperText>
-                                        </FormControl>
-                                        <FormControl>
-                                            <FormLabel>Payable Amount</FormLabel>
-                                            <Input sx={{
-                                                width: "150px",
-                                                fontWeight: "bold",
-                                            }}
-                                                disabled
-
-                                                color="success"
-                                                startDecorator={<CurrencyRupeeIcon fontSize="small" />}
-                                                error={errors.payableAmount ? true : false}
-                                                {...register("payableAmount")}
-                                            />
-                                        </FormControl>
-                                        <FormControl>
-                                            <FormLabel>Paid Amount</FormLabel>
-                                            <Input sx={{
-                                                width: "150px",
-                                                fontWeight: "bold",
-                                            }}
-                                                color="success"
-                                                startDecorator={<CurrencyRupeeIcon fontSize="small" />}
-                                                error={errors.paidAmount ? true : false}
-                                                {...register("paidAmount", {
-                                                    onChange: (e) => {
-                                                        const val = e.target.value;
-                                                        setValue("paidAmount", val === "" ? 0 : Number(val) || 0, {
-                                                            shouldValidate: true,
-                                                            shouldDirty: true,
-                                                        });
-                                                    },
-                                                })}
-                                            />
-                                            <FormHelperText sx={{ color: "red" }} >{errors.paidAmount && errors.paidAmount.message}</FormHelperText>
-                                        </FormControl>
-                                    </Box>
-                                    <Stack direction={"row"} spacing={2}>
-
-                                        <FormControl sx={{ flex: 1 }}>
-                                            <FormLabel>Conession Reason</FormLabel>
-                                            <Input
-
-                                            />
-                                        </FormControl>
-                                    </Stack>
-                                    <Divider />
-
-                                    <Chip size="lg" sx={{ flex: 1, p: 1, width: "100%" }} variant="soft" color="success" >In Words : {numberToWords(paidAmount)}</Chip>
-
-                                    <Stack direction={"row"} spacing={2} justifyContent={"space-between"} alignItems={"end"} mt={2}>
-                                        <Stack direction={"column"}>
-                                            <Typography level="title-sm">Current Due</Typography>
-                                            <Typography level="title-lg" color="danger" sx={{ fontSize: "24px" }}>₹{currentDue}/-</Typography>
-                                        </Stack>
-                                        <Stack direction={"row"} justifyContent={"center"} alignItems={"center"} spacing={2}>
-                                            <Checkbox label="Print PDF" />
-                                            <Button type="submit" >Collect/Save Fee</Button>
-                                        </Stack>
-                                    </Stack>
-                                </Box>
-                            </form>
-                            <br />
-                            <Typography level="title-lg" startDecorator={<InfoOutlined />} color="primary">Extras</Typography>
-                            <Box sx={{ border: "1px solid oklch(.900 .013 255.508)", borderRadius: "10px", padding: "12px", display: "flex", flexDirection: "column", gap: 1, flex: 1, mt: 1 }}>
-                                <Stack sx={{ flex: 1 }} spacing={2} >
-                                    <FormControl>
-                                        <FormLabel>Payment Methods</FormLabel>
-                                        <Select defaultValue="cash">
-                                            <Option value="cash">Cash</Option>
-                                            <Option value="upi-bank">UPI/BANK Transfer</Option>
-                                            <Option value="cheque">Cheque</Option>
-                                        </Select>
                                     </FormControl>
+                                </Box>
+                            </Stack>
+
+                            <Stack direction={"row"} spacing={2} >
+
+
+                                <Stack direction={"column"}>
+                                    <Typography level="title-sm">Total Amount</Typography>
+                                    <Typography level="title-lg" color="primary" sx={{ fontSize: "24px" }}>₹{amountTotal}/-</Typography>
                                 </Stack>
+                            </Stack>
+                            <Box sx={{ border: "1px solid oklch(.900 .013 255.508)", borderRadius: "10px", padding: "12px", display: "flex", gap: 1, justifyContent: "space-between" }} mt={1}>
+                                <FormControl>
+                                    <FormLabel>Consession</FormLabel>
+                                    <Input sx={{
+                                        width: "100px",
+                                        fontWeight: "bold"
+                                    }}
+                                        color="success"
+                                        startDecorator={<CurrencyRupeeIcon fontSize="small" />}
+                                        error={errors.concessionTotal ? true : false}
+                                        {...register("concessionTotal", {
+                                            onChange: (e) => {
+                                                const val = e.target.value;
+                                                console.log("Concession Value:", val);
+                                                setValue("concessionTotal", val === "" ? 0 : Number(val) || 0, {
+                                                    shouldValidate: true,
+                                                    shouldDirty: true,
+                                                });
+                                            },
+                                        })}
+                                    />
+                                    <FormHelperText sx={{ color: "red" }} >{errors.concessionTotal && errors.concessionTotal.message}</FormHelperText>
+                                </FormControl>
+                                <FormControl>
+                                    <FormLabel>Payable Amount</FormLabel>
+                                    <Input sx={{
+                                        width: "150px",
+                                        fontWeight: "bold",
+                                    }}
+                                        disabled
+
+                                        color="success"
+                                        startDecorator={<CurrencyRupeeIcon fontSize="small" />}
+                                        error={errors.payableAmount ? true : false}
+                                        {...register("payableAmount")}
+                                    />
+                                </FormControl>
+                                <FormControl>
+                                    <FormLabel>Paid Amount</FormLabel>
+                                    <Input sx={{
+                                        width: "150px",
+                                        fontWeight: "bold",
+                                    }}
+                                        color="success"
+                                        startDecorator={<CurrencyRupeeIcon fontSize="small" />}
+                                        error={errors.paidAmount ? true : false}
+                                        {...register("paidAmount", {
+                                            onChange: (e) => {
+                                                const val = e.target.value;
+                                                setValue("paidAmount", val === "" ? 0 : Number(val) || 0, {
+                                                    shouldValidate: true,
+                                                    shouldDirty: true,
+                                                });
+                                            },
+                                        })}
+                                    />
+                                    <FormHelperText sx={{ color: "red" }} >{errors.paidAmount && errors.paidAmount.message}</FormHelperText>
+                                </FormControl>
                             </Box>
+                            <Stack direction={"row"} spacing={2}>
+
+                                <FormControl sx={{ flex: 1 }}>
+                                    <FormLabel>Conession Reason</FormLabel>
+                                    <Input
+
+                                    />
+                                </FormControl>
+                            </Stack>
+                            <Divider />
+
+                            <Chip size="lg" sx={{ flex: 1, p: 1, width: "100%" }} variant="soft" color="success" >In Words : {numberToWords(paidAmount)}</Chip>
+
+                            <Stack direction={"row"} spacing={2} justifyContent={"space-between"} alignItems={"end"} mt={2}>
+                                <Stack direction={"column"}>
+                                    <Typography level="title-sm">Current Due</Typography>
+                                    <Typography level="title-lg" color="danger" sx={{ fontSize: "24px" }}>₹{currentDue}/-</Typography>
+                                </Stack>
+                                <Stack direction={"row"} justifyContent={"center"} alignItems={"center"} spacing={2}>
+                                    <Checkbox label="Print PDF" />
+                                    <Button type="submit" >Collect/Save Fee</Button>
+                                </Stack>
+                            </Stack>
                         </Box>
-                    </Stack>
-    
+                    </form>
+                    <br />
+                    <Typography level="title-lg" startDecorator={<InfoOutlined />} color="primary">Extras</Typography>
+                    <Box sx={{ border: "1px solid oklch(.900 .013 255.508)", borderRadius: "10px", padding: "12px", display: "flex", flexDirection: "column", gap: 1, flex: 1, mt: 1 }}>
+                        <Stack sx={{ flex: 1 }} spacing={2} >
+                            <FormControl>
+                                <FormLabel>Payment Methods</FormLabel>
+                                <Select defaultValue="cash">
+                                    <Option value="cash">Cash</Option>
+                                    <Option value="upi-bank">UPI/BANK Transfer</Option>
+                                    <Option value="cheque">Cheque</Option>
+                                </Select>
+                            </FormControl>
+                        </Stack>
+                    </Box>
+                </Box>
+            </Stack>
+
         </>
     )
 }

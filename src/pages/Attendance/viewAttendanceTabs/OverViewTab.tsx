@@ -4,7 +4,7 @@ import RoundIconCard from "components/Card/RoundIconCard";
 import AttendanceBarChart from "components/Graph/AttendanceBarChart";
 import { Clock, Forbidden2, TickCircle } from "iconsax-react";
 import { useEffect, useState } from "react";
-import { getAttendanceSummary, getClassWiseAttendanceSummary } from "services/firestore.attendance";
+import { getAttendanceSummary, getClassWiseAttendanceSummary } from "services/attendance/firestore.attendance";
 import { AttendanceSummary, ClassAttendanceSummary } from "types/AttendanceType";
 
 function OverViewTab() {
