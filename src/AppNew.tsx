@@ -17,7 +17,6 @@ import StudentMigration from "pages/Users/StudentMigration";
 import PrintTopperList from "pages/ResultsManagement/PrintToperList";
 import AllocatedStudents from "pages/transport/vehicleDetailsTabs/AllocatedStudents";
 import AllocatedStudentsLocations from "pages/transport/vehicleDetailsTabs/AllocatedStudentsLocations";
-import NewFeeCollection from "pages/FeeManager/NewFeeCollection";
 import StudentsList from "pages/Reports/StudentsList";
 import { NavbarProvider } from "context/NavbarContext";
 import IotAttendance from "pages/Attendance/iotAttendanance/IotAttendance";
@@ -33,6 +32,8 @@ import Expenses from "pages/expenses/Expenses";
 import { SidebarProvider } from "context/SidebarContext";
 import StudentProfilePictureUpdater from "pages/ProfileUpdater/StudentProfilePictureUpdater";
 import ManualAttendance from "pages/Attendance/ManualAttendance";
+import FeeCollectionPage from "modules/fees/pages/FeeCollectionPage";
+import { ConfirmDialogProvider } from "context/ConfirmDialogContext";
 
 
 // Lazy Loaded Components
@@ -123,209 +124,212 @@ function AppNew() {
             <SidebarProvider>
 
                 <AuthProvider>
-                    <SearchDialogProvider>
-                        <NavbarProvider>
-                            <Suspense>
-                                <Routes>
-                                    <Route path="/" element={<DashboardLayoutNew />}>
+                    <ConfirmDialogProvider>
+                        <SearchDialogProvider>
+                            <NavbarProvider>
+                                <Suspense>
+                                    <Routes>
+                                        <Route path="/" element={<DashboardLayoutNew />}>
 
-                                        <Route
-                                            index
-                                            element={<Dashboard />}
-                                        />
-                                        <Route
-                                            path="students/view"
-                                            element={<ViewStudents />}
-                                        />
-                                        <Route
-                                            path="students/add"
-                                            element={<AddStudentNew />}
-                                        />
+                                            <Route
+                                                index
+                                                element={<Dashboard />}
+                                            />
+                                            <Route
+                                                path="students/view"
+                                                element={<ViewStudents />}
+                                            />
+                                            <Route
+                                                path="students/add"
+                                                element={<AddStudentNew />}
+                                            />
 
-                                        <Route
-                                            path="students/Admission-students"
-                                            element={<AdmissionEnquiry />}
-                                        />
+                                            <Route
+                                                path="students/Admission-students"
+                                                element={<AdmissionEnquiry />}
+                                            />
 
-                                        <Route
-                                            path="faculties"
-                                            element={<Faculties />}
-                                        />
+                                            <Route
+                                                path="faculties"
+                                                element={<Faculties />}
+                                            />
 
-                                        <Route path="faculties/:id" element={<FacultyDetail />} />
-                                        <Route path="faculties/add" element={<UnderConstruction />} />
+                                            <Route path="faculties/:id" element={<FacultyDetail />} />
+                                            <Route path="faculties/add" element={<UnderConstruction />} />
 
-                                        <Route path="inquiries" element={<AdmissionEnquiry />} />
-
-
-                                        <Route
-                                            path="fee-management"
-                                            element={<FeeManager />}
-                                        />
-                                        <Route
-                                            path="fee-management/FeeDetails/:id"
-                                            element={<StudentFeeDetails />}
-                                        />
-                                        <Route
-                                            path="fee-management/NewFeeDetails/:studentId"
-                                            element={<NewFeeCollection />}
-                                        />
-
-                                        <Route
-                                            path="expense-manager"
-                                            element={<Expenses />}
-                                        />
+                                            <Route path="inquiries" element={<AdmissionEnquiry />} />
 
 
-                                        <Route
-                                            path="attendance/view"
-                                            element={<ViewAttendance />}
-                                        />
-                                        <Route
-                                            path="attendance/manual"
-                                            element={<ManualAttendance />}
-                                        />
-                                        {/* <Route
+                                            <Route
+                                                path="fee-management"
+                                                element={<FeeManager />}
+                                            />
+                                            <Route
+                                                path="fee-management/FeeDetails/:id"
+                                                element={<StudentFeeDetails />}
+                                            />
+                                            <Route
+                                                path="fee-management/NewFeeDetails/:studentId"
+                                                element={<FeeCollectionPage />}
+                                            />
+
+
+                                            <Route
+                                                path="expense-manager"
+                                                element={<Expenses />}
+                                            />
+
+
+                                            <Route
+                                                path="attendance/view"
+                                                element={<ViewAttendance />}
+                                            />
+                                            <Route
+                                                path="attendance/manual"
+                                                element={<ManualAttendance />}
+                                            />
+                                            {/* <Route
                                         path="attendance/generate-attendance-qr"
                                         element={<GenerateQrSticker />}
                                     /> */}
-                                        {/* <Route
+                                            {/* <Route
                                         path="attendance/Facuities"
                                         element={<FacultyAttendance />}
                                     /> */}
-                                        <Route
-                                            path="attendance/iot"
-                                            element={<IotAttendance />}
-                                        />
-                                        <Route
-                                            path="students/profile/:id"
-                                            element={<ViewStudentProfile />}
-                                        />
+                                            <Route
+                                                path="attendance/iot"
+                                                element={<IotAttendance />}
+                                            />
+                                            <Route
+                                                path="students/profile/:id"
+                                                element={<ViewStudentProfile />}
+                                            />
 
-                                        {/* Exam Management routes */}
+                                            {/* Exam Management routes */}
 
-                                        <Route
-                                            path="exams/update-results/bulk-update"
-                                            element={<UpdateResultsBulk />}
-                                        />
-                                        <Route
-                                            path="schoolResults/print-rank-list"
-                                            element={<PrintRankList />}
-                                        />
+                                            <Route
+                                                path="exams/update-results/bulk-update"
+                                                element={<UpdateResultsBulk />}
+                                            />
+                                            <Route
+                                                path="schoolResults/print-rank-list"
+                                                element={<PrintRankList />}
+                                            />
 
-                                        <Route
-                                            path="schoolResults/print-toppers-list"
-                                            element={<PrintTopperList />}
-                                        />
+                                            <Route
+                                                path="schoolResults/print-toppers-list"
+                                                element={<PrintTopperList />}
+                                            />
 
-                                        <Route
-                                            path="exams"
-                                            element={<ExamPlanner />}
-                                        />
-                                        <Route
-                                            path="exams/publish-result"
-                                            element={<UpdateResults />}
-                                        />
+                                            <Route
+                                                path="exams"
+                                                element={<ExamPlanner />}
+                                            />
+                                            <Route
+                                                path="exams/publish-result"
+                                                element={<UpdateResults />}
+                                            />
 
-                                        <Route
-                                            path="exams/add-exam/:examId?"
-                                            element={<ExamSetup />}
-                                        />
-                                        <Route
-                                            path="exams/print-result"
-                                            element={<PrintResult />}
-                                        />
-                                        <Route
-                                            path="exams/print-ranklist"
-                                            element={<PrintRankList />}
-                                        />
-                                        <Route
-                                            path="schoolResults/class-migration"
-                                            element={<StudentMigration />}
-                                        />
-                                        {/* Exam Management routes */}
-                                        <Route
-                                            path="print-id-cards"
-                                            element={<IdCardGeneration />}
-                                        />
+                                            <Route
+                                                path="exams/add-exam/:examId?"
+                                                element={<ExamSetup />}
+                                            />
+                                            <Route
+                                                path="exams/print-result"
+                                                element={<PrintResult />}
+                                            />
+                                            <Route
+                                                path="exams/print-ranklist"
+                                                element={<PrintRankList />}
+                                            />
+                                            <Route
+                                                path="schoolResults/class-migration"
+                                                element={<StudentMigration />}
+                                            />
+                                            {/* Exam Management routes */}
+                                            <Route
+                                                path="print-id-cards"
+                                                element={<IdCardGeneration />}
+                                            />
 
-                                        {/* Reports Routes */}
+                                            {/* Reports Routes */}
 
-                                        <Route
-                                            path="reports"
-                                            element={<Reports />}
-                                        />
-                                        <Route
-                                            path="reports/balance-sheet"
-                                            element={<BalanceSheet />}
-                                        />
-                                        <Route
-                                            path="follow-up"
-                                            element={<FollowUp />}
-                                        />
-                                        <Route
-                                            path="follow-up/fee-dues-follow-up"
-                                            element={<FeeDueFollowUp />}
-                                        />
+                                            <Route
+                                                path="reports"
+                                                element={<Reports />}
+                                            />
+                                            <Route
+                                                path="reports/balance-sheet"
+                                                element={<BalanceSheet />}
+                                            />
+                                            <Route
+                                                path="follow-up"
+                                                element={<FollowUp />}
+                                            />
+                                            <Route
+                                                path="follow-up/fee-dues-follow-up"
+                                                element={<FeeDueFollowUp />}
+                                            />
 
-                                        <Route path="reports/due-report" element={<DueReport />} />
-                                        <Route path="reports/demand-slip" element={<DemandSlip />} />
-                                        <Route path="reports/admit-card" element={<GenerateAdmitCard />} />
-                                        <Route path="reports/students-list" element={<StudentsList />} />
-                                        <Route path="reports/faculty-daily-attendance" element={<FacultyDailyAttendanceReport />} />
-                                        <Route path="reports/faculty-monthly-attendance" element={<FacultyMonthlyAttendanceReport />} />
+                                            <Route path="reports/due-report" element={<DueReport />} />
+                                            <Route path="reports/demand-slip" element={<DemandSlip />} />
+                                            <Route path="reports/admit-card" element={<GenerateAdmitCard />} />
+                                            <Route path="reports/students-list" element={<StudentsList />} />
+                                            <Route path="reports/faculty-daily-attendance" element={<FacultyDailyAttendanceReport />} />
+                                            <Route path="reports/faculty-monthly-attendance" element={<FacultyMonthlyAttendanceReport />} />
 
-                                        {"Transport"}
-                                        <Route
-                                            path="transport/pickup-locations"
-                                            element={<Transport />}
-                                        />
-                                        <Route
-                                            path="transport/pickup-locations/allocated-students/:locationId"
-                                            element={<AllocatedStudentsLocations />}
-                                        />
-                                        <Route
-                                            path="transport/allocated-students/:locationId"
-                                            element={<AllocatedStudentsLocations />}
-                                        />
-                                        <Route
-                                            path="transport/vehicles"
-                                            element={<VehicleDetails />}
-                                        />
-                                        <Route
-                                            path="user-management"
-                                            element={<UserManagement />}
-                                        />
-                                        <Route
-                                            path="master-data"
-                                            element={<MasterDataPage />}
-                                        />
-                                        <Route
-                                            path="settings"
-                                            element={<SettingsPage />}
-                                        />
-                                        <Route
-                                            path="website-config"
-                                            element={<WebsiteConfig />}
-                                        />
+                                            {"Transport"}
+                                            <Route
+                                                path="transport/pickup-locations"
+                                                element={<Transport />}
+                                            />
+                                            <Route
+                                                path="transport/pickup-locations/allocated-students/:locationId"
+                                                element={<AllocatedStudentsLocations />}
+                                            />
+                                            <Route
+                                                path="transport/allocated-students/:locationId"
+                                                element={<AllocatedStudentsLocations />}
+                                            />
+                                            <Route
+                                                path="transport/vehicles"
+                                                element={<VehicleDetails />}
+                                            />
+                                            <Route
+                                                path="user-management"
+                                                element={<UserManagement />}
+                                            />
+                                            <Route
+                                                path="master-data"
+                                                element={<MasterDataPage />}
+                                            />
+                                            <Route
+                                                path="settings"
+                                                element={<SettingsPage />}
+                                            />
+                                            <Route
+                                                path="website-config"
+                                                element={<WebsiteConfig />}
+                                            />
 
-                                        <Route
-                                            path="transport/vehicles/allocated-students/:vehicleId"
-                                            element={<AllocatedStudents />}
-                                        />
-                                    </Route>
+                                            <Route
+                                                path="transport/vehicles/allocated-students/:vehicleId"
+                                                element={<AllocatedStudents />}
+                                            />
+                                        </Route>
 
-                                    <Route path="/login" element={<AuthenticationLayout />}>
-                                        <Route index element={<Login />} />
-                                    </Route>
-                                    <Route
-                                        path="profile-update"
-                                        element={<StudentProfilePictureUpdater />}
-                                    />
-                                </Routes>
-                            </Suspense>
-                        </NavbarProvider>
-                    </SearchDialogProvider>
+                                        <Route path="/login" element={<AuthenticationLayout />}>
+                                            <Route index element={<Login />} />
+                                        </Route>
+                                        <Route
+                                            path="profile-update"
+                                            element={<StudentProfilePictureUpdater />}
+                                        />
+                                    </Routes>
+                                </Suspense>
+                            </NavbarProvider>
+                        </SearchDialogProvider>
+                    </ConfirmDialogProvider>
                 </AuthProvider>
             </SidebarProvider>
         </FirebaseProvider>

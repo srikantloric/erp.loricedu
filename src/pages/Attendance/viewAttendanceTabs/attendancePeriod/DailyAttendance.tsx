@@ -15,7 +15,7 @@ import { AttendanceRowType, ClassAttendanceSummary } from "types/AttendanceType"
 import {
     getClassAttendanceForDate,
     getClassAttendanceSummary,
-} from "services/firestore.attendance";
+} from "services/attendance/firestore.attendance";
 import MaterialTable from "@material-table/core";
 import { Chip } from "@mui/material";
 import { ExportCsv, ExportPdf } from "@material-table/exporters";

@@ -15,10 +15,9 @@ import MenuIcon from "@mui/icons-material/Menu";
 import {
   IconAccessPoint,
   IconBell,
-  IconMessage2,
   IconSearch,
 } from "@tabler/icons-react";
-import { Circle, Logout, Settings } from "@mui/icons-material";
+import { Circle, Fullscreen, Logout, Settings } from "@mui/icons-material";
 import { auth } from "../../firebase";
 import { useSearchDialog } from "context/SearchDialogContext";
 import { Chip, Option, Select, Stack, Typography } from "@mui/joy";
@@ -26,6 +25,7 @@ import { useNavbar } from "context/NavbarContext";
 import { useAuth } from "context/AuthContext";
 import { useState } from "react";
 import { useSidebar } from "context/SidebarContext";
+import { toggleFullScreen } from "pages/fullscreen";
 
 type NavbarProps = {
   setAttenzyFeed: (open: boolean) => void;
@@ -115,7 +115,7 @@ const Navbar: React.FC<NavbarProps> = ({ setAttenzyFeed }) => {
                 </Tooltip>
               </div>
               <div className="rounded-bg">
-                <Tooltip title="Message">
+                <Tooltip title="Notifications">
                   <IconButton aria-label={notificationsLabel(100)}>
                     <Badge badgeContent={1} color="success">
                       <IconBell size={22} />
@@ -124,10 +124,10 @@ const Navbar: React.FC<NavbarProps> = ({ setAttenzyFeed }) => {
                 </Tooltip>
               </div>
               <div className="rounded-bg">
-                <Tooltip title="Message">
-                  <IconButton aria-label={notificationsLabel(100)}>
+                <Tooltip title="FullScreen">
+                  <IconButton onClick={toggleFullScreen}>
                     <Badge badgeContent={0} color="primary">
-                      <IconMessage2 size={22} />
+                      <Fullscreen  />
                     </Badge>
                   </IconButton>
                 </Tooltip>
