@@ -105,6 +105,10 @@ export const SCHOOL_FEE_YEAR = [
   {
     title: "2025",
     value: "2025"
+  },
+  {
+    title: "2026",
+    value: "2026"
   }
 ]
 
