@@ -20,13 +20,13 @@ import { useSidebar } from "context/SidebarContext";
 import {
   collection,
   doc,
-  getDoc,
-  getDocs,
+  onSnapshot,
   query,
   where,
+  Unsubscribe,
 } from "firebase/firestore";
 import { enqueueSnackbar } from "notistack";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { StudentDetailsType } from "types/student";
 import { Exam, ExamPaper } from "types/exam";
 import { getClassNameByValue } from "utilities/UtilitiesFunctions";
@@ -66,7 +66,6 @@ export default function UpdateResults() {
 
   const [results, setResults] = useState<ResultsState>({});
   const [savedStudents, setSavedStudents] = useState<Set<string>>(new Set());
-
   const [studentStatus, setStudentStatus] =
     useState<Record<string, StudentStatus>>({});
   const [statusFilter, setStatusFilter] =
@@ -74,129 +73,160 @@ export default function UpdateResults() {
 
   const [loading, setLoading] = useState(false);
 
+  /* ---------------- REALTIME SUBSCRIPTIONS ---------------- */
+
+  const unsubscribers = useRef<Unsubscribe[]>([]);
+
+  const cleanupSubscriptions = () => {
+    unsubscribers.current.forEach(unsub => unsub());
+    unsubscribers.current = [];
+  };
+
+  useEffect(() => {
+    return () => cleanupSubscriptions();
+  }, []);
+
   /* ---------------- EFFECTS ---------------- */
 
   useEffect(() => {
     setMini(true);
   }, []);
 
-  // Fetch exams
+  // Fetch exams (one-time)
   useEffect(() => {
-    const fetchExams = async () => {
-      const q = query(
-        collection(db, "EXAMS"),
-        where("examSession", "==", session)
-      );
-      const snap = await getDocs(q);
+    const q = query(
+      collection(db, "EXAMS"),
+      where("examSession", "==", session)
+    );
+
+    const unsub = onSnapshot(q, snap => {
       setExams(snap.docs.map(d => d.data() as Exam));
-    };
-    fetchExams();
+    });
+
+    return () => unsub();
   }, [session]);
 
   // Fetch exam papers (class based)
   useEffect(() => {
-    const fetchPapers = async () => {
-      if (!selectedExam || !exams.length) return;
+    if (!selectedExam || !exams.length) return;
 
-      const exam = exams.find(e => e.examId === selectedExam);
-      if (!exam) return;
+    const exam = exams.find(e => e.examId === selectedExam);
+    if (!exam) return;
 
-      if (!selectedClass) {
-        setSelectedExamPapers(exam.papers);
-        return;
+    if (!selectedClass) {
+      setSelectedExamPapers(exam.papers);
+      return;
+    }
+
+    const unsub = onSnapshot(
+      doc(db, "MASTER_DATA", "masterData"),
+      snap => {
+        const papersCfg = snap.data()?.papers || [];
+        const className = getClassNameByValue(selectedClass);
+
+        const filtered = exam.papers.filter(p =>
+          papersCfg.some(
+            (c: any) =>
+              c.paperId === p.paperId &&
+              Array.isArray(c.classes) &&
+              c.classes.includes(className)
+          )
+        );
+
+        setSelectedExamPapers(filtered);
       }
+    );
 
-      const cfgRef = doc(db, "MASTER_DATA", "masterData");
-      const cfgSnap = await getDoc(cfgRef);
-      const papersCfg = cfgSnap.data()?.papers || [];
-
-      const className = getClassNameByValue(selectedClass);
-
-      const filtered = exam.papers.filter(p =>
-        papersCfg.some(
-          (c: any) =>
-            c.paperId === p.paperId &&
-            Array.isArray(c.classes) &&
-            c.classes.includes(className)
-        )
-      );
-
-      setSelectedExamPapers(filtered);
-    };
-
-    fetchPapers();
+    unsubscribers.current.push(unsub);
   }, [selectedExam, selectedClass, exams]);
 
-  /* ---------------- HANDLERS ---------------- */
+  /* ---------------- REALTIME SEARCH ---------------- */
 
-  const handleSearch = async () => {
+  const handleSearch = () => {
     if (!selectedClass || !selectedExam) {
       enqueueSnackbar("Please select class and exam", { variant: "warning" });
       return;
     }
 
     setLoading(true);
+    cleanupSubscriptions();
 
-    try {
-      const q = query(
-        collection(db, "STUDENTS"),
-        where("class", "==", selectedClass),
-        where("is_active", "==", true)
-      );
+    const studentsQuery = query(
+      collection(db, "STUDENTS"),
+      where("class", "==", selectedClass),
+      where("is_active", "==", true)
+    );
 
-      const snap = await getDocs(q);
+    const unsubStudents = onSnapshot(studentsQuery, snap => {
       const fetchedStudents = snap.docs.map(d => ({
         id: d.id,
         ...d.data(),
       })) as StudentDetailsType[];
 
-      const fetchedResults: ResultsState = {};
-      const savedSet = new Set<string>();
-      const statusMap: Record<string, StudentStatus> = {};
+      setStudents(fetchedStudents);
 
-      for (const s of fetchedStudents) {
+      fetchedStudents.forEach(student => {
         const resRef = doc(
           db,
           "STUDENTS",
-          s.id,
+          student.id,
           "PUBLISHED_RESULTS",
           selectedExam
         );
-        const resSnap = await getDoc(resRef);
 
-        if (resSnap.exists()) {
-          const data = resSnap.data();
-          statusMap[s.id] = data.status ?? "completed";
+        const unsubResult = onSnapshot(resRef, snap => {
+          setResults(prev => {
+            const next = { ...prev };
 
-          if (Array.isArray(data.result)) {
-            fetchedResults[s.id] = {};
-            savedSet.add(s.id);
+            if (!snap.exists()) {
+              delete next[student.id];
+              return next;
+            }
 
-            data.result.forEach((r: any) => {
-              fetchedResults[s.id][r.paperId] = {
-                theory: r.theory ?? "",
-                practical: r.practical ?? "",
-                ...(r.grade ? { grade: r.grade } : {}),
-              };
-            });
-          }
-        } else {
-          statusMap[s.id] = "pending";
-        }
-      }
+            const data = snap.data();
+            next[student.id] = {};
 
-      setStudents(fetchedStudents);
-      setResults(fetchedResults);
-      setSavedStudents(savedSet);
-      setStudentStatus(statusMap);
-    } catch (err) {
-      enqueueSnackbar("Failed to fetch students", { variant: "error" });
-    } finally {
-      setLoading(false);
-    }
+            if (Array.isArray(data.result)) {
+              data.result.forEach((r: any) => {
+                next[student.id][r.paperId] = {
+                  theory: r.theory ?? "",
+                  practical: r.practical ?? "",
+                  ...(r.grade ? { grade: r.grade } : {}),
+                };
+              });
+            }
+
+            return next;
+          });
+
+          setStudentStatus(prev => ({
+            ...prev,
+            [student.id]: snap.exists()
+              ? snap.data().status ?? "completed"
+              : "pending",
+          }));
+
+          setSavedStudents(prev => {
+            const s = new Set(prev);
+            snap.exists() ? s.add(student.id) : s.delete(student.id);
+            return s;
+          });
+
+          setLoading(false);
+        });
+
+        unsubscribers.current.push(unsubResult);
+      });
+    });
+
+    unsubscribers.current.push(unsubStudents);
   };
 
+  /* ---------------- RESET ---------------- */
+
   const handleReset = () => {
+    cleanupSubscriptions();
+
     setStudents([]);
     setResults({});
     setSavedStudents(new Set());
@@ -206,14 +236,12 @@ export default function UpdateResults() {
     setStatusFilter("all");
   };
 
-  /* ---------------- FILTERED STUDENTS ---------------- */
+  /* ---------------- FILTERING ---------------- */
 
   const filteredStudents = students.filter(s => {
     if (statusFilter === "all") return true;
     return studentStatus[s.id] === statusFilter;
   });
-
-  /* ---------------- STATUS COUNTS ---------------- */
 
   const statusCounts = {
     all: students.length,
@@ -250,12 +278,7 @@ export default function UpdateResults() {
             <Select
               placeholder="Choose class"
               value={selectedClass}
-              onChange={(e, val) => {
-                setSelectedClass(val)
-                if (filteredStudents) {
-                  setStudents([])
-                }
-              }}
+              onChange={(e, val) => setSelectedClass(val)}
             >
               {SCHOOL_CLASSES.map(c => (
                 <Option key={c.id} value={c.value}>
@@ -267,12 +290,7 @@ export default function UpdateResults() {
             <Select
               placeholder="Choose exam"
               value={selectedExam}
-              onChange={(e, val) => {
-                setSelectedExam(val)
-                if (filteredStudents) {
-                  setStudents([])
-                }
-              }}
+              onChange={(e, val) => setSelectedExam(val)}
             >
               {exams.map(exam => (
                 <Option key={exam.examId} value={exam.examId}>
@@ -289,18 +307,14 @@ export default function UpdateResults() {
               Search
             </Button>
 
-            <Button
-              variant="soft"
-              onClick={handleReset}
-              fullWidth={isMobile}
-            >
+            <Button variant="soft" onClick={handleReset} fullWidth={isMobile}>
               Reset
             </Button>
           </Stack>
         </Stack>
 
         {/* STATUS FILTERS */}
-        {filteredStudents.length > 0 ?
+        {students.length > 0 && (
           <Box
             sx={{
               p: isMobile ? 1.5 : 2,
@@ -313,46 +327,27 @@ export default function UpdateResults() {
             </Typography>
 
             <Stack direction="row" spacing={1} flexWrap="wrap">
-              <Button
-                size="sm"
-                variant={statusFilter === "all" ? "solid" : "soft"}
-                onClick={() => setStatusFilter("all")}
-              >
-                All ({statusCounts.all})
-              </Button>
-
-              <Button
-                size="sm"
-                variant={statusFilter === "pending" ? "solid" : "soft"}
-                color="neutral"
-                onClick={() => setStatusFilter("pending")}
-                disabled={statusCounts.pending === 0}
-              >
-                Pending ({statusCounts.pending})
-              </Button>
-
-              <Button
-                size="sm"
-                variant={statusFilter === "review" ? "solid" : "soft"}
-                color="warning"
-                onClick={() => setStatusFilter("review")}
-                disabled={statusCounts.review === 0}
-              >
-                Needs Review ({statusCounts.review})
-              </Button>
-
-              <Button
-                size="sm"
-                variant={statusFilter === "completed" ? "solid" : "soft"}
-                color="success"
-                onClick={() => setStatusFilter("completed")}
-                disabled={statusCounts.completed === 0}
-              >
-                Completed ({statusCounts.completed})
-              </Button>
+              {(["all", "pending", "review", "completed"] as const).map(key => (
+                <Button
+                  key={key}
+                  size="sm"
+                  color={
+                    key === "review"
+                      ? "warning"
+                      : key === "completed"
+                        ? "success"
+                        : "neutral"
+                  }
+                  variant={statusFilter === key ? "solid" : "soft"}
+                  disabled={statusCounts[key] === 0}
+                  onClick={() => setStatusFilter(key)}
+                >
+                  {key.toUpperCase()} ({statusCounts[key]})
+                </Button>
+              ))}
             </Stack>
           </Box>
-          : null}
+        )}
 
         {loading && <LinearProgress />}
 
