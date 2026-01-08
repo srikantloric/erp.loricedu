@@ -44,9 +44,11 @@ export const menuItems: MenuItem[] = [
   {
     label: 'Faculties',
     icon: <IconUsers />,
-    path: "/faculties",
     permission: "manageFaculties",
-    group: "masters"
+    subMenu: [
+      { label: 'View Faculties', path: '/faculties' },
+      { label: 'Attendance', path: '/faculties/attendance' },
+    ]
   },
   {
     label: 'Inquiries',

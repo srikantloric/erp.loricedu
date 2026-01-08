@@ -34,6 +34,7 @@ import StudentProfilePictureUpdater from "pages/ProfileUpdater/StudentProfilePic
 import ManualAttendance from "pages/Attendance/ManualAttendance";
 import FeeCollectionPage from "modules/fees/pages/FeeCollectionPage";
 import { ConfirmDialogProvider } from "context/ConfirmDialogContext";
+import FacultyAttendanceNew from "pages/Attendance/FacultyAttendance/FacultyAttendanceNew";
 
 
 // Lazy Loaded Components
@@ -156,6 +157,10 @@ function AppNew() {
 
                                             <Route path="faculties/:id" element={<FacultyDetail />} />
                                             <Route path="faculties/add" element={<UnderConstruction />} />
+                                            <Route
+                                                path="faculties/attendance"
+                                                element={<FacultyAttendanceNew />}
+                                            />
 
                                             <Route path="inquiries" element={<AdmissionEnquiry />} />
 
@@ -188,14 +193,12 @@ function AppNew() {
                                                 path="attendance/manual"
                                                 element={<ManualAttendance />}
                                             />
+
                                             {/* <Route
-                                        path="attendance/generate-attendance-qr"
-                                        element={<GenerateQrSticker />}
-                                    /> */}
-                                            {/* <Route
-                                        path="attendance/Facuities"
-                                        element={<FacultyAttendance />}
-                                    /> */}
+                                                path="attendance/generate-attendance-qr"
+                                                element={<GenerateQrSticker />}
+                                            /> */}
+
                                             <Route
                                                 path="attendance/iot"
                                                 element={<IotAttendance />}
