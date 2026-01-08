@@ -55,10 +55,10 @@ const ViewStudentProfile = Loadable(
 );
 
 const UpdateResults = Loadable(
-    lazy(() => import("pages/ResultsManagement/UpdateResults"))
+    lazy(() => import("pages/ResultsManagement/UpdateResult"))
 );
 const UpdateResultsBulk = Loadable(
-    lazy(() => import("pages/ResultsManagement/UpdateResultBulk"))
+    lazy(() => import("pages/ResultsManagement/UpdateResult"))
 );
 const PrintResult = Loadable(
     lazy(() => import("pages/ResultsManagement/PrintResult"))

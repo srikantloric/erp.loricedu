@@ -7,16 +7,30 @@ interface NavbarContextProps {
 
 const NavbarContext = createContext<NavbarContextProps | undefined>(undefined);
 
+const getAcademicSession = (): string => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth() + 1; // Jan = 1
+
+    // April (4) to December (12)
+    if (month >= 4) {
+        const nextYearShort = (year + 1).toString().slice(-2);
+        return `${year}-${nextYearShort}`;
+    }
+
+    // January (1) to March (3)
+    const prevYear = year - 1;
+    const currentYearShort = year.toString().slice(-2);
+    return `${prevYear}-${currentYearShort}`;
+};
 
 export const NavbarProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [session, setSession] = useState<string>("");
 
-const currentYear = new Date().getFullYear();
-const nextYearShort = (currentYear + 1).toString().slice(-2);
-const defaultSession = `${currentYear}-${nextYearShort}`;
-if (!session) {
-    setSession(defaultSession);
-}
+
+    if (!session) {
+        setSession(getAcademicSession());
+    }
 
     return (
         <NavbarContext.Provider value={{ session, setSession }}>
