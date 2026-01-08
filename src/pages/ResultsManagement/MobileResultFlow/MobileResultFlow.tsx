@@ -11,6 +11,7 @@ import {
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import DoneIcon from "@mui/icons-material/Done";
 import SaveIcon from "@mui/icons-material/Save";
+import { WarningAmber } from "@mui/icons-material";
 import { StudentDetailsType } from "types/student";
 import { ExamPaper } from "types/exam";
 import { ResultsState } from "pages/ResultsManagement/UpdateResult";
@@ -18,7 +19,8 @@ import { useState } from "react";
 import { enqueueSnackbar } from "notistack";
 import { saveResults } from "components/Tables/StudentsResultUpdateTable";
 import { Timestamp } from "firebase/firestore";
-import { WarningAmber } from "@mui/icons-material";
+
+/* ---------------- TYPES ---------------- */
 
 interface Props {
     students: StudentDetailsType[];
@@ -32,6 +34,8 @@ interface Props {
     studentStatus: Record<string, "pending" | "review" | "completed">;
 }
 
+/* ---------------- COMPONENT ---------------- */
+
 export default function MobileResultFlow({
     students,
     papers,
@@ -41,18 +45,21 @@ export default function MobileResultFlow({
     selectedExamTitle,
     savedStudents,
     setSavedStudents,
-    studentStatus
+    studentStatus,
 }: Props) {
     const [selectedStudent, setSelectedStudent] =
         useState<StudentDetailsType | null>(null);
-    const [isSaving, setIsSaving] = useState<boolean>(false);
+    const [isSaving, setIsSaving] = useState(false);
+
+    /* ---------------- STATUS STYLES ---------------- */
 
     const statusBorderColor = {
         pending: "neutral.outlinedBorder",
         review: "warning.outlinedBorder",
         completed: "success.outlinedBorder",
     };
-    /* -------------------- INPUT HANDLERS -------------------- */
+
+    /* ---------------- INPUT HANDLERS ---------------- */
 
     const handleMarksChange = (
         studentId: string,
@@ -107,7 +114,34 @@ export default function MobileResultFlow({
         }));
     };
 
-    /* -------------------- SAVE -------------------- */
+    /* ---------------- COMPLETENESS CHECK ---------------- */
+
+    const isStudentResultComplete = (studentId: string): boolean => {
+        return papers.every(paper => {
+            const r = results[studentId]?.[paper.paperId];
+            if (!r) return false;
+
+            // Grade-based paper
+            if (paper.scoreType === "grade") {
+                return !!r.grade;
+            }
+
+            // Marks-based paper
+            const theoryValid =
+                r.theory !== "" && r.theory !== null && r.theory !== undefined;
+
+            const practicalValid =
+                paper.maxPractical > 0
+                    ? r.practical !== "" &&
+                    r.practical !== null &&
+                    r.practical !== undefined
+                    : true;
+
+            return theoryValid && practicalValid;
+        });
+    };
+
+    /* ---------------- SAVE ---------------- */
 
     const handleSave = async (
         student: StudentDetailsType,
@@ -128,8 +162,11 @@ export default function MobileResultFlow({
                     ...(p.scoreType === "grade"
                         ? { grade: results[student.id]?.[p.paperId]?.grade ?? "" }
                         : {
-                            theory: results[student.id]?.[p.paperId]?.theory ?? "",
-                            practical: results[student.id]?.[p.paperId]?.practical ?? "",
+                            theory:
+                                results[student.id]?.[p.paperId]?.theory ?? "",
+                            practical:
+                                results[student.id]?.[p.paperId]?.practical ??
+                                "",
                         }),
                 })),
             },
@@ -139,16 +176,19 @@ export default function MobileResultFlow({
 
         if (res.success) {
             enqueueSnackbar(
-                status === "completed" ? "Finalized" : "Saved for review",
+                status === "completed"
+                    ? "Final submission completed"
+                    : "Saved for review",
                 { variant: "success" }
             );
             setSavedStudents(prev => new Set(prev).add(student.id));
+            setSelectedStudent(null)
         }
 
         setIsSaving(false);
     };
 
-    /* -------------------- STUDENT LIST -------------------- */
+    /* ---------------- STUDENT LIST ---------------- */
 
     if (!selectedStudent) {
         return (
@@ -162,14 +202,22 @@ export default function MobileResultFlow({
                             borderRadius: 10,
                             border: "1px solid",
                             borderColor:
-                                statusBorderColor[studentStatus[s.id] ?? "pending"],
+                                statusBorderColor[
+                                studentStatus[s.id] ?? "pending"
+                                ],
                             cursor: "pointer",
-                            transition: "border-color 0.2s ease",
                         }}
                     >
-                        <Stack direction="row" justifyContent="space-between">
+                        <Stack
+                            direction="row"
+                            justifyContent="space-between"
+                            alignItems="center"
+                        >
                             <Box>
-                                <Typography fontWeight={600}>{s.student_name}</Typography>
+                                <Typography fontWeight={600}>
+                                    {s.student_name}
+                                </Typography>
+
                                 {studentStatus[s.id] === "review" && (
                                     <Typography level="body-xs" color="warning">
                                         Needs Review
@@ -181,10 +229,12 @@ export default function MobileResultFlow({
                                         Completed
                                     </Typography>
                                 )}
+
                                 <Typography level="body-sm">
                                     Roll: {s.class_roll}
                                 </Typography>
                             </Box>
+
                             {studentStatus[s.id] === "completed" && (
                                 <DoneIcon color="success" />
                             )}
@@ -199,9 +249,10 @@ export default function MobileResultFlow({
         );
     }
 
-    /* -------------------- MARKS ENTRY -------------------- */
+    /* ---------------- MARK ENTRY ---------------- */
 
     const student = selectedStudent;
+    const isComplete = isStudentResultComplete(student.id);
 
     return (
         <Stack spacing={2}>
@@ -209,7 +260,9 @@ export default function MobileResultFlow({
                 <IconButton onClick={() => setSelectedStudent(null)}>
                     <ArrowBackIcon />
                 </IconButton>
-                <Typography level="title-md">{student.student_name}</Typography>
+                <Typography level="title-md">
+                    {student.student_name}
+                </Typography>
             </Stack>
 
             {papers.map(paper => {
@@ -232,7 +285,11 @@ export default function MobileResultFlow({
                             <Select
                                 value={r.grade ?? ""}
                                 onChange={(e, val) =>
-                                    handleGradeChange(student.id, paper.paperId, val)
+                                    handleGradeChange(
+                                        student.id,
+                                        paper.paperId,
+                                        val
+                                    )
                                 }
                             >
                                 {paper.grade?.map(g => (
@@ -276,7 +333,9 @@ export default function MobileResultFlow({
                                 )}
 
                                 <Typography level="body-sm">
-                                    Total: {(Number(r.theory) || 0) + (Number(r.practical) || 0)}
+                                    Total:{" "}
+                                    {(Number(r.theory) || 0) +
+                                        (Number(r.practical) || 0)}
                                 </Typography>
                             </Stack>
                         )}
@@ -284,25 +343,42 @@ export default function MobileResultFlow({
                 );
             })}
 
+            {/* ---------- ACTION BUTTONS ---------- */}
+
+            {!isComplete && (
+                <Typography
+                    level="body-xs"
+                    color="warning"
+                    sx={{ textAlign: "center" }}
+                >
+                    Enter marks for all subjects (use 0 if absent) to enable Final
+                    Submit
+                </Typography>
+            )}
+
             <Box sx={{ position: "sticky", bottom: 0, bgcolor: "#fff", py: 1 }}>
                 <Stack direction="row" spacing={1}>
-                    <Button
-                        fullWidth
-                        variant="soft"
-                        loading={isSaving}
-                        onClick={() => handleSave(student, "review")}
-                    >
-                        Save for Review
-                    </Button>
+                    {!isComplete && (
+                        <Button
+                            fullWidth
+                            variant="soft"
+                            loading={isSaving}
+                            onClick={() => handleSave(student, "review")}
+                        >
+                            Save for Review
+                        </Button>
+                    )}
 
-                    <Button
-                        fullWidth
-                        startDecorator={<SaveIcon />}
-                        loading={isSaving}
-                        onClick={() => handleSave(student, "completed")}
-                    >
-                        Final Submit
-                    </Button>
+                    {isComplete && (
+                        <Button
+                            fullWidth
+                            startDecorator={<SaveIcon />}
+                            loading={isSaving}
+                            onClick={() => handleSave(student, "completed")}
+                        >
+                            Final Submit
+                        </Button>
+                    )}
                 </Stack>
             </Box>
         </Stack>
