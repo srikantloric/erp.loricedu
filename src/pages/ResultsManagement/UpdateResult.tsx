@@ -326,7 +326,7 @@ export default function UpdateResults() {
               Filter by Status
             </Typography>
 
-            <Stack direction="row" spacing={1} flexWrap="wrap">
+            <Stack direction="row" spacing={1} gap={1} flexWrap="wrap">
               {(["all", "pending", "review", "completed"] as const).map(key => (
                 <Button
                   key={key}
