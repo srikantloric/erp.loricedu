@@ -43,7 +43,6 @@ export default function MobileResultFlow({
     setResults,
     selectedExam,
     selectedExamTitle,
-    savedStudents,
     setSavedStudents,
     studentStatus,
 }: Props) {
@@ -217,6 +216,9 @@ export default function MobileResultFlow({
                                 <Typography fontWeight={600}>
                                     {s.student_name}
                                 </Typography>
+                                <Typography fontWeight={400} fontSize={12} >
+                                    FATHER: {s.father_name}
+                                </Typography>
 
                                 {studentStatus[s.id] === "review" && (
                                     <Typography level="body-xs" color="warning">
@@ -229,7 +231,6 @@ export default function MobileResultFlow({
                                         Completed
                                     </Typography>
                                 )}
-
                                 <Typography level="body-sm">
                                     Roll: {s.class_roll}
                                 </Typography>
