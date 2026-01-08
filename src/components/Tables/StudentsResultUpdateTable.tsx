@@ -119,7 +119,27 @@ export async function saveResults(results: any[], selectedExam: string, status: 
 
 export default function StudentResultsTable({ students, papers, results, setResults, selectedExam, selectedExamTitle, savedStudents, setSavedStudents }: StudentResultsTableProps) {
     const [_savingId, setSavingId] = useState<string | null>(null)
-    const [isSaving, startSaving] = useTransition();
+    const [_, startSaving] = useTransition();
+
+
+    const isStudentComplete = (studentId: string): boolean => {
+        return papers.every(paper => {
+            const r = results[studentId]?.[paper.paperId];
+            if (!r) return false;
+
+            if (paper.scoreType === "grade") {
+                return !!r.grade;
+            }
+
+            const theoryOk = r.theory !== '' && r.theory !== undefined;
+            const practicalOk =
+                paper.maxPractical > 0
+                    ? r.practical !== '' && r.practical !== undefined
+                    : true;
+
+            return theoryOk && practicalOk;
+        });
+    };
 
 
     const handleInputChange = (
@@ -171,12 +191,12 @@ export default function StudentResultsTable({ students, papers, results, setResu
         }));
     };
 
-    const handleSave = (studentId?: string) => {
-        const id = studentId || 'all';
+    const handleSave = (student: StudentDetailsType, status: ResultStatus) => {
+        const id = student.id || 'all';
         setSavingId(id);
 
         const save = async () => {
-            const studentsToSave = studentId ? students.filter(s => s.id === studentId) : students;
+            const studentsToSave = id ? students.filter(s => s.id === id) : students;
 
             let resultsToSave: resultTypeNew[] = studentsToSave.map(student => {
                 const studentResults: any[] = papers.map(paper => ({
@@ -207,7 +227,7 @@ export default function StudentResultsTable({ students, papers, results, setResu
                 return;
             }
 
-            const response = await saveResults(resultsToSave, selectedExam, "completed");
+            const response = await saveResults(resultsToSave, selectedExam, status);
             if (response.success) {
                 enqueueSnackbar("Success", { variant: "success" });
 
@@ -273,88 +293,104 @@ export default function StudentResultsTable({ students, papers, results, setResu
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {students.map(student => (
-                            <TableRow key={student.id}>
-                                <TableCell style={stickyLeftStyle}>
-                                    <div style={{ fontWeight: 500 }}>{student.student_name}</div>
-                                    <div style={studentIdStyle}>ID: {student.admission_no}</div>
-                                    <div style={studentIdStyle}>Roll: {student.class_roll}</div>
-                                </TableCell>
-                                {papers.map(paper => {
-                                    const result = results[student.id]?.[paper.paperId];
-                                    const theory = result?.theory ?? '';
-                                    const practical = result?.practical ?? '';
-                                    const grade = result?.grade ?? '';
-                                    return (
-                                        <React.Fragment key={`${student.id}-${paper.paperId}`}>
-                                            {paper.scoreType === "grade" ? (
-                                                <>
-                                                    <TableCell colSpan={2} style={{ textAlign: "center" }}>
-                                                        <Select
+                        {students.map(student => {
+                            const complete = isStudentComplete(student.id);
+                            return (
+                                <TableRow key={student.id}>
+                                    <TableCell style={stickyLeftStyle}>
+                                        <div style={{ fontWeight: 500 }}>{student.student_name}</div>
+                                        <div style={studentIdStyle}>ID: {student.admission_no}</div>
+                                        <div style={studentIdStyle}>Roll: {student.class_roll}</div>
+                                    </TableCell>
+                                    {papers.map(paper => {
+                                        const result = results[student.id]?.[paper.paperId];
+                                        const theory = result?.theory ?? '';
+                                        const practical = result?.practical ?? '';
+                                        const grade = result?.grade ?? '';
 
-                                                            value={grade}
-                                                            onChange={(e, val) =>
-                                                                handleGradeChange(student.id, paper.paperId, val)
-                                                            }
-                                                        >
-                                                            {paper.grade && paper.grade.map((grade) => {
-                                                                return (
-                                                                    <Option value={grade} key={grade}>
-                                                                        {grade}
-                                                                    </Option>
-                                                                )
-                                                            })}
-                                                        </Select>
+                                        return (
+                                            <React.Fragment key={`${student.id}-${paper.paperId}`}>
+                                                {paper.scoreType === "grade" ? (
+                                                    <>
+                                                        <TableCell colSpan={2} style={{ textAlign: "center" }}>
+                                                            <Select
 
-                                                    </TableCell>
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <TableCell style={{ borderLeft: "1px solid #e5e7eb" }}>
-                                                        <Input
-                                                            type="number"
-                                                            value={theory}
-                                                            onChange={e =>
-                                                                handleInputChange(student.id, paper.paperId, 'theory', e.target.value, paper.maxTheory)
-                                                            }
-                                                            style={Number(theory) > paper.maxTheory ? errorInputStyle : inputStyle}
-                                                        />
-                                                    </TableCell>
-                                                    {paper.maxPractical > 0 && (
-                                                        <TableCell>
+                                                                value={grade}
+                                                                onChange={(e, val) =>
+                                                                    handleGradeChange(student.id, paper.paperId, val)
+                                                                }
+                                                            >
+                                                                {paper.grade && paper.grade.map((grade) => {
+                                                                    return (
+                                                                        <Option value={grade} key={grade}>
+                                                                            {grade}
+                                                                        </Option>
+                                                                    )
+                                                                })}
+                                                            </Select>
+
+                                                        </TableCell>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <TableCell style={{ borderLeft: "1px solid #e5e7eb" }}>
                                                             <Input
                                                                 type="number"
-                                                                value={practical}
+                                                                value={theory}
                                                                 onChange={e =>
-                                                                    handleInputChange(student.id, paper.paperId, 'practical', e.target.value, paper.maxPractical)
+                                                                    handleInputChange(student.id, paper.paperId, 'theory', e.target.value, paper.maxTheory)
                                                                 }
-                                                                style={Number(practical) > paper.maxPractical ? errorInputStyle : inputStyle}
+                                                                style={Number(theory) > paper.maxTheory ? errorInputStyle : inputStyle}
                                                             />
                                                         </TableCell>
-                                                    )}
-                                                    <TableCell style={totalCellStyle}>
-                                                        {(Number(theory) || 0) + (Number(practical) || 0)}
-                                                    </TableCell>
-                                                </>
-                                            )}
-                                        </React.Fragment>
-                                    );
-                                })}
-                                <TableCell style={{
-                                    ...stickyRightStyle,
-                                }} >
-                                    <Tooltip title="Save record">
-                                        {
-                                            savedStudents.has(student.id) ?
-                                                <Done color='success' fontSize="large" />
-                                                : <IconButton onClick={() => handleSave(student.id)} disabled={isSaving}>
+                                                        {paper.maxPractical > 0 && (
+                                                            <TableCell>
+                                                                <Input
+                                                                    type="number"
+                                                                    value={practical}
+                                                                    onChange={e =>
+                                                                        handleInputChange(student.id, paper.paperId, 'practical', e.target.value, paper.maxPractical)
+                                                                    }
+                                                                    style={Number(practical) > paper.maxPractical ? errorInputStyle : inputStyle}
+                                                                />
+                                                            </TableCell>
+                                                        )}
+                                                        <TableCell style={totalCellStyle}>
+                                                            {(Number(theory) || 0) + (Number(practical) || 0)}
+                                                        </TableCell>
+                                                    </>
+                                                )}
+                                            </React.Fragment>
+                                        );
+                                    })}
+                                    <TableCell style={{
+                                        ...stickyRightStyle,
+                                    }} >
+                                        {savedStudents.has(student.id) ? (
+                                            <Done color="success" />
+                                        ) : complete ? (
+                                            <Tooltip title="Final Submit">
+                                                <IconButton
+                                                    color="success"
+                                                    onClick={() => handleSave(student, "completed")}
+                                                >
                                                     <Save />
                                                 </IconButton>
-                                        }
-                                    </Tooltip>
-                                </TableCell>
-                            </TableRow>
-                        ))}
+                                            </Tooltip>
+                                        ) : (
+                                            <Tooltip title="Save for Review" placement='left' >
+                                                <IconButton
+                                                    color="warning"
+                                                    onClick={() => handleSave(student, "review")}
+                                                >
+                                                    <Save />
+                                                </IconButton>
+                                            </Tooltip>
+                                        )}
+                                    </TableCell>
+                                </TableRow>
+                            )
+                        })}
                     </TableBody>
                 </Table>
             </div>
