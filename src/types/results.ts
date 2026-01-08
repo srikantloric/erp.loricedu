@@ -30,3 +30,7 @@ export type rankType = {
   rankObtained: number;
   marksObtained: number;
 };
+
+
+//Update Result
+export type ResultStatus = "review" | "completed";

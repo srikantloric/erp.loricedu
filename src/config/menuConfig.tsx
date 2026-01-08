@@ -1,4 +1,3 @@
-
 import {
   IconCoinRupee,
   IconDashboard,
@@ -25,19 +24,20 @@ export const menuItems: MenuItem[] = [
     isHeader: true,
     group: "masters"
   },
-
   {
     label: 'Dashboard',
     path: '/',
     icon: <IconDashboard />,
+    permission: "viewDashboard",
     group: "masters"
   },
   {
     label: 'Students',
     icon: <IconFriends />,
+    permission: "manageStudents",
     subMenu: [
-      { label: 'View Students', path: '/students/view' },
-      { label: 'Add Student', path: '/students/add' },
+      { label: 'View Students', path: '/students/view', permission: "viewStudents" },
+      { label: 'Add Student', path: '/students/add', permission: "addStudent" },
     ],
     group: "masters"
   },
@@ -45,14 +45,17 @@ export const menuItems: MenuItem[] = [
     label: 'Faculties',
     icon: <IconUsers />,
     path: "/faculties",
+    permission: "manageFaculties",
     group: "masters"
   },
   {
     label: 'Inquiries',
     icon: <IconPhoneIncoming />,
     path: "/inquiries",
+    permission: "viewInquiries",
     group: "masters"
   },
+
   {
     isHeader: true,
     label: "Manager",
@@ -62,17 +65,20 @@ export const menuItems: MenuItem[] = [
     label: 'Fee Manager',
     icon: <IconCoinRupee />,
     path: "/fee-management",
+    permission: "manageFees",
     group: "manager"
   },
   {
     label: 'Expense Manager',
     icon: <IconMoneybag />,
     path: "/expense-manager",
+    permission: "manageExpenses",
     group: "manager"
   },
   {
-    label: 'Attendance ',
+    label: 'Attendance',
     icon: <IconFingerprint />,
+    permission: "manageAttendance",
     subMenu: [
       { label: 'Show Attendance', path: '/attendance/view', permission: 'viewAttendance' },
       { label: 'Manual Attendance', path: '/attendance/manual', permission: 'manualAttendance' },
@@ -81,25 +87,28 @@ export const menuItems: MenuItem[] = [
     group: "manager"
   },
   {
-    label: 'Transport ',
+    label: 'Transport',
     icon: <IconBus />,
+    permission: "manageTransport",
     subMenu: [
-      { label: 'Pickup Locations', path: '/transport/pickup-locations' },
-      { label: 'Vehicles', path: '/transport/vehicles' },
+      { label: 'Pickup Locations', path: '/transport/pickup-locations', permission: "managePickupLocations" },
+      { label: 'Vehicles', path: '/transport/vehicles', permission: "manageVehicles" },
     ],
     group: "manager"
   },
   {
-    label: 'Exams & Results ',
+    label: 'Exams & Results',
     icon: <IconReportAnalytics />,
+    permission: "manageExams",
     subMenu: [
-      { label: 'Setup Exam', path: '/exams' },
-      { label: 'Update Result', path: '/exams/publish-result' },
-      { label: 'Print Result', path: '/exams/print-result' },
-      { label: 'Print RankList', path: '/exams/print-ranklist' },
+      { label: 'Setup Exam', path: '/exams', permission: "setupExam" },
+      { label: 'Update Result', path: '/exams/publish-result', permission: "updateResult" },
+      { label: 'Print Result', path: '/exams/print-result', permission: "printResult" },
+      { label: 'Print RankList', path: '/exams/print-ranklist', permission: "printRankList" },
     ],
     group: "manager"
   },
+
   {
     isHeader: true,
     label: "Reports",
@@ -109,14 +118,17 @@ export const menuItems: MenuItem[] = [
     label: 'Reports',
     icon: <IconReport />,
     path: "/reports",
+    permission: "viewReports",
     group: "reports"
   },
   {
     label: 'Follow Up',
     icon: <IconPhoneOutgoing />,
     path: "/follow-up",
+    permission: "manageFollowUp",
     group: "reports"
   },
+
   {
     isHeader: true,
     label: "Controls",

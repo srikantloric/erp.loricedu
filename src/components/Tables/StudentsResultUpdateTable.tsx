@@ -5,10 +5,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from 'c
 import { getFirestoreInstance } from 'context/firebaseUtility';
 import { doc, Timestamp, writeBatch } from 'firebase/firestore';
 import { enqueueSnackbar } from 'notistack';
-import { ResultsState } from 'pages/ResultsManagement/UpdateResultBulk';
+import { ResultsState } from 'pages/ResultsManagement/UpdateResult';
 import React, { useState, useTransition } from 'react';
 import { ExamPaper } from 'types/exam';
-import { resultTypeNew } from 'types/results';
+import { ResultStatus, resultTypeNew } from 'types/results';
 import { StudentDetailsType } from 'types/student';
 
 
@@ -84,7 +84,7 @@ const totalCellStyle = {
 };
 
 
-export async function saveResults(results: any[], selectedExam: string): Promise<{ success: boolean; message: string }> {
+export async function saveResults(results: any[], selectedExam: string, status: ResultStatus): Promise<{ success: boolean; message: string }> {
     console.log('Saving results to Firestore:', results);
 
     if (!results || results.length === 0) {
@@ -98,7 +98,11 @@ export async function saveResults(results: any[], selectedExam: string): Promise
             const studentRef = doc(db, 'STUDENTS', `${result.studentId}`);
             const resRef = doc(studentRef, "PUBLISHED_RESULTS", selectedExam);
 
-            batch.set(resRef, result, { merge: true });
+            batch.set(resRef, {
+                ...result,
+                status,
+                updatedAt: Timestamp.now(),
+            }, { merge: true });
         });
 
         await batch.commit();
@@ -203,7 +207,7 @@ export default function StudentResultsTable({ students, papers, results, setResu
                 return;
             }
 
-            const response = await saveResults(resultsToSave, selectedExam);
+            const response = await saveResults(resultsToSave, selectedExam, "completed");
             if (response.success) {
                 enqueueSnackbar("Success", { variant: "success" });
 
@@ -224,7 +228,7 @@ export default function StudentResultsTable({ students, papers, results, setResu
         });
     };
 
-  
+
     return (
         <>
             <div style={tableContainerStyle}>
