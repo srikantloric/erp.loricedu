@@ -70,6 +70,71 @@ export async function getStudentsWithAttendance(
     return merged;
 }
 
+/**
+ * Fetch faculty + attendance → merge → return final table rows
+ */
+export async function getFacultiessWithAttendance(
+    date: string
+) {
+    const db = await getFirestoreInstance();
+
+    // -------------------------
+    // 1. LOAD ALL FACULTY
+    // -------------------------
+    const facultySnap = await getDocs(
+        query(collection(db, "STUDENTS"), where("isFaculty", "==", true))
+    );
+
+    const faculties = facultySnap.docs.map((doc) => ({
+        ...(doc.data() as any),
+        facultyId: doc.id,
+    }));
+
+    // -------------------------
+    // 2. LOAD FACULTY ATTENDANCE FOR DATE
+    // -------------------------
+    const attendanceSnap = await getDocs(
+        collection(db, "ATTENDANCE_DAILY", date, "FACULTY")
+    );
+
+    const attendanceMap = new Map<string, any>();
+    attendanceSnap.forEach((doc) => {
+        attendanceMap.set(doc.id, doc.data());
+    });
+
+    // -------------------------
+    // 3. MERGE FACULTY + ATTENDANCE
+    // -------------------------
+    const merged = faculties.map((fac: any) => {
+        const att = attendanceMap.get(fac.facultyId);
+
+        const uiMapped = reverseMapping(att?.status);
+
+        return {
+            facultyId: fac.facultyId,
+            name: fac.facultyName,
+            profilePicUrl: fac.facultyImage || undefined,
+            phone: fac.facultyPhone || "",
+            departmentId: fac.departmentId || "NOT_CONFIGURED",
+
+            // attendance fields
+            status: att?.status || null,
+            present: att?.present || false,
+            firstIn: att?.firstIn || null,
+            lastOut: att?.lastOut || null,
+
+            // ⭐ UI helpers
+            selected_option: uiMapped || "P",
+            originalStatus: att?.status || null,
+            hasChanged: false,
+            comment: "",
+        };
+    });
+
+    return merged;
+}
+
+
 function reverseMapping(status?: AttendanceStatus): string {
     switch (status) {
         case "PRESENT":

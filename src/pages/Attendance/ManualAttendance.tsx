@@ -143,25 +143,7 @@ function ManualAttendance() {
       );
 
       await Promise.all(promises);
-
-      // // 1️⃣ Create and process each event
-      // for (const stu of students) {
-      //   const status = statusMapping[stu.selected_option || "P"];
-
-      //   const event = {
-      //     studentId: stu.studentId,
-      //     classId: selectedClass,
-      //     date: selectedDate,
-      //     status,
-      //     timestamp: serverTimestamp(),
-      //     source: "MANUAL" as const,
-      // };
-
-      // await processAttendanceEvent(event);
-      // }
-
-
-
+      
       enqueueSnackbar("Attendance saved!", { variant: "success" });
 
       await fetchStudent(); // Reload
