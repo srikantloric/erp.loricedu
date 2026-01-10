@@ -6,81 +6,104 @@ import { useState } from "react";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { getFirestoreInstance } from "context/firebaseUtility";
 import { generateFacultyAttendanceReport } from "utilities/GenerateFacultyAttendanceReport";
-import { FacultyType, AttenzyAttendanceType } from "types/facuities";
+import { FacultyType } from "types/facuities";
 import { enqueueSnackbar } from "notistack";
-
+function getTodayIST() {
+    return new Intl.DateTimeFormat("en-CA", {
+        timeZone: "Asia/Kolkata",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+    }).format(new Date());
+}
 export default function FacultyDailyAttendanceReport() {
-    const [selectedDate, setSelectedDate] = useState("");
+    const [selectedDate, setSelectedDate] = useState(getTodayIST());
     const [loading, setLoading] = useState(false);
 
     const handleGenerateReport = async () => {
         if (!selectedDate) return;
 
-        console.log("selected date", selectedDate)
-
         setLoading(true);
         const db = await getFirestoreInstance();
 
         try {
-            // First, fetch all faculty members
-            const facultyQuery = query(
-                collection(db, "STUDENTS"),
-                where("isFaculty", "==", true),
-                where("isActive", "==", true)
+            // ---------------------------------
+            // 1. Load all active faculty
+            // ---------------------------------
+            const facultySnap = await getDocs(
+                query(
+                    collection(db, "STUDENTS"),
+                    where("isFaculty", "==", true),
+                    where("isActive", "==", true)
+                )
             );
 
-            const facultySnapshot = await getDocs(facultyQuery);
-            const facultyMembers: FacultyType[] = facultySnapshot.docs.map((doc: any) => ({
-                ...doc.data(),
+            const faculties = facultySnap.docs.map((doc) => ({
                 id: doc.id,
+                ...(doc.data() as any),
             })) as FacultyType[];
 
-            // Now fetch attendance data for each faculty member
-            const attendanceData: any[] = [];
-
-            for (const faculty of facultyMembers) {
-                const attendanceQuery = query(
-                    collection(db, "STUDENTS", faculty.id!, "MY_ATTENDANCE"),
-                    where("date", "==", selectedDate)
-                );
-
-                const attendanceSnapshot = await getDocs(attendanceQuery);
-
-                if (attendanceSnapshot.docs.length > 0) {
-                    attendanceSnapshot.docs.forEach(doc => {
-                        const attendanceRecord = doc.data() as AttenzyAttendanceType;
-                        attendanceData.push({
-                            id: attendanceRecord.id,
-                            facultyName: attendanceRecord.name,
-                            facultyPhone: attendanceRecord.phone,
-                            facultyImage: attendanceRecord.profileImage,
-                            attendanceStatus: attendanceRecord.status,
-                            attendanceDate: attendanceRecord.date,
-                            checkIn: attendanceRecord.checkIn,
-                            checkOut: attendanceRecord.checkOut,
-                            isSmartAttendance: true,
-                            comment: `Check-in: ${attendanceRecord.checkIn ? attendanceRecord.checkIn.toDate().toLocaleTimeString() : 'N/A'}, Check-out: ${attendanceRecord.checkOut ? attendanceRecord.checkOut.toDate().toLocaleTimeString() : 'N/A'}`,
-                            createdAt: attendanceRecord.timestamp
-                        });
-                    });
-                } else {
-                    // Faculty has no attendance record for this date - mark as absent
-                    attendanceData.push({
-                        id: faculty.facultyId,
-                        facultyName: faculty.facultyName,
-                        facultyPhone: faculty.facultyPhone,
-                        facultyImage: faculty.facultyImage,
-                        attendanceStatus: "Absent",
-                        attendanceDate: selectedDate,
-                        isSmartAttendance: false,
-                        comment: "N/A",
-                        createdAt: new Date()
-                    });
-                }
+            if (faculties.length === 0) {
+                enqueueSnackbar("No faculty found", { variant: "warning" });
+                return;
             }
 
-            // Generate the report with selected date
-            const pdfResult = await generateFacultyAttendanceReport(attendanceData, selectedDate);
+            // ---------------------------------
+            // 2. Load DAILY FACULTY attendance
+            // ---------------------------------
+            const dailySnap = await getDocs(
+                collection(db, "ATTENDANCE_DAILY", selectedDate, "FACULTY")
+            );
+
+            const attendanceMap = new Map<string, any>();
+            dailySnap.forEach((doc) => {
+                attendanceMap.set(doc.id, doc.data());
+            });
+
+            // ---------------------------------
+            // 3. Merge faculty + daily attendance
+            // ---------------------------------
+            const attendanceData = faculties.map((fac) => {
+                const att = attendanceMap.get(fac.id!);
+
+                if (att) {
+                    return {
+                        id: fac.id || "",
+                        facultyName: fac.facultyName,
+                        facultyPhone: Number(fac.facultyPhone || 0),
+                        facultyImage: fac.facultyImage,
+                        attendanceStatus: att.status,
+                        attendanceDate: selectedDate,
+                        isSmartAttendance: att.present === true,
+                        comment: `In: ${att.firstIn ? att.firstIn.toDate().toLocaleTimeString() : "N/A"
+                            }, Out: ${att.lastOut ? att.lastOut.toDate().toLocaleTimeString() : "N/A"
+                            }`,
+                        createdAt: att.firstIn || new Date(),
+                    };
+                }
+
+                // No record = ABSENT
+                return {
+                    id: fac.id || "",
+                    facultyName: fac.facultyName,
+                    facultyPhone: Number(fac.facultyPhone || 0),
+                    facultyImage: fac.facultyImage,
+                    attendanceStatus: "ABSENT",
+                    attendanceDate: selectedDate,
+                    isSmartAttendance: false,
+                    comment: "No attendance recorded",
+                    createdAt: new Date(),
+                };
+            });
+
+            // ---------------------------------
+            // 4. Generate PDF
+            // ---------------------------------
+            const pdfResult = await generateFacultyAttendanceReport(
+                attendanceData,
+                selectedDate
+            );
+
             if (pdfResult) {
                 window.open(pdfResult as string, "_blank");
                 enqueueSnackbar("PDF generated successfully", { variant: "success" });
@@ -92,6 +115,7 @@ export default function FacultyDailyAttendanceReport() {
             setLoading(false);
         }
     };
+
 
     return (
         <>
