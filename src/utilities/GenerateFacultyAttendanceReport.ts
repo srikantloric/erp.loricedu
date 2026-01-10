@@ -7,7 +7,16 @@ import {
     POPPINS_SEMIBOLD,
 } from "utilities/Base64Url";
 import { getAppConfig } from 'hooks/getAppConfig';
-
+import CHECK_ICON from 'assets/icons/check';
+import CROSS_ICON from 'assets/icons/cross';
+type ImageCell = {
+    content: string;
+    image?: string;
+};
+type IconCell = {
+    content: string;      // what autoTable prints (we keep it empty)
+    status?: string;     // our custom data
+};
 export const generateFacultyAttendanceReport = async (attendanceData: FacultyAttendanceShema[], selectedDate?: string) => {
     const config = getAppConfig();
     if (!config) {
@@ -38,8 +47,6 @@ export const generateFacultyAttendanceReport = async (attendanceData: FacultyAtt
     doc.addFont("Poppins-Regular", "Poppins", "normal");
     doc.addFileToVFS("Poppins-Semibold", POPPINS_SEMIBOLD);
     doc.addFont("Poppins-Semibold", "Poppins", "semibold");
-
-
 
 
     const schoolHeaderStartX = x + 32;
@@ -141,19 +148,33 @@ export const generateFacultyAttendanceReport = async (attendanceData: FacultyAtt
 
     const tableHeader = [
         "#",
+        "Photo",
         "ID",
         "Name",
         "Phone",
         "Mode",
+        "Mark",
         "Status",
         "Comment"
     ];
+
     const tableBody = attendanceData.map((record, index) => [
         (index + 1).toString(),
+        // Photo column
+        {
+            content: "",
+            image: record.facultyImage
+        } as ImageCell,
         record.id || '-',
-        record.facultyName,
+        record.facultyName?.toUpperCase(),
         record.facultyPhone?.toString() || '-',
         record.isSmartAttendance ? 'Smart' : 'Manual',
+        // Status icon column
+        {
+            content: "",
+            status: record.attendanceStatus
+        } as IconCell,
+
         record.attendanceStatus || '-',
         record.comment || '-'
     ]);
@@ -169,7 +190,7 @@ export const generateFacultyAttendanceReport = async (attendanceData: FacultyAtt
         styles: {
             textColor: '#000',
             fontSize: 8,
-            minCellHeight: 4,
+            minCellHeight: 16,
         },
         margin: { left: tableX, right: tableX },
         headStyles: {
@@ -179,14 +200,51 @@ export const generateFacultyAttendanceReport = async (attendanceData: FacultyAtt
             fontSize: 8,
         },
         columnStyles: {
-            0: { cellWidth: 8 },  // #
-            1: { cellWidth: 25 }, // ID
-            2: { cellWidth: 40 }, // Name
-            3: { cellWidth: 25 }, // Phone
-            4: { cellWidth: 20 }, // Mode
-            5: { cellWidth: 20 }, // Status
-            6: { cellWidth: availableWidth - 138 }, // Comment - takes remaining width
+            0: { cellWidth: 8 },
+            1: { cellWidth: 12 },
+            2: { cellWidth: 25 },
+            3: { cellWidth: 40 },
+            4: { cellWidth: 25 },
+            5: { cellWidth: 20 },
+            6: { cellWidth: 10 },   // 👈 Mark column
+            7: { cellWidth: 20 },
+            8: { cellWidth: availableWidth - 160 },
         },
+        didDrawCell(data) {
+            const raw = data.cell.raw as any;
+
+            // Faculty photo
+            if (data.column.index === 1 && raw?.image) {
+                // Photo column → force taller rows
+                data.cell.styles.minCellHeight = 16;
+                const size = 10;
+                const x = data.cell.x + (data.cell.width - size) / 2;
+                const y = data.cell.y + (data.cell.height - size) / 2;
+
+                try {
+                    doc.addImage(raw.image, x, y, size, size);
+                } catch { }
+            }
+
+            // Status icon
+            if (data.column.index === 6 && raw?.status) {
+                const icon =
+                    raw.status === "PRESENT"
+                        ? CHECK_ICON
+                        : raw.status === "ABSENT"
+                            ? CROSS_ICON
+                            : null;
+
+                if (icon) {
+                    const size = 6;
+                    const x = data.cell.x + (data.cell.width - size) / 2;
+                    const y = data.cell.y + (data.cell.height - size) / 2;
+
+                    doc.addImage(icon, x, y, size, size);
+                }
+            }
+        }
+
     });
 
     // Draw border around content
