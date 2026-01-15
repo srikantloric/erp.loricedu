@@ -24,7 +24,8 @@ import {
   onSnapshot,
   deleteDoc,
   doc,
-  serverTimestamp
+  serverTimestamp,
+  getDoc
 } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { Button, Divider, Stack, Table, Tooltip } from "@mui/joy";
@@ -127,6 +128,30 @@ const AdmissionEnquiry = () => {
       console.log(e);
     }
   };
+
+  const getAdmissionForm = async () => {
+    try {
+      const docSnap = await getDoc(doc(db, "CONFIG", "ADMISSION_CONFIG"))
+
+      if (docSnap.exists()) {
+        const admissionFormUrl = docSnap.data()?.admissionForm
+
+        if (admissionFormUrl) {
+          // Open PDF in new tab
+          window.open(admissionFormUrl, "_blank", "noopener,noreferrer")
+        } else {
+          enqueueSnackbar("No Admission form available to show!", {
+            variant: "error",
+          })
+        }
+      } else {
+        enqueueSnackbar("Admission config not found", { variant: "error" })
+      }
+    } catch (e) {
+      console.error(e)
+      enqueueSnackbar("Failed to load admission form", { variant: "error" })
+    }
+  }
 
 
   return (
@@ -315,8 +340,7 @@ const AdmissionEnquiry = () => {
             startDecorator={<Print />}
             target="_blank"
             color="success"
-            component="a"
-            href="https://firebasestorage.googleapis.com/v0/b/apx-international-dev.firebasestorage.app/o/documents%2Fadmission-form.pdf?alt=media&token=5fc17ec9-21f5-4dc1-a6ed-6bfe0a6df470"
+            onClick={getAdmissionForm}
           >
             Admission Form
           </Button>
