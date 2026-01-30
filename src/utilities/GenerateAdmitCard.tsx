@@ -1,248 +1,253 @@
 import jsPDF from "jspdf";
 import { admitCardType } from "types/admitCard";
+import {
+  POPPINS_BOLD,
+  POPPINS_REGULAR,
+  POPPINS_SEMIBOLD,
+  PROFILE_PLACEHOLDER_BASE64,
+} from "./Base64Url";
 
-import { POPPINS_BOLD, POPPINS_REGULAR, POPPINS_SEMIBOLD, PROFILE_PLACEHOLDER_BASE64 } from "./Base64Url";
-
-// import { examData } from "components/Exams/ExamScheduleTable";
 import { getAppConfig } from "hooks/getAppConfig";
 import { ExamData } from "components/Exams/ExamScheduleTable";
-export const getScheduleForClassAndSession = (timeTable: ExamData[], className: string, sessionName: string) => {
+import { getDownloadURL, ref } from "firebase/storage";
+import { getStorageInstance } from "context/firebaseUtility";
+
+/* ---------------------------------------------
+   Helpers
+--------------------------------------------- */
+
+export const getScheduleForClassAndSession = (
+  timeTable: ExamData[],
+  className: string,
+  sessionName: string
+) => {
   return timeTable
     .map((exam) => ({
       date: exam.date,
       sessions: exam.sessions
-        .filter((session) => session.session === sessionName)
-        .map((session) => ({
-          session: session.session,
-          subject: session.subjects[className] || "No Exam",
+        .filter((s) => s.session === sessionName)
+        .map((s) => ({
+          session: s.session,
+          subject: s.subjects[className] || "No Exam",
         }))
-        .filter((session) => session.subject !== "No Exam"),
+        .filter((s) => s.subject !== "No Exam"),
     }))
     .filter((exam) => exam.sessions.length > 0);
 };
 
+/* ---------------------------------------------
+   Image Loader (Base64)
+--------------------------------------------- */
+
+async function imagePathToBase64(path: string): Promise<string> {
+  const storage = await getStorageInstance();
+  const imageRef = ref(storage, path);
+  const downloadUrl = await getDownloadURL(imageRef);
+
+  const res = await fetch(downloadUrl);
+  const blob = await res.blob();
+
+  return await new Promise<string>((resolve) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result as string);
+    reader.readAsDataURL(blob);
+  });
+}
+
+/* ---------------------------------------------
+   MAIN PDF GENERATOR
+--------------------------------------------- */
+
 export const GenerateAdmitCard = async (
   data: admitCardType[]
 ): Promise<string> => {
-  return new Promise(async (resolve, reject) => {
+  /* ---------- App Config ---------- */
+  const config = getAppConfig();
+  if (!config) throw new Error("App config not found");
 
-    const config = getAppConfig();
-    if (!config) {
-      console.error("Error: App config not found.");
-      return;
-    }
-    const {
-      schoolName: SCHOOL_NAME,
-      schoolAddress: SCHOOL_ADDRESS,
-      schoolWebsite: SCHOOL_WEBSITE,
-      schoolPrincipalSignBase64: PRINCIPAL_SIGN
-    } = config;
+  const {
+    schoolName,
+    schoolAddress,
+    schoolWebsite,
+    schoolPrincipalSignBase64,
+  } = config;
 
-
-    const doc = new jsPDF({
-      orientation: "portrait",
-      unit: "mm",
-      format: "a4",
-    });
-
-    // Load fonts
-    doc.addFileToVFS("Poppins-Bold", POPPINS_BOLD);
-    doc.addFont("Poppins-Bold", "Poppins", "bold");
-
-    doc.addFileToVFS("Poppins-Regular", POPPINS_REGULAR);
-    doc.addFont("Poppins-Regular", "Poppins", "normal");
-
-    doc.addFileToVFS("Poppins-Semibold", POPPINS_SEMIBOLD);
-    doc.addFont("Poppins-Semibold", "Poppins", "semibold");
-
-    const cardHeight = (297 / 3) - 2;
-    const margin = 5; // Margin around the admit card
-
-    data.forEach((studentData, index) => {
-      const positionY = (index % 3) * cardHeight + margin + 6;
-      if (index > 0 && index % 3 === 0) {
-        doc.addPage();
-      }
-
-      // Border around admit card
-      doc.setDrawColor(0, 0, 0);
-      doc.rect(margin, positionY - margin, 210 - 2 * margin, cardHeight - margin);
-
-      // School Header
-
-      doc.addImage(PROFILE_PLACEHOLDER_BASE64, "PNG", margin + 6, positionY + 30, 25, 30); // Adjust the position and size as needed
-
-      doc.setFont("Poppins", "bold");
-      doc.setFontSize(26);
-      doc.setTextColor(0, 0, 139);
-      doc.text(SCHOOL_NAME, 105, positionY + 4, { align: "center" });
-
-      doc.setTextColor(0, 0, 0);
-      doc.setFont("Poppins", "normal");
-      doc.setFontSize(9);
-      doc.text(`${SCHOOL_ADDRESS}  |  ${SCHOOL_WEBSITE}`, 105, positionY + 11, {
-        align: "center",
-      });
-
-      // Admit Card Title with Exam Title and Session
-      doc.setFillColor(0, 0, 0);
-      doc.rect(margin, positionY + 15, 210 - 2 * margin, 8, "F");
-      doc.setFont("Poppins", "semibold");
-      doc.setFontSize(14);
-      doc.setTextColor(255, 255, 255);
-      doc.text(
-        `ADMIT CARD || ${studentData.examTitle} || Session: ${studentData.session}`,
-        105,
-        positionY + 21,
-        { align: "center" }
-      );
-      doc.setTextColor(0, 0, 0);
-
-      // Student Image
-      const studentImg = new Image();
-      studentImg.src = studentData.profile_url;
-      // doc.addImage(studentImg, "PNG", margin + 6, positionY + 30, 25, 30); // Stamp size
-      doc.rect(margin + 6, positionY + 30, 25, 30);
-
-      // Student Details
-      doc.setFont("Poppins", "normal");
-      doc.setFontSize(10);
-      let studentDetailsX = margin + 36;
-      let timeTableX = 113; // Starting X position for the time table
-
-      doc.setTextColor(0, 0, 139);
-      doc.setFont("Poppins", "semibold");
-      doc.text(`${studentData.studentName}`, studentDetailsX, positionY + 30);
-
-      doc.setTextColor(0, 0, 0);
-      doc.setFont("Poppins", "normal");
-      doc.text(
-        `Class: ${studentData.className}`,
-        studentDetailsX,
-        positionY + 35
-      );
-      doc.text(
-        `Father: ${studentData.fatherName}`,
-        studentDetailsX,
-        positionY + 40
-      );
-      doc.text(
-        `Mother: ${studentData.motherName}`,
-        studentDetailsX,
-        positionY + 45
-      );
-      doc.text(`DOB: ${studentData.studentDOB}`, studentDetailsX, positionY + 50);
-
-      // Card Number and Roll Number
-      doc.text(
-        `Id: ${studentData.studentId}`,
-        studentDetailsX,
-        positionY + 55
-      );
-      doc.text(
-        `Roll No: ${studentData.rollNumber}`,
-        studentDetailsX,
-        positionY + 60
-      );
-
-      // Exam Details Box
-      doc.setDrawColor(0, 0, 0);
-      doc.setFillColor("#ffffcc"); // Light yellow background for exam timing
-      doc.rect(margin + 6, positionY + 62, timeTableX - margin - 5, 10, "F");
-      doc.setFont("Poppins", "semibold");
-      doc.setFontSize(10);
-      doc.text(
-        `Exam Timing: ${studentData.examTimings}`,
-        margin + 10,
-        positionY + 69,
-        { align: "left" }
-      );
-
-      // --- Time Table Section ---
-      doc.setFont("Poppins", "semibold");
-      doc.setFontSize(10);
-      let startY = positionY + 34;
-
-      // Table Headers
-      doc.setFillColor("#cccccc"); // Light grey background for headers
-      doc.rect(timeTableX - 4, startY - 6, 90, 8, "F");
-      doc.text("Date", timeTableX + 7, startY - 2, { align: "center" });
-      doc.text("1st Seating", timeTableX + 35, startY - 2, { align: "center" });
-      doc.text("2nd Seating", timeTableX + 65, startY - 2, { align: "center" });
-
-      // Fetch both sessions
-      const firstSession = getScheduleForClassAndSession(
-        studentData.timeTabel,
-        studentData.className,
-        "1st"
-      );
-      const secondSession = getScheduleForClassAndSession(
-        studentData.timeTabel,
-        studentData.className,
-        "2nd"
-      );
-
-      // Merge both sessions by date
-      const mergedSchedule = [] as {
-        date: string;
-        firstSubject: string;
-        secondSubject: string;
-      }[];
-
-      const allDates = new Set([
-        ...firstSession.map((x) => x.date),
-        ...secondSession.map((x) => x.date),
-      ]);
-
-      allDates.forEach((date) => {
-        const first = firstSession.find((x) => x.date === date);
-        const second = secondSession.find((x) => x.date === date);
-        mergedSchedule.push({
-          date,
-          firstSubject: first?.sessions[0]?.subject || "-",
-          secondSubject: second?.sessions[0]?.subject || "-",
-        });
-      });
-
-      // Sort dates (optional)
-      mergedSchedule.sort((a, b) => a.date.localeCompare(b.date));
-
-      // Draw table rows
-      doc.setFont("Poppins", "normal");
-
-      mergedSchedule.forEach((item, index) => {
-        const rowY = startY + (index + 1) * 6;
-        const fillColor = index % 2 === 0 ? "#ccffcc" : "#ffffcc"; // alternating row colors
-
-        doc.setFillColor(fillColor);
-        doc.rect(timeTableX - 4, rowY - 6, 90, 6, "F");
-        doc.setDrawColor(0, 0, 0);
-        doc.rect(timeTableX - 4, rowY - 6, 90, 6);
-
-        const [year, month, day] = item.date.split("-");
-        const formattedDate = `${day}/${month}/${year}`;
-
-        doc.text(formattedDate, timeTableX + 7, rowY - 2, { align: "center" });
-        doc.text(item.firstSubject, timeTableX + 35, rowY - 2, { align: "center" });
-        doc.text(item.secondSubject, timeTableX + 65, rowY - 2, { align: "center" });
-      });
-
-      // Signatures
-      const signatureY = positionY + cardHeight - 15;
-      doc.setFont("Poppins", "normal");
-      doc.setFontSize(8);
-
-      doc.text("(Class Teacher)", margin + 20, signatureY + 4);
-
-
-      // doc.addImage(PRINCIPAL_SIGN, "PNG", 80, signatureY - 10, 25, 13); // Placeholder for signature image
-      // doc.text("(Principal)", 85, signatureY+4);
-
-      doc.text("(Principal)", 150, signatureY + 4);
-      doc.addImage(PRINCIPAL_SIGN, "PNG", 150, signatureY - 10, 20, 15); // Placeholder for signature image
-    });
-    const blob = doc.output("blob");
-    const url = URL.createObjectURL(blob);
-    resolve(url);
+  /* ---------- jsPDF ---------- */
+  const doc = new jsPDF({
+    orientation: "portrait",
+    unit: "mm",
+    format: "a4",
   });
+
+  /* ---------- Fonts ---------- */
+  doc.addFileToVFS("Poppins-Bold", POPPINS_BOLD);
+  doc.addFont("Poppins-Bold", "Poppins", "bold");
+
+  doc.addFileToVFS("Poppins-Regular", POPPINS_REGULAR);
+  doc.addFont("Poppins-Regular", "Poppins", "normal");
+
+  doc.addFileToVFS("Poppins-Semibold", POPPINS_SEMIBOLD);
+  doc.addFont("Poppins-Semibold", "Poppins", "semibold");
+
+  /* ---------- Layout ---------- */
+  const cardHeight = 297 / 3 - 2;
+  const margin = 5;
+
+  /* ---------- IMAGE PREFETCH (FAST PART) ---------- */
+
+  const imageCache = new Map<string, string>();
+
+  const imagePaths = Array.from(
+    new Set(
+      data
+        .map((s) => s.profile_url)
+        .filter(Boolean)
+        .map((url) => decodeURIComponent(url!.split(".app/")[1]))
+    )
+  );
+
+  await Promise.all(
+    imagePaths.map(async (path) => {
+      try {
+        const base64 = await imagePathToBase64(path);
+        imageCache.set(path, base64);
+      } catch {
+        imageCache.set(path, PROFILE_PLACEHOLDER_BASE64);
+      }
+    })
+  );
+
+  /* ---------- PDF CONTENT ---------- */
+
+  for (let index = 0; index < data.length; index++) {
+    const student = data[index];
+
+    if (index > 0 && index % 3 === 0) {
+      doc.addPage();
+    }
+
+    const positionY = (index % 3) * cardHeight + margin + 6;
+
+    /* Border */
+    doc.setDrawColor(0);
+    doc.rect(margin, positionY - margin, 210 - 2 * margin, cardHeight - margin);
+
+    /* Header */
+    doc.setFont("Poppins", "bold");
+    doc.setFontSize(26);
+    doc.setTextColor(0, 0, 139);
+    doc.text(schoolName, 105, positionY + 4, { align: "center" });
+
+    doc.setFont("Poppins", "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(0);
+    doc.text(
+      `${schoolAddress} | ${schoolWebsite}`,
+      105,
+      positionY + 11,
+      { align: "center" }
+    );
+
+    /* Title */
+    doc.setFillColor("#000");
+    doc.rect(margin, positionY + 15, 210 - 2 * margin, 8, "F");
+    doc.setFont("Poppins", "semibold");
+    doc.setFontSize(14);
+    doc.setTextColor(255);
+    doc.text(
+      `ADMIT CARD || ${student.examTitle} || Session: ${student.session}`,
+      105,
+      positionY + 21,
+      { align: "center" }
+    );
+    doc.setTextColor(0);
+
+    /* Student Photo */
+    const imagePath = student.profile_url
+      ? decodeURIComponent(student.profile_url.split(".app/")[1])
+      : "";
+
+    const photo =
+      imageCache.get(imagePath) || PROFILE_PLACEHOLDER_BASE64;
+
+    doc.addImage(photo, margin + 6, positionY + 30, 25, 30);
+    doc.rect(margin + 6, positionY + 30, 25, 30);
+
+    /* Student Info */
+    const x = margin + 36;
+    doc.setFont("Poppins", "semibold");
+    doc.setTextColor(0, 0, 139);
+    doc.text(student.studentName, x, positionY + 30);
+
+    doc.setFont("Poppins", "normal");
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(10);
+    doc.text(`Class: ${student.className}`, x, positionY + 35);
+    doc.text(`Father: ${student.fatherName}`, x, positionY + 40);
+    doc.text(`Mother: ${student.motherName}`, x, positionY + 45);
+    doc.text(`DOB: ${student.studentDOB}`, x, positionY + 50);
+    doc.text(`ID: ${student.studentId}`, x, positionY + 55);
+    doc.text(`Roll No: ${student.rollNumber}`, x, positionY + 60);
+
+    /* Exam Timing */
+    doc.setFillColor("#ffffcc");
+    doc.rect(margin + 6, positionY + 62, 90, 10, "F");
+    doc.setFont("Poppins", "semibold");
+    doc.text(
+      `Exam Timing: ${student.examTimings}`,
+      margin + 10,
+      positionY + 69
+    );
+
+    /* Time Table */
+    const startY = positionY + 34;
+    const tableX = 113;
+
+    doc.setFillColor("#cccccc");
+    doc.rect(tableX - 4, startY - 6, 90, 8, "F");
+    doc.text("Date", tableX + 7, startY - 2, { align: "center" });
+    doc.text("1st Seating", tableX + 35, startY - 2, { align: "center" });
+    doc.text("2nd Seating", tableX + 65, startY - 2, { align: "center" });
+
+    const first = getScheduleForClassAndSession(
+      student.timeTabel,
+      student.className,
+      "1st"
+    );
+    const second = getScheduleForClassAndSession(
+      student.timeTabel,
+      student.className,
+      "2nd"
+    );
+
+    const dates = new Set([...first, ...second].map((x) => x.date));
+
+    Array.from(dates)
+      .sort()
+      .forEach((date, i) => {
+        const y = startY + (i + 1) * 6;
+        doc.setFillColor(i % 2 === 0 ? "#ccffcc" : "#ffffcc");
+        doc.rect(tableX - 4, y - 6, 90, 6, "F");
+        doc.rect(tableX - 4, y - 6, 90, 6);
+
+        const f = first.find((x) => x.date === date)?.sessions[0]?.subject || "-";
+        const s = second.find((x) => x.date === date)?.sessions[0]?.subject || "-";
+
+        const [yy, mm, dd] = date.split("-");
+        doc.text(`${dd}/${mm}/${yy}`, tableX + 7, y - 2, { align: "center" });
+        doc.text(f, tableX + 35, y - 2, { align: "center" });
+        doc.text(s, tableX + 65, y - 2, { align: "center" });
+      });
+
+    /* Signatures */
+    const signY = positionY + cardHeight - 15;
+    doc.setFontSize(8);
+    doc.text("(Class Teacher)", margin + 20, signY + 4);
+    doc.text("(Principal)", 150, signY + 4);
+    doc.addImage(schoolPrincipalSignBase64, "PNG", 150, signY - 10, 20, 15);
+  }
+
+  /* ---------- OUTPUT ---------- */
+  const blob = doc.output("blob");
+  return URL.createObjectURL(blob);
 };
