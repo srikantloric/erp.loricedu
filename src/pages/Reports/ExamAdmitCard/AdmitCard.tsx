@@ -139,7 +139,7 @@ const AdmitCard = () => {
   }, [selectedExam, db]);
   return (
     <>
-      <Paper sx={{ p: "10px", mt: "8px" }}>
+      <Box sx={{ border: "1px solid oklch(.900 .013 255.508)", borderRadius: "10px", padding: "10px", }}>
         <Stack
           direction="row"
           alignItems="center"
@@ -192,10 +192,10 @@ const AdmitCard = () => {
             </Button>
           </Stack>
         </Stack>
-      </Paper>
+      </Box>
       {pdfUrl && (
         <>
-          <Chip sx={{ mt: "8px", mb: "8px" }}>
+          <Chip sx={{ mt: "8px", mb: "8px"}} color="primary">
             Total admitcard count :{studentData.length}
           </Chip>
           <Paper sx={{ height: "100vh" }}>
