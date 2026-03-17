@@ -21,6 +21,7 @@ export const MarksheetReportGenerator = async (
       // Use the default theme if none is provided
       const selectedTheme = theme || "theory-practical-design";
       const designModule = getDesignModule(selectedTheme);
+      console.log("Selected Marksheet Design:", selectedTheme);
       // Delegate the PDF generation to the design module
       const pdfUrl = await designModule.generatePDF(resultData, config, selectedSession,examPaperWithFullMarks);
 

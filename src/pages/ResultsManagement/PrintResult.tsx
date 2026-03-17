@@ -12,7 +12,7 @@ import {
   Table,
   Typography,
 } from "@mui/joy";
-import { Paper } from "@mui/material";
+import { Divider, Paper, useMediaQuery, useTheme } from "@mui/material";
 import { IconBrandTinder } from "@tabler/icons-react";
 import BreadCrumbsV2 from "components/Breadcrumbs/BreadCrumbsV2";
 
@@ -35,6 +35,8 @@ import { collection, doc, getDoc, getDocs, query, setDoc, where } from "firebase
 import { useFirebase } from "context/firebaseContext";
 import { Exam } from "types/exam";
 import { useNavbar } from "context/NavbarContext";
+import PageHeaderWithHelpButton from "components/Breadcrumbs/PageHeaderWithHelpButton";
+import { useSidebar } from "context/SidebarContext";
 
 
 
@@ -46,8 +48,12 @@ type rankTypeExtended = {
   marksObtained: number;
 };
 
+const marksheetDesignOptions = [
+  { value: "theory-practical-design", label: "Modern" },
+  { value: "new-design", label: "Classic" },
+]
+
 function PrintResult() {
-  const [studentIdInput, setStudentIdInput] = useState<string | null>(null);
   const [selectedClass, setSelectedClass] = useState<any | null>(null);
   const [examsList, setExamList] = useState<Exam[]>([]);
   const [selectedExam, setSelectedExam] = useState<any | null>(null);
@@ -62,7 +68,12 @@ function PrintResult() {
   //Get Firebase DB instance
   const { db } = useFirebase();
   const { session } = useNavbar()
+  const { setMini, isMini } = useSidebar();
 
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+
+  const [marksheetDesign, setMarksheetDesign] = useState<string>("new-design");
 
   useEffect(() => {
     //fetch exams
@@ -143,7 +154,7 @@ function PrintResult() {
         marksheetList,
         session,
         examPaperWithFullMarks,
-        examTheme
+        marksheetDesign
       );
 
       setPdfUrl(pdfUrl);
@@ -354,26 +365,30 @@ function PrintResult() {
   return (
     <>
 
-      <BreadCrumbsV2
-        Icon={IconBrandTinder}
-        Path="School Results/Print Results"
-      />
-      <Paper sx={{ p: "10px", mt: "8px" }}>
+      <Box
+        sx={{
+          maxWidth: isMobile ? "100vw" : isMini ? "90vw" : "85vw",
+          px: isMobile ? 1 : 0,
+          backgroundColor: "#fff",
+        }}
+      >
+        <PageHeaderWithHelpButton title="Print students result" />
+
         <Stack
           direction="row"
           alignItems="center"
           justifyContent="space-between"
+          sx={{
+            p: isMobile ? 1.5 : 2,
+            border: "1px solid oklch(.929 .013 255.508)",
+            borderRadius: 10,
+            mt: 2,
+          }}
         >
           <Box>
             <Typography level="title-md">Print Marksheet</Typography>
           </Box>
           <Stack direction="row" alignItems="center" gap={1.5}>
-            <Input
-              placeholder="Search by student id.."
-              value={studentIdInput!}
-              onChange={(e) => setStudentIdInput(e.target.value)}
-            ></Input>
-            <Typography>Or</Typography>
             <Select
               placeholder="choose class"
               onChange={(e, val) => setSelectedClass(val)}
@@ -394,6 +409,19 @@ function PrintResult() {
                   );
                 })}
             </Select>
+            <Divider orientation="vertical" sx={{ height: 28, mx: 0.5 }} />
+            <Select
+              placeholder="choose design"
+              value={marksheetDesign}
+              onChange={(e, val) => setMarksheetDesign(val)}
+            >
+              {marksheetDesignOptions &&
+                marksheetDesignOptions.map((item, key) => {
+                  return (
+                    <Option value={item.value}>{item.label}</Option>
+                  );
+                })}
+            </Select>
             <Button
               sx={{ ml: "8px" }}
               startDecorator={<Print />}
@@ -410,147 +438,147 @@ function PrintResult() {
             </Button>
           </Stack>
         </Stack>
-      </Paper>
 
-      {pdfUrl && (
-        <>
-          <Chip sx={{ mt: "8px", mb: "8px" }}>
-            Total marksheet count :{marksheetList.length}
-          </Chip>
-          <Paper sx={{ height: "100vh" }}>
-            <iframe
-              src={pdfUrl}
-              title="PDF Viewer"
-              width="100%"
-              height="100%"
-              frameBorder={0}
-            />
-          </Paper>
-        </>
-      )}
-
-      <br />
-      {studentRankDetails.length > 0 && (
-        <Sheet variant="outlined" sx={{ borderRadius: "10px" }}>
-          <Stack
-            direction="row"
-            minHeight="200px"
-            justifyContent="space-evenly"
-            alignItems="center"
-          >
-            <Stack alignItems="center">
-              <img
-                src={rank1Img}
-                alt="1st_rank"
-                style={{ height: "120px" }}
+        {pdfUrl && (
+          <>
+            <Chip sx={{ mt: "8px", mb: "8px" }}>
+              Total marksheet count :{marksheetList.length}
+            </Chip>
+            <Paper sx={{ height: "100vh" }}>
+              <iframe
+                src={pdfUrl}
+                title="PDF Viewer"
+                width="100%"
+                height="100%"
+                frameBorder={0}
               />
-              <Typography
-                level="title-md"
-                sx={{
-                  bgcolor: "var(--bs-primary)",
-                  borderRadius: "16px",
-                  pl: "8px",
-                  pr: "8px",
-                  pt: "3px",
-                  pb: "3px",
-                  color: "#fff",
-                }}
-              >
-                {studentRankDetails.at(0)?.studentName}
-              </Typography>
-              <Typography level="body-sm">
-                {" "}
-                {studentRankDetails.at(0)?.studentId}
-              </Typography>
-            </Stack>
-            <Stack alignItems="center">
-              <img
-                src={rank2Img}
-                alt="1st_rank"
-                style={{ height: "120px" }}
-              />
-              <Typography
-                level="title-md"
-                sx={{
-                  bgcolor: "var(--bs-primary)",
-                  borderRadius: "16px",
-                  pl: "8px",
-                  pr: "8px",
-                  pt: "3px",
-                  pb: "3px",
-                  color: "#fff",
-                }}
-              >
-                {studentRankDetails.at(1)?.studentName}
-              </Typography>
-              <Typography level="body-sm">
-                {" "}
-                {studentRankDetails.at(1)?.studentId}
-              </Typography>
-            </Stack>
-            <Stack alignItems="center">
-              <img
-                src={rank3Img}
-                alt="1st_rank"
-                style={{ height: "120px" }}
-              />
-              <Typography
-                level="title-md"
-                sx={{
-                  bgcolor: "var(--bs-primary)",
-                  borderRadius: "16px",
-                  pl: "8px",
-                  pr: "8px",
-                  pt: "3px",
-                  pb: "3px",
-                  color: "#fff",
-                }}
-              >
-                {studentRankDetails.at(2)?.studentName}
-              </Typography>
-              <Typography level="body-sm">
-                {studentRankDetails.at(2)?.studentId}
-              </Typography>
-            </Stack>
-          </Stack>
+            </Paper>
+          </>
+        )}
 
-          <br />
-
-          <Sheet variant="outlined" sx={{ m: "10px", p: "10px" }}>
-            <Table
-              hoverRow
-              stripe="even"
-              sx={{ "& tr > *": { textAlign: "center" } }}
+        <br />
+        {studentRankDetails.length > 0 && (
+          <Sheet variant="outlined" sx={{ borderRadius: "10px" }}>
+            <Stack
+              direction="row"
+              minHeight="200px"
+              justifyContent="space-evenly"
+              alignItems="center"
             >
-              <thead>
-                <tr>
-                  <th>Rank</th>
-                  <th>Marks Obtained</th>
-                  <th>Student ID</th>
-                  <th>Student Name</th>
-                  <th>Fathers Name</th>
-                </tr>
-              </thead>
-              <tbody>
-                {studentRankDetails &&
-                  studentRankDetails.map((studentRank) => (
-                    <tr>
-                      <td>
-                        <Typography level="title-md" sx={{ color: "#000" }}>
-                          {getOrdinal(studentRank.rankObtained)}
-                        </Typography>
-                      </td>
-                      <td>{studentRank.marksObtained}</td>
-                      <td>{studentRank.studentId}</td>
-                      <td>{studentRank.studentName}</td>
-                      <td>{studentRank.studentFather}</td>
-                    </tr>
-                  ))}
-              </tbody>
-            </Table>
+              <Stack alignItems="center">
+                <img
+                  src={rank1Img}
+                  alt="1st_rank"
+                  style={{ height: "120px" }}
+                />
+                <Typography
+                  level="title-md"
+                  sx={{
+                    bgcolor: "var(--bs-primary)",
+                    borderRadius: "16px",
+                    pl: "8px",
+                    pr: "8px",
+                    pt: "3px",
+                    pb: "3px",
+                    color: "#fff",
+                  }}
+                >
+                  {studentRankDetails.at(0)?.studentName}
+                </Typography>
+                <Typography level="body-sm">
+                  {" "}
+                  {studentRankDetails.at(0)?.studentId}
+                </Typography>
+              </Stack>
+              <Stack alignItems="center">
+                <img
+                  src={rank2Img}
+                  alt="1st_rank"
+                  style={{ height: "120px" }}
+                />
+                <Typography
+                  level="title-md"
+                  sx={{
+                    bgcolor: "var(--bs-primary)",
+                    borderRadius: "16px",
+                    pl: "8px",
+                    pr: "8px",
+                    pt: "3px",
+                    pb: "3px",
+                    color: "#fff",
+                  }}
+                >
+                  {studentRankDetails.at(1)?.studentName}
+                </Typography>
+                <Typography level="body-sm">
+                  {" "}
+                  {studentRankDetails.at(1)?.studentId}
+                </Typography>
+              </Stack>
+              <Stack alignItems="center">
+                <img
+                  src={rank3Img}
+                  alt="1st_rank"
+                  style={{ height: "120px" }}
+                />
+                <Typography
+                  level="title-md"
+                  sx={{
+                    bgcolor: "var(--bs-primary)",
+                    borderRadius: "16px",
+                    pl: "8px",
+                    pr: "8px",
+                    pt: "3px",
+                    pb: "3px",
+                    color: "#fff",
+                  }}
+                >
+                  {studentRankDetails.at(2)?.studentName}
+                </Typography>
+                <Typography level="body-sm">
+                  {studentRankDetails.at(2)?.studentId}
+                </Typography>
+              </Stack>
+            </Stack>
+
+            <br />
+
+            <Sheet variant="outlined" sx={{ m: "10px", p: "10px" }}>
+              <Table
+                hoverRow
+                stripe="even"
+                sx={{ "& tr > *": { textAlign: "center" } }}
+              >
+                <thead>
+                  <tr>
+                    <th>Rank</th>
+                    <th>Marks Obtained</th>
+                    <th>Student ID</th>
+                    <th>Student Name</th>
+                    <th>Fathers Name</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {studentRankDetails &&
+                    studentRankDetails.map((studentRank) => (
+                      <tr>
+                        <td>
+                          <Typography level="title-md" sx={{ color: "#000" }}>
+                            {getOrdinal(studentRank.rankObtained)}
+                          </Typography>
+                        </td>
+                        <td>{studentRank.marksObtained}</td>
+                        <td>{studentRank.studentId}</td>
+                        <td>{studentRank.studentName}</td>
+                        <td>{studentRank.studentFather}</td>
+                      </tr>
+                    ))}
+                </tbody>
+              </Table>
+            </Sheet>
           </Sheet>
-        </Sheet>
-      )}
+        )}
+      </Box >
     </>
   );
 }
