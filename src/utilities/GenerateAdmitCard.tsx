@@ -182,7 +182,7 @@ export const GenerateAdmitCard = async (
     doc.setFont("Poppins", "normal");
     doc.setTextColor(0, 0, 0);
     doc.setFontSize(10);
-    doc.text(`Class: ${student.className}`, x, positionY + 35);
+    doc.text(`Class: Nursery-B`, x, positionY + 35);
     doc.text(`Father: ${student.fatherName}`, x, positionY + 40);
     doc.text(`Mother: ${student.motherName}`, x, positionY + 45);
     doc.text(`DOB: ${student.studentDOB}`, x, positionY + 50);
