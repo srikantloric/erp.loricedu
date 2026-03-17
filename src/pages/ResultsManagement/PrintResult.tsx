@@ -4,7 +4,6 @@ import {
   Box,
   Button,
   Chip,
-  Input,
   Option,
   Select,
   Sheet,
@@ -13,8 +12,6 @@ import {
   Typography,
 } from "@mui/joy";
 import { Divider, Paper, useMediaQuery, useTheme } from "@mui/material";
-import { IconBrandTinder } from "@tabler/icons-react";
-import BreadCrumbsV2 from "components/Breadcrumbs/BreadCrumbsV2";
 
 import { SCHOOL_CLASSES } from "config/schoolConfig";
 import { useEffect, useState } from "react";
@@ -36,7 +33,6 @@ import { useFirebase } from "context/firebaseContext";
 import { Exam } from "types/exam";
 import { useNavbar } from "context/NavbarContext";
 import PageHeaderWithHelpButton from "components/Breadcrumbs/PageHeaderWithHelpButton";
-import { useSidebar } from "context/SidebarContext";
 
 
 
@@ -68,7 +64,6 @@ function PrintResult() {
   //Get Firebase DB instance
   const { db } = useFirebase();
   const { session } = useNavbar()
-  const { setMini, isMini } = useSidebar();
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
@@ -367,7 +362,7 @@ function PrintResult() {
 
       <Box
         sx={{
-          maxWidth: isMobile ? "100vw" : isMini ? "90vw" : "85vw",
+          maxWidth: isMobile ? "100vw"  : "85vw",
           px: isMobile ? 1 : 0,
           backgroundColor: "#fff",
         }}
@@ -413,10 +408,10 @@ function PrintResult() {
             <Select
               placeholder="choose design"
               value={marksheetDesign}
-              onChange={(e, val) => setMarksheetDesign(val)}
+              onChange={(e, val) => setMarksheetDesign(val!)}
             >
               {marksheetDesignOptions &&
-                marksheetDesignOptions.map((item, key) => {
+                marksheetDesignOptions.map((item) => {
                   return (
                     <Option value={item.value}>{item.label}</Option>
                   );
