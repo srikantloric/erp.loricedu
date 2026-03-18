@@ -220,7 +220,7 @@ function AppNew() {
                                             />
 
                                             <Route
-                                                path="schoolResults/print-toppers-list"
+                                                path="exams/print-toppers-list"
                                                 element={<PrintTopperList />}
                                             />
 

@@ -175,7 +175,7 @@ export const TopperListGenerator = async (
     doc.setFontSize(14);
     doc.setTextColor(255, 255, 255);
     doc.text(
-      examName.toUpperCase() + " - " + "(" + session.toUpperCase() + ")",
+      examName.toUpperCase(),
       pageMargin + effectiveWidth / 2 - 50,
       pageMargin + 38
     );
@@ -202,13 +202,11 @@ export const TopperListGenerator = async (
         yStart + Math.floor(index / membersPerRow) * (cardHeight + 10);
 
       const topperImage = topper.imageUrl;
+      console.log("Topper Image URL:", topper.imageUrl);
+      
 
-      const circleRadius = 25;
       const circleCenterX = xOffset + cardWidth / 2;
-      const circleCenterY = yOffset + circleRadius;
 
-      doc.setFillColor("#f0f0f0"); // Light gray background
-      doc.circle(circleCenterX, circleCenterY, circleRadius, "F");
 
       // Add topper image on top of the circular background
       if (topperImage) {
@@ -229,24 +227,25 @@ export const TopperListGenerator = async (
       const rectX = xOffset + 20;
       const rectY = yOffset + 55;
       const rectWidth = cardWidth - 50;
-      const rectHeight = 15;
+      const rectHeight = 18;
 
       doc.setFillColor("#093d91"); // Blue color
       doc.rect(rectX + 5, rectY, rectWidth, rectHeight, "F");
 
       // Topper details inside the rectangle
-      doc.setFontSize(10);
+      doc.setFontSize(14);
       doc.setFont("Poppins", "bold");
       doc.setTextColor(255, 255, 255); // White text color
       doc.text(
         `Rank: ${topper.rankObtained}`,
         rectX + rectWidth / 2 + 5,
-        rectY + 4,
+        rectY + 5,
         {
           align: "center",
         }
       );
-      doc.text(`${topper.studentName}`, rectX + rectWidth / 2 + 5, rectY + 8, {
+       doc.setFontSize(10);
+      doc.text(`${topper.studentName}`, rectX + rectWidth / 2 + 5, rectY + 10, {
         align: "center",
       });
       doc.text(
@@ -254,7 +253,7 @@ export const TopperListGenerator = async (
           topper.percentageObtained.toFixed(2) + "%"
         }`,
         rectX + rectWidth / 2 + 5,
-        rectY + 13,
+        rectY + 15,
         { align: "center" }
       );
     }
