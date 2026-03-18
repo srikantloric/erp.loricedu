@@ -551,7 +551,7 @@ export const MarksheetDesign3 = {
 
             // Parent's Signature
             doc.line(marginSign + sectionWidth * 1.5 - 25, signY - lineOffset, marginSign + sectionWidth * 1.5 + 25, signY - lineOffset);
-            doc.text("Parents Sign", marginSign + sectionWidth * 1.5 - 15, signY);
+            doc.text("Exam Controller", marginSign + sectionWidth * 1.5 - 15, signY);
 
             // Principal's Signature
             doc.line(marginSign + sectionWidth * 2.5 - 25, signY - lineOffset, marginSign + sectionWidth * 2.5 + 25, signY - lineOffset);

@@ -1,5 +1,12 @@
 import { Print } from "@mui/icons-material";
-import { Box, Button, Chip, Option, Select, Stack, Typography } from "@mui/joy";
+import {
+  Button,
+  Chip,
+  Option,
+  Select,
+  Stack,
+  Typography,
+} from "@mui/joy";
 import { Paper } from "@mui/material";
 import { IconBrandTinder } from "@tabler/icons-react";
 import BreadCrumbsV2 from "components/Breadcrumbs/BreadCrumbsV2";
@@ -11,54 +18,31 @@ import { rankType, resultTypeNew } from "types/results";
 import { StudentDetailsType } from "types/student";
 import {
   collection,
-  doc,
-  getDoc,
   getDocs,
   query,
   where,
+  doc,
+  getDoc,
 } from "firebase/firestore";
 import { useFirebase } from "context/firebaseContext";
 import { TopperListGenerator } from "components/Reports/GenerateTopperList";
 import { getClassNameByValue } from "utilities/UtilitiesFunctions";
-import { STUDENT_IMAGE1 } from "utilities/Base64Url";
-
-type examType = {
-  examId: string;
-  examTitle: string;
-};
-
-type paperType = {
-  paperId: string;
-  paperTitle: string;
-};
-type examConfig = {
-  examPapers: paperType[];
-  exams: examType[];
-};
-
-const fullMarks = {
-  MATHS: 50,
-  SCIENCE: 50,
-  ENGLISH: 50,
-  SST: 50,
-  COMPUTER: 50,
-  GK: 50,
-  DRAWING: 0,
-  ORAL: 50,
-  HINDI: 50,
-};
+import { IMAGE_PLACEHOLDER } from "utilities/Base64Url";
+import { useNavbar } from "context/NavbarContext";
+import { Exam } from "types/exam";
 
 type ExtendedRankType = rankType & {
   studentName: string;
   fatherName: string;
   rollNumber: number;
+  studentImage: string;
   subjectMarks: { subject: string; marks: number }[];
   percentage: number;
 };
 
 function PrintTopperList() {
   const [selectedClass, setSelectedClass] = useState<any | null>(null);
-  const [examsList, setExamList] = useState<examType[]>([]);
+  const [examsList, setExamList] = useState<Exam[]>([]);
   const [selectedExam, setSelectedExam] = useState<any | null>(null);
   const [pdfUrl, setPdfUrl] = useState<string>();
   const [isGeneratingRank, setIsGeneratingRank] = useState<boolean>(false);
@@ -67,58 +51,39 @@ function PrintTopperList() {
   >([]);
 
   const { db } = useFirebase();
+  const { session } = useNavbar();
 
+  // 🔹 Fetch Exams
   useEffect(() => {
-    const fetchExamConfig = async () => {
-      try {
-        const examConfigRef = doc(db, "CONFIG", "EXAM_CONFIG");
-        const snap = await getDoc(examConfigRef);
-
-        if (snap.exists()) {
-          const data = snap.data() as examConfig;
-          setExamList(data.exams);
-        } else {
-          console.log("No data retrieved from exam config.");
-        }
-      } catch (err) {
-        console.error("Error while fetching exams/papers:", err);
-      }
+    const fetchExams = async () => {
+      const examsQuery = query(
+        collection(db, "EXAMS"),
+        where("examSession", "==", session)
+      );
+      const querySnapshot = await getDocs(examsQuery);
+      const fetchedExams = querySnapshot.docs.map(
+        (doc) => doc.data() as Exam
+      );
+      setExamList(fetchedExams);
     };
+    fetchExams();
+  }, [session]);
 
-    fetchExamConfig();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const generateTopperList = async () => {
-    if (!selectedClass) {
-      enqueueSnackbar("Please select class!", { variant: "info" });
-      return;
-    }
-    if (!examsList) {
-      enqueueSnackbar("Unable to load exam config, please try again!", {
-        variant: "info",
-      });
-      return;
-    }
+  // 🔹 Generate Topper PDF
+  const generateTopperList = async (
+    marksheetList: ExtendedRankType[],
+    fullMarks: Record<string, number>
+  ) => {
     const selectedClassA = getClassNameByValue(selectedClass) || "N/A";
     const selectedExamA =
       examsList.find((item) => item.examId === selectedExam)?.examTitle ||
       "N/A";
 
-    // if (studentRankDetails.length < 3) {
-    //   enqueueSnackbar("Not enough students to generate topper list!", {
-    //     variant: "warning",
-    //   });
-    //   return;
-    // }
-
-    const topperList = studentRankDetails.slice(0, 3).map((student) => {
-      // Calculating totalFullMarks dynamically based on the subjects
-      const totalFullMarks = student.subjectMarks.reduce((total, subject) => {
-        const fullMarkForSubject =
-          fullMarks[subject.subject as keyof typeof fullMarks] || 0;
-        return total + fullMarkForSubject;
-      }, 0);
+    const topperList = marksheetList.slice(0, 3).map((student) => {
+      const totalFullMarks = Object.values(fullMarks).reduce(
+        (a, b) => a + b,
+        0
+      );
 
       return {
         studentId: student.studentId,
@@ -127,24 +92,21 @@ function PrintTopperList() {
         marksObtained: student.marksObtained,
         totalFullMarks,
         percentageObtained: student.percentage,
-        imageUrl: STUDENT_IMAGE1, // Srikant replace with image of student
+        imageUrl: student.studentImage || IMAGE_PLACEHOLDER,
       };
     });
 
     const pdfUrl = await TopperListGenerator(
       topperList,
       selectedExamA,
-      "2024-2025",
+      session,
       selectedClassA
     );
 
     setPdfUrl(pdfUrl);
-    enqueueSnackbar("Topper list generated successfully!", {
-      variant: "success",
-    });
   };
 
-  //Generate Student Rank
+  // 🔥 MAIN LOGIC (Same as RankList)
   const printTopperStudents = async () => {
     if (!selectedClass) {
       enqueueSnackbar("Please select class!", { variant: "error" });
@@ -154,23 +116,27 @@ function PrintTopperList() {
       enqueueSnackbar("Please select exam!", { variant: "error" });
       return;
     }
-    if (!examsList) {
-      enqueueSnackbar("Failed to load exam config, please try again", {
-        variant: "info",
-      });
+
+    const themeExam = examsList.find(
+      (item) => item.examId === selectedExam
+    )?.marksheetDesign;
+
+    if (!themeExam) {
+      enqueueSnackbar("Failed to load exam theme!", { variant: "info" });
       return;
     }
 
     try {
       setIsGeneratingRank(true);
 
-      // Fetch all students for the selected class
-      const studentsQuery = query(
-        collection(db, "STUDENTS"),
-        where("class", "==", selectedClass)
-        , where("is_active", "==", true)
+      // 🔹 Fetch Students
+      const studentsSnap = await getDocs(
+        query(
+          collection(db, "STUDENTS"),
+          where("class", "==", selectedClass),
+          where("is_active", "==", true)
+        )
       );
-      const studentsSnap = await getDocs(studentsQuery);
 
       if (studentsSnap.empty) {
         setIsGeneratingRank(false);
@@ -188,53 +154,85 @@ function PrintTopperList() {
 
       let markSheetTempListExtended: ExtendedRankType[] = [];
 
+      // 🔹 MASTER DATA
+      const configSnap = await getDoc(doc(db, "MASTER_DATA", "masterData"));
+      if (!configSnap.exists()) {
+        enqueueSnackbar("Master data missing!", { variant: "error" });
+        return;
+      }
+
+      const masterData = configSnap.data();
+      const selectedClassName = getClassNameByValue(selectedClass);
+
+      const paperIdsForClass: string[] =
+        masterData.papers
+          ?.filter((p: any) => p.classes.includes(selectedClassName))
+          .map((p: any) => p.paperId) ?? [];
+
+      if (!paperIdsForClass.length) {
+        enqueueSnackbar("No papers configured!", { variant: "warning" });
+        return;
+      }
+
+      const examPapers =
+        examsList
+          .find((item) => item.examId === selectedExam)
+          ?.papers.filter((p) =>
+            paperIdsForClass.includes(p.paperId)
+          ) || [];
+
+      const fullMarks: Record<string, number> = {};
+      examPapers.forEach((paper) => {
+        fullMarks[paper.paperId] =
+          (paper.maxTheory || 0) + (paper.maxPractical || 0);
+      });
+
+      // 🔹 Fetch Results
       const resultPromises = allStudentList.map(async (student) => {
-        const resultQuery = collection(
-          db,
-          "STUDENTS",
-          student.id,
-          "PUBLISHED_RESULTS"
+        const resultSnap = await getDocs(
+          collection(db, "STUDENTS", student.id, "PUBLISHED_RESULTS")
         );
-        const resultSnap = await getDocs(resultQuery);
 
         resultSnap.forEach((resDoc) => {
           const res = resDoc.data() as resultTypeNew;
-          if (res.examId === selectedExam) {
-            if (!Array.isArray(res.result)) {
-              console.error("Error: res.result is not an array!", res.result);
-              return;
-            }
 
-            //calculate total marks
+          if (res.examId === selectedExam) {
+            if (!Array.isArray(res.result)) return;
+
             let totalMarks = res.result.reduce((total, item) => {
-              const fullMarkForSubject =
-                fullMarks[item.paperId as keyof typeof fullMarks] || 0;
-              return total + fullMarkForSubject;
+              return total + (fullMarks[item.paperId] || 0);
             }, 0);
 
             let marksObtained = res.result.reduce((total, item) => {
-              const obtainedMarkCalculated =
-                item.paperId === "DRAWING"
-                  ? 0
-                  : Number(item.theory) +
-                  Number(item.practical);
+              let obtained = 0;
 
-              return total + obtainedMarkCalculated;
+              if (themeExam === "theory-practical-design") {
+                if (item.grade && item.grade.trim() === "") {
+                  obtained = 0;
+                } else {
+                  obtained =
+                    Number(item.theory || 0) +
+                    Number(item.practical || 0);
+                }
+              }
+
+              return total + obtained;
             }, 0);
 
             markSheetTempListExtended.push({
               studentId: student.admission_no,
               studentName: student.student_name,
               fatherName: student.father_name,
+              studentImage: student.profil_url || IMAGE_PLACEHOLDER,
               rankObtained: -1,
-              marksObtained: marksObtained,
+              marksObtained,
               percentage: (marksObtained / totalMarks) * 100,
               rollNumber: Number(student.class_roll),
               subjectMarks: res.result.map((item) => ({
                 subject: item.paperId,
                 marks:
-                  Number(item.theory) +
-                  Number(item.practical),
+                  Number(item.theory || 0) +
+                  Number(item.practical || 0),
               })),
             });
           }
@@ -243,17 +241,18 @@ function PrintTopperList() {
 
       await Promise.all(resultPromises);
 
+      // 🔹 Sort
       markSheetTempListExtended.sort(
         (a, b) => b.marksObtained - a.marksObtained
       );
 
-      // Assign ranks
+      // 🔹 Rank Assign
       let currentRank = 1;
       markSheetTempListExtended.forEach((student, index) => {
         if (
           index > 0 &&
           student.marksObtained ===
-          markSheetTempListExtended[index - 1].marksObtained
+            markSheetTempListExtended[index - 1].marksObtained
         ) {
           student.rankObtained =
             markSheetTempListExtended[index - 1].rankObtained;
@@ -263,57 +262,62 @@ function PrintTopperList() {
         currentRank++;
       });
 
-      console.log("markSheetTempListExtended", markSheetTempListExtended);
-
       setStudentRankDetails(markSheetTempListExtended);
-      generateTopperList();
+
+      await generateTopperList(markSheetTempListExtended, fullMarks);
+
+      enqueueSnackbar("Topper list generated successfully!", {
+        variant: "success",
+      });
+
       setIsGeneratingRank(false);
     } catch (err) {
-      console.error("Error generating student ranks:", err);
+      console.error(err);
       setIsGeneratingRank(false);
-      enqueueSnackbar("Failed to update rank!", { variant: "error" });
+      enqueueSnackbar("Failed to generate topper list!", {
+        variant: "error",
+      });
     }
   };
 
   return (
     <>
-
       <BreadCrumbsV2
         Icon={IconBrandTinder}
         Path="School Results/Print Topper List"
       />
+
       <Paper sx={{ p: "10px", mt: "8px" }}>
         <Stack
           direction="row"
           alignItems="center"
           justifyContent="space-between"
         >
-          <Box>
-            <Typography level="title-md">Print Toper List</Typography>
-          </Box>
-          <Stack direction="row" alignItems="center" gap={1.5}>
+          <Typography level="title-md">Print Topper List</Typography>
+
+          <Stack direction="row" gap={1.5}>
             <Select
               placeholder="choose class"
               onChange={(e, val) => setSelectedClass(val)}
             >
-              {SCHOOL_CLASSES.map((item) => {
-                return <Option value={item.value}>{item.title}</Option>;
-              })}
+              {SCHOOL_CLASSES.map((item) => (
+                <Option value={item.value}>{item.title}</Option>
+              ))}
             </Select>
+
             <Select
               placeholder="choose exam"
               value={selectedExam}
               onChange={(e, val) => setSelectedExam(val)}
             >
-              {examsList &&
-                examsList.map((item, key) => {
-                  return (
-                    <Option value={item.examId}>{item.examTitle}</Option>
-                  );
-                })}
+              {examsList.map((item) => (
+                <Option value={item.examId}>
+                  {item.examTitle}
+                </Option>
+              ))}
             </Select>
+
             <Button
-              sx={{ ml: "8px" }}
               startDecorator={<Print />}
               loading={isGeneratingRank}
               onClick={printTopperStudents}
@@ -323,20 +327,22 @@ function PrintTopperList() {
           </Stack>
         </Stack>
       </Paper>
+
       <br />
 
       {pdfUrl && (
         <>
-          <Chip sx={{ mt: "8px", mb: "8px" }}>
-            Total student count :{studentRankDetails.length}
+          <Chip sx={{ mt: 1, mb: 1 }}>
+            Total students: {studentRankDetails.length}
           </Chip>
+
           <Paper sx={{ height: "100vh" }}>
             <iframe
               src={pdfUrl}
-              title="PDF Viewer"
               width="100%"
               height="100%"
               frameBorder={0}
+              title="PDF"
             />
           </Paper>
         </>
