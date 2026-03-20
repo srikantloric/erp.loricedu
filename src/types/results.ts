@@ -29,6 +29,7 @@ export type rankType = {
   studentId: string;
   rankObtained: number;
   marksObtained: number;
+  studentName: string;
 };
 
 

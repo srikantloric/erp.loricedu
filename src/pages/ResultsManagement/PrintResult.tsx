@@ -289,6 +289,7 @@ function PrintResult() {
               studentId: student.id,
               rankObtained: -1,
               marksObtained: marksObtained,
+              studentName: student.student_name,
             });
 
             markSheetTempListExtended.push({
