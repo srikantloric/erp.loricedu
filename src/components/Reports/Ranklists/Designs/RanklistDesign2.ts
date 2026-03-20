@@ -124,7 +124,7 @@ export const RankListDesign2 = {
             doc.setFont("Poppins", "bold");
             doc.setFontSize(12);
             doc.text(
-                `Exam: ${examName} | Session: ${session} | Class: Nursery-B`,
+                `Exam: ${examName} | Session: ${session} | Class: ${className}`,
                 pageMargin + effectiveWidth / 2,
                 pageMargin + 42,
                 { align: "center" }
