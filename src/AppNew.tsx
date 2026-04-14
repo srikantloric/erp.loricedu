@@ -18,6 +18,7 @@ import PrintTopperList from "pages/ResultsManagement/PrintToperList";
 import AllocatedStudents from "pages/transport/vehicleDetailsTabs/AllocatedStudents";
 import AllocatedStudentsLocations from "pages/transport/vehicleDetailsTabs/AllocatedStudentsLocations";
 import StudentsList from "pages/Reports/StudentsList";
+import FacultyList from "pages/Reports/FacultyList";
 import { NavbarProvider } from "context/NavbarContext";
 import IotAttendance from "pages/Attendance/iotAttendanance/IotAttendance";
 import GenerateAdmitCard from "pages/Reports/ExamAdmitCard/GenerateAdmitCard";
@@ -278,6 +279,7 @@ function AppNew() {
                                             <Route path="reports/demand-slip" element={<DemandSlip />} />
                                             <Route path="reports/admit-card" element={<GenerateAdmitCard />} />
                                             <Route path="reports/students-list" element={<StudentsList />} />
+                                            <Route path="reports/faculty-list" element={<FacultyList />} />
                                             <Route path="reports/faculty-daily-attendance" element={<FacultyDailyAttendanceReport />} />
                                             <Route path="reports/faculty-monthly-attendance" element={<FacultyMonthlyAttendanceReport />} />
 
