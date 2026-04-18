@@ -84,6 +84,7 @@ const defaultColumns: Column[] = [
   { field: "transportation_fee", title: "Transport Fee", selected: false },
   { field: "aadhar_number", title: "Aadhar Number", selected: false },
   { field: "date_of_addmission", title: "Admission Date", selected: false },
+  { field: "rfidCode", title: "RFID Code", selected: false },
 ];
 
 interface CustomField {
@@ -323,8 +324,6 @@ const StudentsList = () => {
       case "transportation_fee":
         const fee = (student as any)[col.field];
         return fee ? `₹${fee}` : "-";
-      case "profil_url":
-        return ""; // Skip profile URL in exports
       default:
         return col.isCustom ? "-" : (student as any)[col.field] ?? "-";
     }
@@ -392,9 +391,7 @@ const StudentsList = () => {
 
   const handleExportExcel = () => {
     try {
-      const selectedCols = getAllSelectedColumns().filter(
-        (col) => col.field !== "profil_url"
-      );
+      const selectedCols = getAllSelectedColumns();
 
       if (selectedCols.length === 0) {
         enqueueSnackbar("Please select at least one column to export", {

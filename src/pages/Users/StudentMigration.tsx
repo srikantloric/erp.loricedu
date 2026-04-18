@@ -39,7 +39,7 @@ function StudentMigration() {
         setStudents([])
         setSelectedData([])
 
-        const sessionId = "SESSION_2024_25";
+        const sessionId = "SESSION_2026_27";
         //fetch already promoted students id from session
         const promotionRef = doc(db, "STUDENTS_PROMOTIONS", sessionId)
         const promotionSnap = await getDoc(promotionRef);
@@ -117,7 +117,7 @@ function StudentMigration() {
             return;
         }
 
-        const sessionId = "SESSION_2024_25";
+        const sessionId = "SESSION_2026_27";
         const promotionRef = doc(db, "STUDENTS_PROMOTIONS", sessionId);
 
         try {

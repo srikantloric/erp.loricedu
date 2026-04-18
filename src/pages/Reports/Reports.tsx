@@ -46,6 +46,11 @@ const reports: Report[] = [
     description: "Print list for students",
   },
   {
+    id: "faculty-list",
+    title: "Faculty List",
+    description: "Print list for faculty",
+  },
+  {
     id: "faculty-daily-attendance",
     title: "Faculty Daily Attendance",
     description: "Generate daily attendance report for faculty members",

@@ -13,11 +13,11 @@ import ExamPlanner from "pages/ResultsManagement/ExamPlanner";
 import { FirebaseProvider } from "context/firebaseContext";
 
 
-import StudentMigration from "pages/Users/StudentMigration";
 import PrintTopperList from "pages/ResultsManagement/PrintToperList";
 import AllocatedStudents from "pages/transport/vehicleDetailsTabs/AllocatedStudents";
 import AllocatedStudentsLocations from "pages/transport/vehicleDetailsTabs/AllocatedStudentsLocations";
 import StudentsList from "pages/Reports/StudentsList";
+import FacultyList from "pages/Reports/FacultyList";
 import { NavbarProvider } from "context/NavbarContext";
 import IotAttendance from "pages/Attendance/iotAttendanance/IotAttendance";
 import GenerateAdmitCard from "pages/Reports/ExamAdmitCard/GenerateAdmitCard";
@@ -61,12 +61,19 @@ const UpdateResults = Loadable(
 const UpdateResultsBulk = Loadable(
     lazy(() => import("pages/ResultsManagement/UpdateResult"))
 );
+
+
 const PrintResult = Loadable(
     lazy(() => import("pages/ResultsManagement/PrintResult"))
 );
 const PrintRankList = Loadable(
     lazy(() => import("pages/ResultsManagement/PrintRankList"))
 );
+
+const StudentMigration = Loadable(
+    lazy(() => import("pages/Users/StudentMigration"))
+);
+
 const IdCardGeneration = Loadable(
     lazy(() => import("pages/Extras/IdCardGeneration"))
 );
@@ -246,7 +253,7 @@ function AppNew() {
                                                 element={<PrintRankList />}
                                             />
                                             <Route
-                                                path="schoolResults/class-migration"
+                                                path="exams/class-migration"
                                                 element={<StudentMigration />}
                                             />
                                             {/* Exam Management routes */}
@@ -278,6 +285,7 @@ function AppNew() {
                                             <Route path="reports/demand-slip" element={<DemandSlip />} />
                                             <Route path="reports/admit-card" element={<GenerateAdmitCard />} />
                                             <Route path="reports/students-list" element={<StudentsList />} />
+                                            <Route path="reports/faculty-list" element={<FacultyList />} />
                                             <Route path="reports/faculty-daily-attendance" element={<FacultyDailyAttendanceReport />} />
                                             <Route path="reports/faculty-monthly-attendance" element={<FacultyMonthlyAttendanceReport />} />
 
