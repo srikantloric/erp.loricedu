@@ -13,7 +13,6 @@ import ExamPlanner from "pages/ResultsManagement/ExamPlanner";
 import { FirebaseProvider } from "context/firebaseContext";
 
 
-import StudentMigration from "pages/Users/StudentMigration";
 import PrintTopperList from "pages/ResultsManagement/PrintToperList";
 import AllocatedStudents from "pages/transport/vehicleDetailsTabs/AllocatedStudents";
 import AllocatedStudentsLocations from "pages/transport/vehicleDetailsTabs/AllocatedStudentsLocations";
@@ -62,12 +61,19 @@ const UpdateResults = Loadable(
 const UpdateResultsBulk = Loadable(
     lazy(() => import("pages/ResultsManagement/UpdateResult"))
 );
+
+
 const PrintResult = Loadable(
     lazy(() => import("pages/ResultsManagement/PrintResult"))
 );
 const PrintRankList = Loadable(
     lazy(() => import("pages/ResultsManagement/PrintRankList"))
 );
+
+const StudentMigration = Loadable(
+    lazy(() => import("pages/Users/StudentMigration"))
+);
+
 const IdCardGeneration = Loadable(
     lazy(() => import("pages/Extras/IdCardGeneration"))
 );
@@ -247,7 +253,7 @@ function AppNew() {
                                                 element={<PrintRankList />}
                                             />
                                             <Route
-                                                path="schoolResults/class-migration"
+                                                path="exams/class-migration"
                                                 element={<StudentMigration />}
                                             />
                                             {/* Exam Management routes */}

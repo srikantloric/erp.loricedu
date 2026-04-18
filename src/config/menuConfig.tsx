@@ -108,6 +108,7 @@ export const menuItems: MenuItem[] = [
       { label: 'Print Result', path: '/exams/print-result', permission: "printResult" },
       { label: 'Print RankList', path: '/exams/print-ranklist', permission: "printRankList" },
       { label: 'Print Topper List', path: '/exams/print-toppers-list', permission: "printTopperList" },
+      { label: 'Student Migration', path: '/exams/class-migration' },
     ],
     group: "manager"
   },

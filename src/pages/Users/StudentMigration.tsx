@@ -117,7 +117,7 @@ function StudentMigration() {
             return;
         }
 
-        const sessionId = "SESSION_2024_25";
+        const sessionId = "SESSION_2026_27";
         const promotionRef = doc(db, "STUDENTS_PROMOTIONS", sessionId);
 
         try {
