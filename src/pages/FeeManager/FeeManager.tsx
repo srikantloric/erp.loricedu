@@ -25,6 +25,7 @@ import { fetchstudent } from "store/reducers/studentSlice";
 import { RootState, AppDispatch } from "store";
 import { getClassNameByValue } from "utilities/UtilitiesFunctions";
 import FeeCollectionReport from "./FeeCollectionReport";
+import { useNavbar } from "context/NavbarContext";
 
 // -----------------------------
 // Interfaces / Types
@@ -88,6 +89,8 @@ const FeeManager: React.FC = () => {
   const searchBoxRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
 
+  const {session} = useNavbar();
+
   const handleChange = (_event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
   };
@@ -115,7 +118,7 @@ const FeeManager: React.FC = () => {
   useEffect(() => {
     if (!data || data.length === 0) {
       setLoading(true);
-      dispatch(fetchstudent()).then(() => setLoading(false));
+      dispatch(fetchstudent(session)).then(() => setLoading(false));
     }
   }, [data, dispatch]);
 

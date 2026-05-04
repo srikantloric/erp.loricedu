@@ -7,6 +7,7 @@ import AddSections from "./AddSections";
 import AddReligions from "./AddReligion";
 import AddReligionCategory from "./AddCasteCategory";
 import AddSubjects from "./AddSubjects";
+import AddSessions from "./AddSessions";
 function MasterData() {
   return (
     <>
@@ -20,6 +21,7 @@ function MasterData() {
             <Tab>Religion</Tab>
             <Tab>Caste Category</Tab>
             <Tab>Subjects</Tab>
+            <Tab>Sessions</Tab>
           </TabList>
           <TabPanel value={0} sx={{ minHeight: "90vh", p: "2rem" }}>
             <AddClasses />
@@ -36,6 +38,9 @@ function MasterData() {
           </TabPanel>
           <TabPanel value={4}>
             <AddSubjects/>
+          </TabPanel>
+          <TabPanel value={5}>
+            <AddSessions/>
           </TabPanel>
          
         </Tabs>

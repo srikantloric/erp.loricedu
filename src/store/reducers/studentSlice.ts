@@ -1,11 +1,23 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-
 import FileResizer from "react-image-file-resizer";
-import { collection, doc, getDoc, getDocs, orderBy, query, runTransaction, serverTimestamp, setDoc, where } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  runTransaction,
+  serverTimestamp,
+  setDoc,
+  where,
+} from "firebase/firestore";
 import { StudentDetailsType } from "types/student";
 import { getDownloadURL, ref, uploadString } from "firebase/storage";
-import { getFirestoreInstance, getStorageInstance } from "context/firebaseUtility";
+import {
+  getFirestoreInstance,
+  getStorageInstance,
+} from "context/firebaseUtility";
 
 const resizeFile = (file: any) =>
   new Promise((resolve) => {
@@ -25,91 +37,173 @@ const generateFirebaseUID = () => {
 };
 
 //ADD STUDENT
-export const addstudent = createAsyncThunk<StudentDetailsType, { studentData: StudentDetailsType }, { rejectValue: string }>(
-  "add-students/addstudent",
-  async ({ studentData }, { rejectWithValue }) => {
+export const addstudent = createAsyncThunk<
+  StudentDetailsType,
+  { studentData: StudentDetailsType },
+  { rejectValue: string }
+>("add-students/addstudent", async ({ studentData }, { rejectWithValue }) => {
+  // get Firestore instance
+  const db = await getFirestoreInstance();
 
-    // get Firestore instance 
-    const db = await getFirestoreInstance()
+  try {
+    // Fetch previous admission count from Firestore
+    const prevAdmissionDoc = await getDoc(
+      doc(db, "ADMISSION_TRACKER", "admission_number_tracker"),
+    );
 
-    try {
-      // Fetch previous admission count from Firestore
-      const prevAdmissionDoc = await getDoc(doc(db, "ADMISSION_TRACKER", "admission_number_tracker"));
-
-      if (!prevAdmissionDoc.exists()) {
-        throw new Error("Error fetching previous admission number.");
-      }
-
-      const prevAdmissionNumber = prevAdmissionDoc.data()?.total_count || 0;
-      const formattedCountValue = String(prevAdmissionNumber + 1).padStart(5, "0");
-
-      // Extract password from DOB and generate email
-      const userPass = studentData.dob.split("-").reverse().join("");
-
-
-      //fetch school id from local storage
-      const schoolId = localStorage.getItem("schoolId")?.split("_")[1].substring(0, 3).concat(new Date().getFullYear().toString()).toUpperCase();
-
-      if (!schoolId) {
-        throw new Error("Unable to construct email. School ID not found.");
-      }
-      const userEmail = `apx2025${formattedCountValue}@gmail.com`;
-
-      const docId = generateFirebaseUID();
-      const admissionNo = `${schoolId}${formattedCountValue}`;
-
-      studentData = {
-        ...studentData,
-        student_id: userEmail,
-        student_pass: userPass,
-        id: docId,
-        admission_no: admissionNo,
-        created_at: serverTimestamp(),
-      };
-
-      const studentRef = doc(db, "STUDENTS", docId);
-      const admissionTrackerRef = doc(db, "ADMISSION_TRACKER", "admission_number_tracker");
-
-      // Firestore Transaction to update admission tracker and save student data
-      await runTransaction(db, async (trx) => {
-        const countDoc = await trx.get(admissionTrackerRef);
-        if (!countDoc.exists()) throw new Error("Document does not exist.");
-
-        const newSerialNumber = countDoc.data()?.total_count + 1 || 1;
-        trx.update(admissionTrackerRef, {
-          total_count: newSerialNumber,
-          updatedAt: new Date(),
-        });
-        trx.set(studentRef, studentData);
-      });
-
-      return studentData;
-    } catch (error: any) {
-      console.error(error);
-      return rejectWithValue(error.message || "An error occurred while adding the student.");
+    if (!prevAdmissionDoc.exists()) {
+      throw new Error("Error fetching previous admission number.");
     }
-  }
-);
 
+    const prevAdmissionNumber = prevAdmissionDoc.data()?.total_count || 0;
+    const formattedCountValue = String(prevAdmissionNumber + 1).padStart(
+      5,
+      "0",
+    );
+
+    // Extract password from DOB and generate email
+    const userPass = studentData.dob.split("-").reverse().join("");
+
+    //fetch school id from local storage
+    const schoolId = localStorage
+      .getItem("schoolId")
+      ?.split("_")[1]
+      .substring(0, 3)
+      .concat(new Date().getFullYear().toString())
+      .toUpperCase();
+
+    if (!schoolId) {
+      throw new Error("Unable to construct email. School ID not found.");
+    }
+    const userEmail = `apx2025${formattedCountValue}@gmail.com`;
+
+    const docId = generateFirebaseUID();
+    const admissionNo = `${schoolId}${formattedCountValue}`;
+
+    studentData = {
+      ...studentData,
+      student_id: userEmail,
+      student_pass: userPass,
+      id: docId,
+      admission_no: admissionNo,
+      created_at: serverTimestamp(),
+    };
+
+    const studentRef = doc(db, "STUDENTS", docId);
+    const admissionTrackerRef = doc(
+      db,
+      "ADMISSION_TRACKER",
+      "admission_number_tracker",
+    );
+
+    // Firestore Transaction to update admission tracker and save student data
+    await runTransaction(db, async (trx) => {
+      const countDoc = await trx.get(admissionTrackerRef);
+      if (!countDoc.exists()) throw new Error("Document does not exist.");
+
+      const newSerialNumber = countDoc.data()?.total_count + 1 || 1;
+      trx.update(admissionTrackerRef, {
+        total_count: newSerialNumber,
+        updatedAt: new Date(),
+      });
+      trx.set(studentRef, studentData);
+    });
+
+    return studentData;
+  } catch (error: any) {
+    console.error(error);
+    return rejectWithValue(
+      error.message || "An error occurred while adding the student.",
+    );
+  }
+});
 
 //FETCH STUDENT
-export const fetchstudent = createAsyncThunk("student/fetchstudent", async () => {
-  console.log("fetch data query triggered");
-  const db = await getFirestoreInstance();
-  // Create a reference to the STUDENTS collection
-  const studentsRef = collection(db, "STUDENTS");
+// export const fetchstudent = createAsyncThunk("student/fetchstudent", async () => {
+//   console.log("fetch data query triggered");
+//   const db = await getFirestoreInstance();
+//   // Create a reference to the STUDENTS collection
+//   const studentsRef = collection(db, "STUDENTS");
 
-  // Create a query with orderBy and filter where is_active is true
-  const q = query(studentsRef, orderBy("created_at", "desc"), where("is_active", "==", true));
+//   // Create a query with orderBy and filter where is_active is true
+//   const q = query(studentsRef, orderBy("created_at", "desc"), where("is_active", "==", true));
 
-  // Fetch the documents based on the query
-  const snap = await getDocs(q);
+//   // Fetch the documents based on the query
+//   const snap = await getDocs(q);
 
-  // Map over the snapshot to return the student data
-  const students = snap.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
+//   // Map over the snapshot to return the student data
+//   const students = snap.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
 
-  return students;
-});
+//   return students;
+// });
+export const fetchstudent = createAsyncThunk(
+  "student/fetchstudent",
+  async (sessionId: string) => {
+    const db = await getFirestoreInstance();
+    console.log("fetch data query triggered for session:", sessionId);
+
+    // 🔹 Step 1: Get studentSessions for session
+    const sessionQuery = query(
+      collection(db, "STUDENTS_SESSIONS"),
+      where("sessionId", "==", sessionId),
+    );
+
+    const sessionSnap = await getDocs(sessionQuery);
+
+    if (sessionSnap.empty) {
+      console.log("No students found for session");
+      return [];
+    }
+
+    const sessions = sessionSnap.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    // 🔹 Step 2: Extract studentIds
+    const studentIds = sessions.map((s: any) => s.studentId);
+
+    // 🔹 Step 3: Chunk (Firestore "in" limit = 10)
+    const chunks: string[][] = [];
+    for (let i = 0; i < studentIds.length; i += 10) {
+      chunks.push(studentIds.slice(i, i + 10));
+    }
+
+    let students: any[] = [];
+
+    // 🔹 Step 4: Fetch only required students
+    for (const chunk of chunks) {
+      const studentQuery = query(
+        collection(db, "STUDENTS"),
+        where("__name__", "in", chunk),
+        where("is_active", "==", true),
+      );
+
+      const snap = await getDocs(studentQuery);
+
+      students.push(
+        ...snap.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        })),
+      );
+    }
+
+    // 🔹 Step 5: Map session by studentId
+    const sessionMap = Object.fromEntries(
+      sessions.map((s: any) => [s.studentId, s]),
+    );
+
+    // 🔹 Step 6: Merge
+    const finalData = students.map((student) => ({
+      ...student,
+      session: sessionMap[student.id] || null,
+      isInCurrentSession: true, // always true now
+    }));
+
+    return finalData;
+  },
+);
 
 //SET STUDENT INACTIVE
 export const deleteStudent = createAsyncThunk(
@@ -126,16 +220,22 @@ export const deleteStudent = createAsyncThunk(
       console.error("Error updating document: ", error);
       return rejectWithValue(error.message || "Error setting student inactive");
     }
-  }
+  },
 );
 
 //UPDATE STUDENT
 export const updatedatastudent = createAsyncThunk(
   "student/updatestudent",
-  async ({ studentdata, imageupdate }: { studentdata: StudentDetailsType, imageupdate: File | null }, { rejectWithValue }) => {
+  async (
+    {
+      studentdata,
+      imageupdate,
+    }: { studentdata: StudentDetailsType; imageupdate: File | null },
+    { rejectWithValue },
+  ) => {
     let studentData = { ...studentdata };
 
-    const db = await getFirestoreInstance()
+    const db = await getFirestoreInstance();
     const storageRef = await getStorageInstance();
 
     try {
@@ -143,10 +243,17 @@ export const updatedatastudent = createAsyncThunk(
       if (imageupdate) {
         console.log("updating new image..");
 
-        const fileRef = ref(storageRef, `profileImages/${studentData.id}/${studentData.email}`);
+        const fileRef = ref(
+          storageRef,
+          `profileImages/${studentData.id}/${studentData.email}`,
+        );
 
         const resizedImage = await resizeFile(imageupdate);
-        const uploadTask = await uploadString(fileRef, "" + resizedImage, "data_url");
+        const uploadTask = await uploadString(
+          fileRef,
+          "" + resizedImage,
+          "data_url",
+        );
 
         console.log(uploadTask);
 
@@ -172,7 +279,7 @@ export const updatedatastudent = createAsyncThunk(
       console.error("Error updating student data:", e);
       return rejectWithValue(e.message || "Something went wrong");
     }
-  }
+  },
 );
 
 interface StudentState {
@@ -187,7 +294,6 @@ const initialState: StudentState = {
   error: null,
 };
 
-
 const studentslice = createSlice({
   name: "student",
   initialState,
@@ -198,10 +304,13 @@ const studentslice = createSlice({
       .addCase(addstudent.pending, (state) => {
         state.loading = true;
       })
-      .addCase(addstudent.fulfilled, (state, action: PayloadAction<StudentDetailsType>) => {
-        state.loading = false;
-        state.studentarray.push(action.payload);
-      })
+      .addCase(
+        addstudent.fulfilled,
+        (state, action: PayloadAction<StudentDetailsType>) => {
+          state.loading = false;
+          state.studentarray.push(action.payload);
+        },
+      )
       .addCase(addstudent.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || "Failed to add student";
@@ -224,12 +333,15 @@ const studentslice = createSlice({
       .addCase(deleteStudent.pending, (state) => {
         state.loading = true;
       })
-      .addCase(deleteStudent.fulfilled, (state, action: PayloadAction<string>) => {
-        state.loading = false;
-        state.studentarray = state.studentarray.filter(
-          (student) => student.id !== action.payload
-        );
-      })
+      .addCase(
+        deleteStudent.fulfilled,
+        (state, action: PayloadAction<string>) => {
+          state.loading = false;
+          state.studentarray = state.studentarray.filter(
+            (student) => student.id !== action.payload,
+          );
+        },
+      )
       .addCase(deleteStudent.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || "Failed to delete student";
@@ -239,17 +351,20 @@ const studentslice = createSlice({
       .addCase(updatedatastudent.pending, (state) => {
         state.loading = true;
       })
-      .addCase(updatedatastudent.fulfilled, (state, action: PayloadAction<any>) => {
-        state.loading = false;
-        const payload = action.payload;
-        console.log(payload);
-        const studentindex = state.studentarray.findIndex(
-          (student) => student.id === payload.id
-        );
-        if (studentindex !== -1) {
-          state.studentarray[studentindex] = payload;
-        }
-      })
+      .addCase(
+        updatedatastudent.fulfilled,
+        (state, action: PayloadAction<any>) => {
+          state.loading = false;
+          const payload = action.payload;
+          console.log(payload);
+          const studentindex = state.studentarray.findIndex(
+            (student) => student.id === payload.id,
+          );
+          if (studentindex !== -1) {
+            state.studentarray[studentindex] = payload;
+          }
+        },
+      )
       .addCase(updatedatastudent.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || "Failed to update student";
