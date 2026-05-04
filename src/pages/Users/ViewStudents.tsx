@@ -1,9 +1,7 @@
-
 import {
   Box,
   Breadcrumbs,
   Chip,
-
   IconButton,
   LinearProgress,
   ListItemIcon,
@@ -17,12 +15,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import PersonIcon from "@mui/icons-material/Person";
 import BlockIcon from "@mui/icons-material/Block";
 
-import {
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
-} from "@mui/material";
+import { FormControl, InputLabel, MenuItem, Select } from "@mui/material";
 
 import { useSelector } from "react-redux";
 import { useEffect } from "react";
@@ -44,29 +37,13 @@ import { RootState, useDispatch } from "store";
 import { StudentDetailsType } from "types/student";
 import { doc, updateDoc } from "firebase/firestore";
 import { useFirebase } from "context/firebaseContext";
-
-
-
-const classLookup = {
-  1: "Nursery",
-  2: "LKG",
-  3: "UKG",
-  4: "STD-1",
-  5: "STD-2",
-  6: "STD-3",
-  7: "STD-4",
-  8: "STD-5",
-  9: "STD-6",
-  10: "STD-7",
-  11: "STD-8",
-  12: "STD-9",
-  13: "STD-10",
-  14: "Pre-Nursery",
-};
+import { useNavbar } from "context/NavbarContext";
 
 function ViewStudents() {
   const data = useSelector((state: RootState) => state.students.studentarray);
-  const isDataLoading = useSelector((state: RootState) => state.students.loading);
+  const isDataLoading = useSelector(
+    (state: RootState) => state.students.loading,
+  );
   const error = useSelector((state: RootState) => state.students.error);
 
   const { enqueueSnackbar } = useSnackbar();
@@ -74,14 +51,12 @@ function ViewStudents() {
   const dipatch = useDispatch();
 
   const [filteredData, setFilteredData] = useState(Array.from(data));
-  const [selectedRowData, setSelectedRowData] = useState<StudentDetailsType | null>(null);
+  const [selectedRowData, setSelectedRowData] =
+    useState<StudentDetailsType | null>(null);
   const [filterChip, setFilterChip] = useState(false);
   const [filterChipLabel, setFilterChipLabel] = useState<string>("");
-
-  const session = "2025/26"
   const [selectedClass, setSelectedClass] = useState<any>(-1);
   const [selectedSection, setSelectedSection] = useState<any>(-1);
-
 
   //confirmation Modal
   const [confirmationModal, setConfirmationModal] = useState(false);
@@ -94,6 +69,8 @@ function ViewStudents() {
   const [searchParams, setSearchParams] = useSearchParams();
   const searchQuery = searchParams.get("search") || "";
   const [searchValue, setSearchValue] = useState(searchQuery);
+
+  const { session } = useNavbar();
 
   //Get Firebase DB instance
   const { db } = useFirebase();
@@ -113,11 +90,8 @@ function ViewStudents() {
   }, [searchQuery]);
 
   useEffect(() => {
-    if (Array.from(data).length === 0) {
-      dipatch(fetchstudent());
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    dipatch(fetchstudent(session));
+  }, [session]);
 
   useEffect(() => {
     if (error) {
@@ -134,16 +108,15 @@ function ViewStudents() {
 
   const handleFilterButton = () => {
     if (selectedClass !== -1 && selectedSection !== -1) {
-
       let dataNew = data.filter((data) => {
         return data.class === selectedClass && data.section === selectedSection;
       });
       setFilteredData(dataNew);
       setFilterChipLabel(
         "Filter set for class " +
-        getClassNameByValue(selectedClass) +
-        " and section " +
-        selectedSection
+          getClassNameByValue(selectedClass) +
+          " and section " +
+          selectedSection,
       );
       setFilterChip(true);
     } else if (selectedSection === -1 && selectedClass !== -1) {
@@ -152,7 +125,7 @@ function ViewStudents() {
       });
       setFilteredData(dataNew);
       setFilterChipLabel(
-        "Filter set for class " + getClassNameByValue(selectedClass)
+        "Filter set for class " + getClassNameByValue(selectedClass),
       );
       setFilterChip(true);
     }
@@ -184,17 +157,15 @@ function ViewStudents() {
   };
 
   const handleNewWindowOpen = async () => {
-    const pdfRes: URL = await StudReportPDF(filteredData) as URL;
+    const pdfRes: URL = (await StudReportPDF(filteredData)) as URL;
     const features =
       "width=600,height=400,toolbar=no,location=no,status=no,menubar=no,scrollbars=yes,resizable=yes";
     if (pdfRes) {
       window.open(pdfRes, "_blank", features);
     } else {
-      enqueueSnackbar("Failed to generate report", { variant: "error" })
+      enqueueSnackbar("Failed to generate report", { variant: "error" });
     }
   };
-
-
 
   //column for material table
   const columnMat = [
@@ -223,23 +194,17 @@ function ViewStudents() {
 
       export: false,
       render: (rowData: StudentDetailsType) => {
-
         return <Avatar src={rowData.profil_url} alt="profile-student" />;
       },
     },
 
     { field: "student_name", title: "Name" },
     {
-      field: "class",
-      title: "Class",
-      lookup: classLookup,
-      render: (rowData: StudentDetailsType) => {
-        const className = classLookup[rowData.class as keyof typeof classLookup] || "Class unknown";
-        return <p>{className}</p>;
-      },
+      field: "session.classId",
+      title: "Class Name",
     },
-    { field: "section", title: "Section" },
-    { field: "class_roll", title: "Roll" },
+    { field: "session.section", title: "Section" },
+    { field: "session.rollNumber", title: "Roll" },
     { field: "father_name", title: "Father Name" },
     { field: "contact_number", title: " Contact number" },
   ];
@@ -255,39 +220,40 @@ function ViewStudents() {
   const deactivateUser = (student: StudentDetailsType) => {
     if (!student) {
       enqueueSnackbar("No student selected", { variant: "error" });
-      return
+      return;
     }
     const studentDocRef = doc(db, "STUDENTS", student.id);
 
     updateDoc(studentDocRef, { is_active: false })
       .then(() => {
-        enqueueSnackbar("Student deactivated successfully!", { variant: "success" });
-
+        enqueueSnackbar("Student deactivated successfully!", {
+          variant: "success",
+        });
       })
       .catch((error) => {
         console.error("Error deactivating student: ", error);
         enqueueSnackbar("Failed to deactivate student", { variant: "error" });
       });
-
-
-  }
-
+  };
 
   const handleFeeDetails = (studentId: string) => {
     if (studentId && filteredData) {
-      const selectedData = filteredData.filter((student) => student.id === studentId);
-      navigate(`/fee-management/FeeDetails/${studentId}`, { state: selectedData });
-
+      const selectedData = filteredData.filter(
+        (student) => student.id === studentId,
+      );
+      navigate(`/fee-management/FeeDetails/${studentId}`, {
+        state: selectedData,
+      });
     } else {
       enqueueSnackbar("Error : Please enter student id or admission number !", {
         variant: "error",
       });
     }
-  }
+  };
 
   useEffect(() => {
-    console.log(searchValue)
-  }, [searchValue])
+    console.log(searchValue);
+  }, [searchValue]);
 
   return (
     <>
@@ -297,7 +263,18 @@ function ViewStudents() {
         handleStudentDelete={handleStudentDelete}
         deleteLoading={deleteLoading}
       />
-      <Box sx={{ padding: "10px 10px", mt: "8px", border: "1px solid oklch(.905 .013 255.508)", borderRadius: "10px", display: "flex", alignItems: "center", justifyContent: "space-between", overflow: "hidden" }}>
+      <Box
+        sx={{
+          padding: "10px 10px",
+          mt: "8px",
+          border: "1px solid oklch(.905 .013 255.508)",
+          borderRadius: "10px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          overflow: "hidden",
+        }}
+      >
         <Breadcrumbs aria-label="breadcrumb">
           <a
             style={{
@@ -321,26 +298,6 @@ function ViewStudents() {
           </Typography>
         </Breadcrumbs>
         <div style={{ display: "flex", alignItems: "center" }}>
-          <FormControl
-            variant="standard"
-            sx={{ mr: 2, padding: 0, minWidth: 150, background: "#fff" }}
-          >
-            <InputLabel id="demo-simple-select-standard-label">
-              Select session
-            </InputLabel>
-            <Select
-              labelId="demo-simple-select-standard-label"
-              id="demo-simple-select-standard"
-              label="session"
-              value={session}
-            >
-              <MenuItem value={1}>
-                <em>Select</em>
-              </MenuItem>
-              <MenuItem value="2025/26">2025/26</MenuItem>
-            </Select>
-          </FormControl>
-
           <FormControl
             variant="standard"
             sx={{ mr: 2, padding: 0, minWidth: 150, background: "#fff" }}
@@ -429,7 +386,13 @@ function ViewStudents() {
       </Box>
 
       <MaterialTable
-        style={{ display: "grid", overflow: "hidden", border: "1px solid oklch(.905 .013 255.508)", borderRadius: "10px", boxShadow: "none" }}
+        style={{
+          display: "grid",
+          overflow: "hidden",
+          border: "1px solid oklch(.905 .013 255.508)",
+          borderRadius: "10px",
+          boxShadow: "none",
+        }}
         columns={columnMat}
         data={filteredData}
         title="Students Data"
@@ -447,7 +410,7 @@ function ViewStudents() {
           searchText: searchValue,
           pageSizeOptions: [5, 10, 20, 50, 100],
           pageSize: 10,
-          search: true,  // enable search
+          search: true, // enable search
 
           headerStyle: {
             backgroundColor: "#5d87ff",
@@ -475,9 +438,7 @@ function ViewStudents() {
             },
           },
           {
-            icon: () => (
-              <CurrencyRupee sx={{ color: "var(--bs-primary)" }} />
-            ),
+            icon: () => <CurrencyRupee sx={{ color: "var(--bs-primary)" }} />,
             tooltip: "Fee Details",
             onClick: (event, rowData: any) => {
               handleFeeDetails(rowData.id);
@@ -503,7 +464,6 @@ function ViewStudents() {
             ),
             tooltip: "More options",
             onClick: (event, rowData: any) => {
-
               handleMenuClick(event, rowData);
             },
           },
