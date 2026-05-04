@@ -101,6 +101,7 @@ const Navbar: React.FC<NavbarProps> = ({ setAttenzyFeed }) => {
           )}
 
           <Select sx={{ mr: 2 }} size="sm" value={session} onChange={(e, val) => setSession(val!)} variant="soft">
+            <Option value="2026-27">2026-27</Option>
             <Option value="2025-26">2025-26</Option>
             <Option value="2024-25">2024-25</Option>
           </Select>
