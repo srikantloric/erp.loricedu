@@ -168,6 +168,7 @@ export const CASTES = [
 
 
 export const SCHOOL_SESSIONS = [
+  { id: "202627", title: "2026-27", value: "2026-2027" },
   { id: "202526", title: "2025-26", value: "2025-2026" },
   { id: "202425", title: "2024-25", value: "2024-2025" },
 ]
