@@ -364,7 +364,7 @@ function GenerateQrSticker() {
                         <tr>
                           <Typography>
                             {individualStudentData &&
-                              individualStudentData.class_roll}
+                              individualStudentData.rollNumber}
                           </Typography>
                         </tr>
                       </td>

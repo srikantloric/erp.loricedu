@@ -79,7 +79,7 @@ const StudentDetailsFeeHeader: React.FC<Props> = ({
                     >
                         <Typography level="body-sm">Roll</Typography>
                         <Typography level="title-sm">
-                            {studentMasterData.class_roll}
+                            {studentMasterData.rollNumber}
                         </Typography>
                     </div>
                     <div

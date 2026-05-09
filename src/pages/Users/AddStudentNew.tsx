@@ -59,7 +59,7 @@ const FormValidationSchema = Yup.object().shape({
     student_name: Yup.string().required("required"),
     class: Yup.number().nullable().required("required"),
     section: Yup.string().nullable().required("required"),
-    class_roll: Yup.number().optional(),
+    rollNumber: Yup.number().optional(),
     dob: Yup.date().nullable().required("required"),
     date_of_addmission: Yup.date().nullable().required("required"),
     gender: Yup.string().required("required"),
@@ -115,7 +115,7 @@ function AddStudentNew() {
         student_name: "",
         class: 0,
         section: "",
-        class_roll: 0,
+        rollNumber: 0,
         dob: new Date(),
         date_of_addmission: new Date(),
         gender: "",
@@ -152,14 +152,14 @@ function AddStudentNew() {
                 studentsRef,
                 where("class", "==", classId),
                 where("section", "==", sectionId),
-                orderBy("class_roll", "desc"),
+                orderBy("rollNumber", "desc"),
                 limit(1)
             );
 
             const snapshot = await getDocs(q);
 
             if (!snapshot.empty) {
-                const lastRoll = snapshot.docs[0].data().class_roll;
+                const lastRoll = snapshot.docs[0].data().rollNumber;
                 const lastRollNum = typeof lastRoll === "string" ? parseInt(lastRoll, 10) : lastRoll || 0;
                 return lastRollNum + 1; // Return as number
             } else {
@@ -267,7 +267,7 @@ function AddStudentNew() {
                             enqueueSnackbar("Some issue occured while auto-generating roll number", { variant: "error" })
                             return
                         }
-                        values.class_roll = nextRoll;
+                        values.rollNumber = nextRoll;
                         dispatch(
                             // @ts-ignore
                             addstudent({ studentData: values })
@@ -313,7 +313,7 @@ function AddStudentNew() {
                                     {/* <Grid item xs={12} md={4}>
                                         <Textfield
                                             label="Class Roll"
-                                            name="class_roll"
+                                            name="rollNumber"
                                         />
                                     </Grid> */}
                                     <Grid item xs={12} md={4}>

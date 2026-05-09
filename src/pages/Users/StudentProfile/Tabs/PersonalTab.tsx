@@ -22,7 +22,7 @@ import {
   Typography,
   styled,
 } from "@mui/joy";
-import EditIcon from '@mui/icons-material/Edit';
+import EditIcon from "@mui/icons-material/Edit";
 import { SCHOOL_CLASSES, SCHOOL_SECTIONS } from "config/schoolConfig";
 import { Edit, Warning2 } from "iconsax-react";
 import { StudentDetailsType } from "types/student";
@@ -32,9 +32,17 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { enqueueSnackbar } from "notistack";
 import { useState } from "react";
 import LockIcon from "@mui/icons-material/Lock";
-import { doc, serverTimestamp, Timestamp, updateDoc } from "firebase/firestore";
+import {
+  arrayUnion,
+  doc,
+  runTransaction,
+  serverTimestamp,
+  Timestamp,
+} from "firebase/firestore";
 import { useFirebase } from "context/firebaseContext";
 import StudentRollUpdaterModal from "pages/StudentManagement/StudentRollUpdatorModal";
+import { getClassNameByValue } from "utilities/UtilitiesFunctions";
+import { useAuth } from "context/AuthContext";
 
 const VisuallyHiddenInput = styled("input")`
   clip: rect(0 0 0 0);
@@ -69,15 +77,14 @@ const schema = z.object({
         return !isNaN(numberValue) && numberValue >= 0 && value.length === 10;
       },
       {
-        message:
-          "If provided, the number must be a 10-character string",
-      }
+        message: "If provided, the number must be a 10-character string",
+      },
     ),
   blood_group: z.string().min(1, "Blood Group is required!"),
   caste: z.string(),
   city: z.string().min(1, "City is required!"),
   class: z.number().min(1, "Class is required!"),
-  class_roll: z.string().min(1),
+  rollNumber: z.string().min(1),
   contact_number: z
     .string()
     .regex(/^\d{10}$/, { message: "Invalid phone number" }),
@@ -137,12 +144,15 @@ const PersonalTab: React.FC<StudentProfileProps> = ({ studentData }) => {
   const [changeKeyAccessError, setChangeKeyAccessError] = useState<string>("");
 
   //Roll update modal state
-  const [updatedRollNumber, setUpdatedRollNumber] = useState<number>(studentData.class_roll)
-  const [rollUpdateModalShowing, setRollUpdateModalShowing] = useState<boolean>(false)
+  const [updatedRollNumber, setUpdatedRollNumber] = useState<number>(
+    studentData.rollNumber,
+  );
+  const [rollUpdateModalShowing, setRollUpdateModalShowing] =
+    useState<boolean>(false);
 
   //Get Firebase DB instance
   const { db } = useFirebase();
-
+  const auth = useAuth();
   const {
     register,
     handleSubmit,
@@ -159,7 +169,7 @@ const PersonalTab: React.FC<StudentProfileProps> = ({ studentData }) => {
       caste: studentData.caste,
       city: studentData.city,
       class: studentData.class!,
-      class_roll: studentData.class_roll!.toString(),
+      rollNumber: studentData.rollNumber!.toString(),
       dob: studentData.dob,
       // email: studentData.email,
       father_name: studentData.father_name,
@@ -197,14 +207,46 @@ const PersonalTab: React.FC<StudentProfileProps> = ({ studentData }) => {
         updatedData["updated_at"] = serverTimestamp();
 
         const studentRef = doc(db, "STUDENTS", studentData.id);
-        await updateDoc(studentRef, updatedData);
+
+        const studentSessionRef = doc(
+          db,
+          "STUDENTS_SESSIONS",
+          studentData.sessionDocId!,
+        );
+
+        const sessionUpdateData = {
+          class: updatedData.class,
+          classId: getClassNameByValue(updatedData.class)?.toString() || "N/A",
+          section: updatedData.section,
+          rollNumber: parseInt(updatedData.rollNumber),
+          updatedAt: serverTimestamp(),
+          updatedBy: auth.currentUser?.uid,
+
+          //store historical data in array of objects in firestore
+          previousRecords: arrayUnion({
+            class: studentData.class,
+            section: studentData.section,
+            rollNumber: studentData.rollNumber,
+            updatedAt: studentData.updated_at,
+            updatedBy: auth.currentUser?.uid,
+          }),
+        };
+
+        await runTransaction(db, async (transaction) => {
+          transaction.update(studentRef, updatedData);
+          transaction.update(studentSessionRef, sessionUpdateData);
+        });
 
         console.log("Update successful!");
-        enqueueSnackbar("Profile updated successfully!", { variant: "success" });
+        enqueueSnackbar("Profile updated successfully!", {
+          variant: "success",
+        });
         setPaymentDetailsChangeBlocked(true);
       } catch (err) {
         console.error("Firestore Update Error:", err);
-        enqueueSnackbar("Something went wrong while updating data!", { variant: "error" });
+        enqueueSnackbar("Something went wrong while updating data!", {
+          variant: "error",
+        });
       } finally {
         setIsUpdating(false);
       }
@@ -214,7 +256,7 @@ const PersonalTab: React.FC<StudentProfileProps> = ({ studentData }) => {
   };
 
   const onError = async (data: any) => {
-    console.log(data)
+    console.log(data);
     enqueueSnackbar("Please check the fields!", {
       variant: "error",
     });
@@ -722,21 +764,27 @@ const PersonalTab: React.FC<StudentProfileProps> = ({ studentData }) => {
                 <Grid md={3} xs={12}>
                   <FormControl>
                     <FormLabel>Roll Number</FormLabel>
-                    <Stack direction={"row"} alignItems={"center"} justifyContent={"center"} spacing={1}>
-                      <Input
-                        type="text"
-                        value={updatedRollNumber}
-                        disabled
+                    <Stack
+                      direction={"row"}
+                      alignItems={"center"}
+                      justifyContent={"center"}
+                      spacing={1}
+                    >
+                      <Input type="text" value={updatedRollNumber} disabled />
+                      <Button
+                        size="sm"
+                        startDecorator={<EditIcon />}
+                        sx={{ mt: 1 }}
+                        variant="outlined"
+                        onClick={() => setRollUpdateModalShowing(true)}
                       />
-                      <Button size="sm" startDecorator={<EditIcon />} sx={{ mt: 1 }} variant="outlined" onClick={() => setRollUpdateModalShowing(true)} />
                     </Stack>
                     <FormHelperText>
-                      {errors.class_roll && errors.class_roll.message}
+                      {errors.rollNumber && errors.rollNumber.message}
                     </FormHelperText>
                   </FormControl>
                 </Grid>
               </Grid>
-
             </Box>
           </Box>
           <Box
@@ -882,7 +930,7 @@ const PersonalTab: React.FC<StudentProfileProps> = ({ studentData }) => {
                 ) {
                   if (changeKeyInput === "123456") {
                     setAdmissionDetailsChangeBlocked(
-                      !admissionDetailsChangeBlocked
+                      !admissionDetailsChangeBlocked,
                     );
                     setAlertDialogOpen({
                       open: false,
@@ -893,11 +941,11 @@ const PersonalTab: React.FC<StudentProfileProps> = ({ studentData }) => {
                       "Edit Option Enabled For Admission Details !",
                       {
                         variant: "success",
-                      }
+                      },
                     );
                   } else {
                     setChangeKeyAccessError(
-                      "Incorrect key , please try again!"
+                      "Incorrect key , please try again!",
                     );
                   }
                 }
@@ -921,9 +969,14 @@ const PersonalTab: React.FC<StudentProfileProps> = ({ studentData }) => {
           </DialogActions>
         </ModalDialog>
       </Modal>
-      {rollUpdateModalShowing &&
-        <StudentRollUpdaterModal open={rollUpdateModalShowing} onClose={() => setRollUpdateModalShowing(false)} selectedStudent={studentData} setUpdatedRollNumber={setUpdatedRollNumber}/>
-      }
+      {rollUpdateModalShowing && (
+        <StudentRollUpdaterModal
+          open={rollUpdateModalShowing}
+          onClose={() => setRollUpdateModalShowing(false)}
+          selectedStudent={studentData}
+          setUpdatedRollNumber={setUpdatedRollNumber}
+        />
+      )}
     </Box>
   );
 };

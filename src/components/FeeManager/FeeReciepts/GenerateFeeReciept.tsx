@@ -329,13 +329,13 @@ export const GenerateFeeReciept = async ({
       studentDetailsStartY + 8.5
     );
     doc.text(
-      "Roll No: " + studentMasterData.class_roll,
+      "Roll No: " + studentMasterData.rollNumber,
       pWidth - pBorderPadd - 2,
       studentDetailsStartY + 8.5,
       { align: "right" }
     );
     doc.text(
-      "Roll No: " + studentMasterData.class_roll,
+      "Roll No: " + studentMasterData.rollNumber,
       pBorderPaddOffsetX + pWidth - (pBorderPadd * 2 + 1),
       studentDetailsStartY + 8.5,
       { align: "right" }

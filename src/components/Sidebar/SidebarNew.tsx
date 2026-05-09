@@ -10,7 +10,9 @@ import { useSidebar } from "context/SidebarContext";
 const drawerWidth = 240;
 const miniWidth = 87;
 
-const StyledDrawer = styled(Drawer)<{ isMini: boolean }>(({ theme, isMini }) => ({
+const StyledDrawer = styled(Drawer, {
+    shouldForwardProp: (prop) => prop !== "isMini",
+})<{ isMini: boolean }>(({ theme, isMini }) => ({
     width: isMini ? miniWidth : drawerWidth,
     flexShrink: 0,
     whiteSpace: "nowrap",

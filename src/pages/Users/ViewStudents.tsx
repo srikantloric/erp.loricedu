@@ -200,11 +200,11 @@ function ViewStudents() {
 
     { field: "student_name", title: "Name" },
     {
-      field: "session.classId",
+      field: "classId",
       title: "Class Name",
     },
-    { field: "session.section", title: "Section" },
-    { field: "session.rollNumber", title: "Roll" },
+    { field: "section", title: "Section" },
+    { field: "rollNumber", title: "Roll" },
     { field: "father_name", title: "Father Name" },
     { field: "contact_number", title: " Contact number" },
   ];

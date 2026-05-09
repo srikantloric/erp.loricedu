@@ -300,7 +300,7 @@ export default function StudentResultsTable({ students, papers, results, setResu
                                     <TableCell style={stickyLeftStyle}>
                                         <div style={{ fontWeight: 500 }}>{student.student_name}</div>
                                         <div style={studentIdStyle}>ID: {student.admission_no}</div>
-                                        <div style={studentIdStyle}>Roll: {student.class_roll}</div>
+                                        <div style={studentIdStyle}>Roll: {student.rollNumber}</div>
                                     </TableCell>
                                     {papers.map(paper => {
                                         const result = results[student.id]?.[paper.paperId];

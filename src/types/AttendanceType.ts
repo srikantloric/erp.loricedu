@@ -68,7 +68,7 @@ export interface ClassAttendanceSummary {
 export type StudentType = {
   id: string;
   student_name: string;
-  class_roll: number;
+  rollNumber: number;
   student_id: string;
   contact_number: string;
   father_name: string;

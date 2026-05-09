@@ -22,9 +22,9 @@ export const ROLL_TABLE_COLS_SORT_ALPHA = [
     //     title: "Marks Obtained Last Exam", field: "latestResultMark",
     // },
     {
-        title: "Current Roll", field: "class_roll", render: (row: StudentWithResult) => {
+        title: "Current Roll", field: "rollNumber", render: (row: StudentWithResult) => {
             return (
-                <Chip color="primary" variant="plain" sx={{ fontSize: "18px" }}>{row.class_roll}</Chip>
+                <Chip color="primary" variant="plain" sx={{ fontSize: "18px" }}>{row.rollNumber}</Chip>
             )
         }
     },
@@ -53,9 +53,9 @@ export const ROLL_TABLE_COLS_SORT_EXAM = [
     //     title: "Marks Obtained Last Exam", field: "latestResultMark",
     // },
     {
-        title: "Current Roll", field: "class_roll", render: (row: StudentWithResult) => {
+        title: "Current Roll", field: "rollNumber", render: (row: StudentWithResult) => {
             return (
-                <Chip color="primary" variant="plain" sx={{ fontSize: "18px" }}>{row.class_roll}</Chip>
+                <Chip color="primary" variant="plain" sx={{ fontSize: "18px" }}>{row.rollNumber}</Chip>
             )
         }
     },

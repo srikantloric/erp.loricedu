@@ -50,7 +50,7 @@ const ExportToExcel = ({ data, columns, filename }: ExportToExcelConfig) => {
     { field: "father_name", title: "Father Name" },
     { field: "class", title: "Class" },
     { field: "section", title: "Section" },
-    { field: "class_roll", title: "Roll" },
+    { field: "rollNumber", title: "Roll" },
     { field: "contact_number", title: "Contact" },
     { field: "address", title: "Address" }
   ];

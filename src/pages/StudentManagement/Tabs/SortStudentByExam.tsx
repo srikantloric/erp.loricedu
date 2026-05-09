@@ -35,7 +35,7 @@ const SortStudentByExam: React.FC<SortStudentByAlphaProps> = ({ students, fetchS
 
       students.forEach((student) => {
         const studentRef = doc(db, "STUDENTS", student.id); // Assuming student.id is the doc ID
-        batch.update(studentRef, { class_roll: student.newClassRoll });
+        batch.update(studentRef, { rollNumber: student.newClassRoll });
       });
 
       await batch.commit();

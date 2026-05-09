@@ -232,7 +232,7 @@ export default function MobileResultFlow({
                                     </Typography>
                                 )}
                                 <Typography level="body-sm">
-                                    Roll: {s.class_roll}
+                                    Roll: {s.rollNumber}
                                 </Typography>
                             </Box>
 

@@ -341,7 +341,7 @@ export const getClassAttendanceForDate = async (
     const finalRows = students.map((stu) => ({
         studentId: stu.id,
         name: stu.student_name,
-        rollNo: stu.class_roll,
+        rollNo: stu.rollNumber,
         mobileNo: stu.contact_number,
         fatherName: stu.father_name,
         admissionNo: stu.admission_no,
@@ -403,7 +403,7 @@ export async function getMonthlyAttendanceForClass(
             studentId: student.id || "",
             admissionNo: student.admission_no || "",
             name: student.student_name || "",
-            rollNo: student.class_roll || "",
+            rollNo: student.rollNumber || "",
             fatherName: student.father_name || "",
             profilePicUrl: student.profil_url || "",
             totalPresent: 0,

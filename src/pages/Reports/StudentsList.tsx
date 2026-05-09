@@ -68,7 +68,7 @@ const defaultColumns: Column[] = [
   { field: "student_name", title: "Name", selected: true },
   { field: "class", title: "Class", selected: true },
   { field: "section", title: "Section", selected: true },
-  { field: "class_roll", title: "Roll", selected: true },
+  { field: "rollNumber", title: "Roll", selected: true },
   { field: "father_name", title: "Father Name", selected: true },
   { field: "mother_name", title: "Mother Name", selected: false },
   { field: "gender", title: "Gender", selected: false },
@@ -101,7 +101,7 @@ const StudentsList = () => {
   const [filterChipLabel, setFilterChipLabel] = useState("");
   const [sortingPreference, setSortingPreference] = useState<
     | "student_name"
-    | "class_roll"
+    | "rollNumber"
     | "admission_no"
     | "date_of_addmission"
     | "dob"
@@ -141,9 +141,9 @@ const StudentsList = () => {
         if (isNaN(bDate)) return sortOrder === "asc" ? -1 : 1;
         comparison = aDate - bDate;
       }
-      // Handle numeric fields (including class_roll, admission_no)
+      // Handle numeric fields (including rollNumber, admission_no)
       else if (
-        sortingPreference === "class_roll" ||
+        sortingPreference === "rollNumber" ||
         sortingPreference === "admission_no" ||
         (typeof aValue === "number" && typeof bValue === "number")
       ) {
@@ -588,7 +588,7 @@ const StudentsList = () => {
                 >
                   <Option value="">None</Option>
                   <Option value="student_name">Sort by Name</Option>
-                  <Option value="class_roll">Sort by Roll</Option>
+                  <Option value="rollNumber">Sort by Roll</Option>
                   <Option value="admission_no">
                     Sort by Admission Number
                   </Option>

@@ -238,7 +238,7 @@ function AttendanceByStudentId() {
                       >
                         <Typography level="body-sm">Roll</Typography>
                         <Typography level="title-sm">
-                          {student.class_roll}
+                          {student.rollNumber}
                         </Typography>
                       </div>
                       <div

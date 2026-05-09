@@ -9,8 +9,9 @@ export type StudentDetailsType = {
   blood_group: string;
   caste: string;
   city: string;
-  class: number | null;
-  class_roll: number;
+  class: number;
+  classId: string;
+  rollNumber: number;
   contact_number: string;
   date_of_addmission: string;
   dob: string;
@@ -38,22 +39,53 @@ export type StudentDetailsType = {
   generatedChallans: string[];
   fee_discount?: number | null;
   updated_at?: FieldValue | null;
-  student_pass?: string,
-  promotionHistory?: PromotionRecord[],
-  status?: "Pending"|"Promoted",
-  lastPromotedAt?: FieldValue | Timestamp,
-  rfidCode?:string
+  student_pass?: string;
+  promotionHistory?: PromotionRecord[];
+  status?: "Pending" | "Promoted";
+  lastPromotedAt?: FieldValue | Timestamp;
+  rfidCode?: string;
   transport_location?: string | null;
   transport_vehicle?: string | null;
   paidInstallments?: string[];
+  sessionDocId?: string;
+  sessionId?: string;
+};
+
+export type StudentSessionDetailsType = {
+  sessionDocId?: string;
+  sessionId?: string;
+  class?: number | null;
+  classId?: string | null;
+  section?: string;
+  rollNumber?: number | null;
+  monthlyFee?: number | null;
+  monthly_fee?: number | null;
+  transportationFee?: number | null;
+  transportation_fee?: number | null;
+  computerFee?: number | null;
+  computer_fee?: number | null;
+  admissionFee?: number | null;
+  examFee?: number | null;
+  annualFee?: number | null;
+  otherFee?: number | null;
+  feeDiscount?: number | null;
+  status?: string;
+  migrationStatus?: string;
+  migratedFromSession?: string;
+  migratedFromClass?: string | number;
+  migratedToSession?: string;
+  migratedToClass?: string | number;
+  migratedToSection?: string;
+  migratedToClassId?: string;
+  migratedAt?: string;
+  migratedBy?: string;
 };
 
 type PromotionRecord = {
-  from: string
-  to: string
-  date: FieldValue | Timestamp
-}
-
+  from: string;
+  to: string;
+  date: FieldValue | Timestamp;
+};
 
 export interface StudentFeeDetailsType {
   credit_by: string;
@@ -66,10 +98,7 @@ export interface StudentFeeDetailsType {
   id: string;
   late_fee: number;
   paid_amount: number;
-  payment_date:
-  | Timestamp
-  | FieldValue
-  | null;
+  payment_date: Timestamp | FieldValue | null;
   payment_mode: string;
   payment_remarks: string;
   created_at?: Timestamp | FieldValue;
@@ -87,7 +116,7 @@ export interface StudentFeeDetailsType {
   exam_fee?: number;
 
   //optional
-  total_due?: number
+  total_due?: number;
 }
 
 type feeHeadType = {
@@ -121,22 +150,20 @@ export type BalanceSheetType = {
   tran_amount: string;
 };
 
-
 export interface IStudentFeeChallan {
-  docIdExt: string,
-  studentId: string,
-  challanDocId: string,
+  docIdExt: string;
+  studentId: string;
+  challanDocId: string;
   createdAt: FieldValue;
-  createdBy?: string,
-  paymentId: string,
-  challanTitle: string,
-  paymentStatus: string,
-  paymentDueDate: string,
-  monthlyFee: number,
-  lateFine: number,
-  transportationFee: number,
-  computerFee: number,
-
+  createdBy?: string;
+  paymentId: string;
+  challanTitle: string;
+  paymentStatus: string;
+  paymentDueDate: string;
+  monthlyFee: number;
+  lateFine: number;
+  transportationFee: number;
+  computerFee: number;
 }
 
 export interface IStudentFeeChallanExtended extends IStudentFeeChallan {
@@ -149,10 +176,8 @@ export interface IStudentFeeChallanExtended extends IStudentFeeChallan {
   paidAmount?: number;
   paymentRecievedDate?: string;
   paymentRecievedBy?: string;
-  challanCreationDate?: FieldValue,
-  challanCreatedBy?: string,
-  paymentRecivedDate?: string,
-  sumOfHeaders?: number,
+  challanCreationDate?: FieldValue;
+  challanCreatedBy?: string;
+  paymentRecivedDate?: string;
+  sumOfHeaders?: number;
 }
-
-
