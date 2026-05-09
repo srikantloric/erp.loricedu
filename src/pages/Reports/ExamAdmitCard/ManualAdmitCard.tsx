@@ -70,7 +70,7 @@ function ManualAdmitCard() {
                 examTimings: "08:00AM - 10:30AM",
                 studentName: student.student_name || "N/A",
                 fatherName: student.father_name || "N/A",
-                rollNumber: student.class_roll || "N/A",
+                rollNumber: student.rollNumber || "N/A",
                 motherName: student.mother_name || "N/A",
                 studentId: student.admission_no || "N/A",
                 studentDOB: student.dob || "N/A",

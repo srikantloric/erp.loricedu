@@ -12,12 +12,16 @@ import {
   setDoc,
   where,
 } from "firebase/firestore";
-import { StudentDetailsType } from "types/student";
+import { StudentDetailsType, StudentSessionDetailsType } from "types/student";
 import { getDownloadURL, ref, uploadString } from "firebase/storage";
 import {
   getFirestoreInstance,
   getStorageInstance,
 } from "context/firebaseUtility";
+
+type StudentSessionDoc = StudentSessionDetailsType & {
+  studentId: string;
+};
 
 const resizeFile = (file: any) =>
   new Promise((resolve) => {
@@ -140,7 +144,10 @@ export const fetchstudent = createAsyncThunk(
   "student/fetchstudent",
   async (sessionId: string) => {
     const db = await getFirestoreInstance();
-    console.log("fetch data query triggered for session:", sessionId);
+
+    if (!sessionId) {
+      return [];
+    }
 
     // 🔹 Step 1: Get studentSessions for session
     const sessionQuery = query(
@@ -155,13 +162,20 @@ export const fetchstudent = createAsyncThunk(
       return [];
     }
 
-    const sessions = sessionSnap.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
+    const sessions = sessionSnap.docs.map((sessionDoc) => ({
+      sessionDocId: sessionDoc.id,
+      ...(sessionDoc.data() as StudentSessionDoc),
     }));
 
     // 🔹 Step 2: Extract studentIds
-    const studentIds = sessions.map((s: any) => s.studentId);
+    const studentIds = Array.from(
+      new Set(sessions.map((session) => session.studentId).filter(Boolean)),
+    );
+
+    if (studentIds.length === 0) {
+      console.log("No student IDs found for session:", sessionId);
+      return [];
+    }
 
     // 🔹 Step 3: Chunk (Firestore "in" limit = 10)
     const chunks: string[][] = [];
@@ -169,7 +183,7 @@ export const fetchstudent = createAsyncThunk(
       chunks.push(studentIds.slice(i, i + 10));
     }
 
-    let students: any[] = [];
+    const studentsById = new Map<string, StudentDetailsType>();
 
     // 🔹 Step 4: Fetch only required students
     for (const chunk of chunks) {
@@ -181,26 +195,34 @@ export const fetchstudent = createAsyncThunk(
 
       const snap = await getDocs(studentQuery);
 
-      students.push(
-        ...snap.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        })),
-      );
+      snap.docs.forEach((studentDoc) => {
+        studentsById.set(studentDoc.id, {
+          ...(studentDoc.data() as StudentDetailsType),
+          id: studentDoc.id,
+        });
+      });
     }
 
-    // 🔹 Step 5: Map session by studentId
-    const sessionMap = Object.fromEntries(
-      sessions.map((s: any) => [s.studentId, s]),
-    );
+    // 🔹 Step 6: Merge base student details with academic session details
+    const finalData: StudentDetailsType[] = sessions.flatMap((session) => {
+      const student = studentsById.get(session.studentId);
 
-    // 🔹 Step 6: Merge
-    const finalData = students.map((student) => ({
-      ...student,
-      session: sessionMap[student.id] || null,
-      isInCurrentSession: true, // always true now
-    }));
+      if (!student) {
+        return [];
+      }
 
+      return [
+        {
+          ...student,
+          sessionDocId: session.sessionDocId!,
+          sessionId: session.sessionId!,
+          classId: session.classId!,
+          class: session.class!,
+          section: session.section!,
+          rollNumber: session.rollNumber!,
+        },
+      ];
+    });
     return finalData;
   },
 );

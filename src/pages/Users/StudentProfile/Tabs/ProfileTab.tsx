@@ -12,8 +12,6 @@ interface StudentProfileProps {
 
 const ProfileTab:React.FC<StudentProfileProps>=({studentData}) =>{
 
-  console.log(studentData)
-
   return (
     <Box sx={{ display: "flex", gap: "1.6rem", mt: "1rem" }}>
       <Box
@@ -56,7 +54,7 @@ const ProfileTab:React.FC<StudentProfileProps>=({studentData}) =>{
             </Stack>
             <Divider orientation="vertical" />
             <Stack alignItems={"center"}>
-              <Typography level="title-md">{studentData.class_roll}</Typography>
+              <Typography level="title-md">{studentData.rollNumber}</Typography>
               <Typography level="body-md">Roll No</Typography>
             </Stack>
             <Divider orientation="vertical" />

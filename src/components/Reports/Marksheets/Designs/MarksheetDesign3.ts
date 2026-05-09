@@ -423,7 +423,7 @@ export const MarksheetDesign3 = {
             doc.text("Roll No", rightXStart, studentDetailsStartY + 18);
             doc.setFont("Poppins", "normal");
             doc.text(
-                ": " + data.student.class_roll,
+                ": " + data.student.rollNumber,
                 rightXStartContent,
                 studentDetailsStartY + 18
             );

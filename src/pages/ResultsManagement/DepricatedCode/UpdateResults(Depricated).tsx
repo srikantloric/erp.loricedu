@@ -160,7 +160,7 @@ function UpdateResults() {
         const studentQuery = query(
           collection(db, "STUDENTS"),
           where("class", "==", selectedClass),
-          orderBy("class_roll", "asc")
+          orderBy("rollNumber", "asc")
         );
 
         const snapshot = await getDocs(studentQuery);
@@ -177,7 +177,7 @@ function UpdateResults() {
 
         snapshot.forEach((doc) => {
           const studData = doc.data() as StudentDetailsType;
-          rollListTemp.push(studData.class_roll);
+          rollListTemp.push(studData.rollNumber);
           studentListTemp.push(studData);
         });
 
@@ -214,7 +214,7 @@ function UpdateResults() {
       }
 
       if (selectedRoll) {
-        const currentStudent = studentList.find((student) => student.class_roll === selectedRoll);
+        const currentStudent = studentList.find((student) => student.rollNumber === selectedRoll);
         if (currentStudent) setCurrentSelectedStudent(currentStudent);
       }
     } catch (err) {
@@ -496,7 +496,7 @@ function UpdateResults() {
                 <Box>
                   <Chip size="lg" color="primary">
                     {currentSelectedStudent
-                      ? `Name- ${currentSelectedStudent.student_name}, Id- ${currentSelectedStudent.admission_no}, Roll No- ${currentSelectedStudent.class_roll}`
+                      ? `Name- ${currentSelectedStudent.student_name}, Id- ${currentSelectedStudent.admission_no}, Roll No- ${currentSelectedStudent.rollNumber}`
                       : "No Student Found"}
                   </Chip>
                 </Box>

@@ -59,7 +59,7 @@ const AdmitCard = () => {
           examTimings: selectedExamData.examTimings,
           studentName: student.student_name,
           fatherName: student.father_name,
-          rollNumber: student.class_roll,
+          rollNumber: student.rollNumber,
           motherName: student.mother_name,
           studentId: student.admission_no,
           studentDOB: student.dob,

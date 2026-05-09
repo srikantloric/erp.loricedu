@@ -17,9 +17,6 @@ export const FirebaseProvider = ({ children }: { children: ReactNode }) => {
   const [storage, setStorage] = useState<any>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  console.log("Firebase provider called !")
-  
-
   useEffect(() => {
     setIsLoading(true);
     Promise.all([getFirestoreInstance(), getAuthInstance(), getStorageInstance()])

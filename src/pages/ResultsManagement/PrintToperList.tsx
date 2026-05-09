@@ -227,7 +227,7 @@ function PrintTopperList() {
               rankObtained: -1,
               marksObtained,
               percentage: (marksObtained / totalMarks) * 100,
-              rollNumber: Number(student.class_roll),
+              rollNumber: Number(student.rollNumber),
               subjectMarks: res.result.map((item) => ({
                 subject: item.paperId,
                 marks:

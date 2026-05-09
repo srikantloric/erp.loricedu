@@ -373,7 +373,7 @@ export const MarksheetDesign2 = {
       doc.text("Roll No", rightXStart, studentDetailsStartY + 12);
 
       doc.text(
-        ": " + data.student.class_roll,
+        ": " + data.student.rollNumber,
         rightXStartContent,
         studentDetailsStartY + 12
       );

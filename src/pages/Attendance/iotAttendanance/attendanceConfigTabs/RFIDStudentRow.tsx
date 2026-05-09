@@ -49,7 +49,7 @@ export default function RFIDStudentRow({ student, onUpdate }: RFIDStudentRowProp
         </Stack>
       </td>
       <td>{student.father_name}</td>
-      <td>{student.class_roll}</td>
+      <td>{student.rollNumber}</td>
       <td>
         <Stack direction="row" spacing={1}>
           <Input

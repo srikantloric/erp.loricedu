@@ -95,8 +95,8 @@ function StudentMigration() {
                 student_name: studentData.student_name || "",
                 father_name: studentData.father_name || "",
                 profil_url: studentData.profil_url || "",
-                class_roll:
-                  sessionStudent.class_roll || studentData.class_roll || "",
+                rollNumber:
+                  sessionStudent.rollNumber || studentData.rollNumber || "",
                 sessionId: sessionStudent.sessionId || "",
                 class: sessionStudent.class || "",
               };
@@ -519,7 +519,7 @@ function StudentMigration() {
                 },
                 {
                   title: "Roll No",
-                  field: "class_roll",
+                  field: "rollNumber",
                   cellStyle: { fontSize: "14px" },
                 },
                 {

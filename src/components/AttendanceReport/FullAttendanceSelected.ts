@@ -202,7 +202,7 @@ let FullAttendanceReport = async (FilterStudentData: StudentDetailsType[], FullA
       );
 
       doc.text(
-        "Roll No: " + FilterStudentData[0].class_roll,
+        "Roll No: " + FilterStudentData[0].rollNumber,
         studentDetailsStartX + 2 * (cardWidth / 3),
         studentDetailsStartY + 5,
       );

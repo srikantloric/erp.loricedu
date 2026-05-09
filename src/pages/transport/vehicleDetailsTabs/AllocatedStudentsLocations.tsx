@@ -144,7 +144,7 @@ function AllocatedStudentsLocations() {
             },
         },
         { field: "section", title: "Section" },
-        { field: "class_roll", title: "Roll" },
+        { field: "rollNumber", title: "Roll" },
         { field: "father_name", title: "Father Name" },
         { field: "contact_number", title: " Contact number" },
     ];

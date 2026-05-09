@@ -62,7 +62,7 @@ const SortableStudentItem: React.FC<SortableStudentItemProps> = ({
         borderRadius: "8px",
         background: isSelected ? "#e0f7fa" : "#fff",
         boxShadow:
-            originalIndex + 1 !== Number(student.class_roll)
+            originalIndex + 1 !== Number(student.rollNumber)
                 ? "0 0 10px rgba(255, 204, 0, 0.6)"
                 : "",
         cursor: "grab"
@@ -84,12 +84,12 @@ const SortableStudentItem: React.FC<SortableStudentItemProps> = ({
                 <b
                     style={{
                         color:
-                            originalIndex + 1 !== Number(student.class_roll)
+                            originalIndex + 1 !== Number(student.rollNumber)
                                 ? "red"
                                 : "green"
                     }}
                 >
-                    {Number(student.class_roll)}
+                    {Number(student.rollNumber)}
                 </b>
             </div>
         </div>
@@ -136,7 +136,7 @@ const StudentRollUpdaterModal: React.FC<StudentRollUpdaterModalProps> = ({
                 querySnapshot.forEach((doc) =>
                     fetched.push({ ...doc.data(), id: doc.id } as StudentDetailsType)
                 );
-                fetched.sort((a, b) => Number(a.class_roll) - Number(b.class_roll));
+                fetched.sort((a, b) => Number(a.rollNumber) - Number(b.rollNumber));
                 setStudents(fetched);
                 originalOrderRef.current = [...fetched]; // full object snapshot
                 setLoading(false);
@@ -163,7 +163,7 @@ const StudentRollUpdaterModal: React.FC<StudentRollUpdaterModalProps> = ({
 
             const updated = arrayMove(students, oldIndex, newIndex).map((student, idx) => ({
                 ...student,
-                class_roll: idx + 1 // store as number
+                rollNumber: idx + 1 // store as number
             }));
 
             setStudents(updated);
@@ -173,7 +173,7 @@ const StudentRollUpdaterModal: React.FC<StudentRollUpdaterModalProps> = ({
     const handleUpdate = async () => {
         const changedStudents = students.filter((student, index) => {
             const original = originalOrderRef.current.find((s) => s.id === student.id);
-            return original?.class_roll !== student.class_roll;
+            return original?.rollNumber !== student.rollNumber;
         });
 
         if (changedStudents.length === 0) {
@@ -185,14 +185,14 @@ const StudentRollUpdaterModal: React.FC<StudentRollUpdaterModalProps> = ({
             const batch = writeBatch(db);
             changedStudents.forEach((student) => {
                 const studentRef = doc(db, "STUDENTS", student.id);
-                batch.update(studentRef, { class_roll: Number(student.class_roll) }); // save as number
+                batch.update(studentRef, { rollNumber: Number(student.rollNumber) }); // save as number
             });
             await batch.commit();
 
             // 🔁 Set the updated roll number of selected student
             const updatedStudent = students.find(s => s.id === selectedStudent.id);
             if (updatedStudent) {
-                setUpdatedRollNumber(updatedStudent.class_roll); 
+                setUpdatedRollNumber(updatedStudent.rollNumber); 
             }
 
             enqueueSnackbar("Roll numbers updated successfully!", { variant: "success" });
