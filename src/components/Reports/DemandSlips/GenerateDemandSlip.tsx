@@ -4,8 +4,11 @@ import autoTable from "jspdf-autotable";
 import { enqueueSnackbar } from "notistack";
 import { DemandSlipType } from "types/reports";
 
-
-import {  POPPINS_BOLD, POPPINS_REGULAR, POPPINS_SEMIBOLD } from "utilities/Base64Url";
+import {
+  POPPINS_BOLD,
+  POPPINS_REGULAR,
+  POPPINS_SEMIBOLD,
+} from "utilities/Base64Url";
 
 const numberToWords = (num: number): string => {
   const a = [
@@ -59,14 +62,15 @@ const numberToWords = (num: number): string => {
 };
 
 export const GenerateDemandSlip = async (
-  recieptData: DemandSlipType[]
+  recieptData: DemandSlipType[],
 ): Promise<string> => {
   return new Promise((resolve, reject) => {
-
     const config = getAppConfig();
     if (!config) {
       console.error("Error: App config not found.");
-      enqueueSnackbar("Failed to load school configurations,please contact software vendor!")
+      enqueueSnackbar(
+        "Failed to load school configurations,please contact software vendor!",
+      );
       return;
     }
 
@@ -74,10 +78,9 @@ export const GenerateDemandSlip = async (
       schoolName: SCHOOL_NAME,
       schoolAddress: SCHOOL_ADDRESS,
       schoolContact: SCHOOL_CONTACT,
-      schoolEmail:SCHOOL_EMAIL,
+      schoolEmail: SCHOOL_EMAIL,
       schoolLogoBase64: SCHOOL_LOGO_BASE64,
     } = config;
-
 
     try {
       const doc = new jsPDF({
@@ -125,7 +128,7 @@ export const GenerateDemandSlip = async (
           SCHOOL_NAME.toUpperCase(),
           schoolHeaderStartX,
           schoolHeaderStartY + 2,
-          {align:"left"}
+          { align: "left" },
         );
 
         doc.setFontSize(6);
@@ -134,10 +137,10 @@ export const GenerateDemandSlip = async (
           "An English Medium School Based on CBSE curriculum",
           schoolHeaderStartX,
           schoolHeaderStartY + 5,
-          {align:"left"}
+          { align: "left" },
         );
 
-        const schoolContactDetailStartY = schoolHeaderStartY +3;
+        const schoolContactDetailStartY = schoolHeaderStartY + 3;
 
         const cardXStartPoint = x;
         const cardXEndPoint = cardWidth;
@@ -149,23 +152,19 @@ export const GenerateDemandSlip = async (
           schoolHeaderStartX,
           schoolContactDetailStartY + 6,
           { maxWidth: cardWidth - 30 },
-          {align:"left"}
+          { align: "left" },
         );
 
-
-
         doc.text(
-          "Contact :"+SCHOOL_CONTACT,
-          schoolHeaderStartX ,
-          schoolContactDetailStartY + 9
-        );
-
-
-
-        doc.text(
-          "Email :"+SCHOOL_EMAIL,
+          "Contact :" + SCHOOL_CONTACT,
           schoolHeaderStartX,
-          schoolContactDetailStartY + 12
+          schoolContactDetailStartY + 9,
+        );
+
+        doc.text(
+          "Email :" + SCHOOL_EMAIL,
+          schoolHeaderStartX,
+          schoolContactDetailStartY + 12,
         );
 
         doc.setFillColor("#939393");
@@ -199,22 +198,26 @@ export const GenerateDemandSlip = async (
         doc.text(
           data.studentDetails.class + " " + data.studentDetails.section,
           slipX + 20 + cardWidth / 2,
-          slipY
+          slipY,
         );
         doc.text(
-          data.studentDetails.rollNumber.toString(),
+          data.studentDetails?.rollNumber?.toString() || "",
           slipX + cardWidth / 2 + 20,
-          slipY + 4
+          slipY + 4,
         );
         doc.text(data.studentDetails.admissionNo, slipX + 16, slipY + 8);
         doc.text(
           data.studentDetails.phoneNumber.toString(),
           slipX + cardWidth / 2 + 20,
-          slipY + 8
+          slipY + 8,
         );
 
         doc.text(currentDate, slipX + 16, slipY + 12);
-        doc.text(data.studentDetails.dob,slipX + cardWidth / 2 + 20, slipY + 12);
+        doc.text(
+          data.studentDetails.dob,
+          slipX + cardWidth / 2 + 20,
+          slipY + 12,
+        );
 
         doc.setLineWidth(0.5);
         doc.line(slipX, slipY + 15, slipX + cardWidth - 10, slipY + 15); // horizontal line
@@ -225,7 +228,6 @@ export const GenerateDemandSlip = async (
 
         // Wrap due months
         const dueMonths = data.dueMonths;
-
 
         let dueMonthsText = "Due Month(s): ";
         let dueMonthsY = slipY + 21;
@@ -242,17 +244,14 @@ export const GenerateDemandSlip = async (
         });
         doc.text(dueMonthsText, slipX, dueMonthsY);
 
-
-        const feeDetails = data.feeHeaders.map(item => {
+        const feeDetails = data.feeHeaders.map((item) => {
           // Format the header to make it human-readable
           const label = item.header
             .replace(/([A-Z])/g, " $1")
-            .replace(/^./, str => str.toUpperCase());
+            .replace(/^./, (str) => str.toUpperCase());
 
           return [label, item.amount.toString()];
         });
-
-
 
         // Fee details table
         doc.setTextColor("#000");
@@ -274,7 +273,10 @@ export const GenerateDemandSlip = async (
           tableWidth: cardWidth - 10,
         });
 
-        const totalFee = data.feeHeaders.reduce((acc, item) => acc + item.amount, 0);
+        const totalFee = data.feeHeaders.reduce(
+          (acc, item) => acc + item.amount,
+          0,
+        );
         const totalFeeInWords = numberToWords(totalFee);
 
         const tableEndY = (doc as any).lastAutoTable.finalY + 5;
@@ -282,10 +284,10 @@ export const GenerateDemandSlip = async (
         doc.setFont("Poppins", "semibold");
         doc.setTextColor("#ff0000");
         doc.setFontSize(12);
-        doc.text(`Total Fee Due: ₹${totalFee}`, slipX, tableEndY+2);
+        doc.text(`Total Fee Due: ₹${totalFee}`, slipX, tableEndY + 2);
         doc.setTextColor("#000");
         doc.setFontSize(8);
-        doc.text(`${totalFeeInWords} Only`, slipX, tableEndY+7);
+        doc.text(`${totalFeeInWords} Only`, slipX, tableEndY + 7);
 
         // Message at the bottom
         const boxY = y + cardHeight - 15;
@@ -299,7 +301,7 @@ export const GenerateDemandSlip = async (
         doc.text(
           "Kindly pay the fee before 15th of the month",
           slipX + 5,
-          boxY + 6
+          boxY + 6,
         );
 
         ///End Of PDF DESIGN

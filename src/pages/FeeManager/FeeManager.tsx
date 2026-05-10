@@ -130,9 +130,7 @@ const FeeManager: React.FC = () => {
   const handleNextPageBtn = (e: React.FormEvent) => {
     e.preventDefault();
     if (selectedDoc) {
-      const selectedData = data.filter((student) => student.id === selectedDoc);
-      historyRef(`FeeDetails/${selectedDoc}`, { state: selectedData });
-
+      historyRef(`FeeDetails/${selectedDoc}`);
     } else {
       enqueueSnackbar("Error : Please enter student id or admission number !", {
         variant: "error",
