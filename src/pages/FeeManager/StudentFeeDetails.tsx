@@ -13,12 +13,9 @@ import {
 import ControlPointIcon from "@mui/icons-material/ControlPoint";
 import { Delete, Print } from "@mui/icons-material";
 import PaymentIcon from "@mui/icons-material/Payment";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { enqueueSnackbar } from "notistack";
-import {
-  Box,
-  Button
-} from "@mui/joy";
+import { Box, Button } from "@mui/joy";
 import BreadCrumbsV3 from "components/Breadcrumbs/BreadCrumbsV3";
 import AddFeeArrearModal from "components/Modals/payments/AddFeeArrearModal";
 
@@ -51,13 +48,26 @@ import { GenerateFeeReciept } from "components/FeeManager/FeeReciepts/GenerateFe
 import { StudentDetailsType } from "types/student";
 import ModalLoader from "components/Loader/ModalLoader";
 import { GenerateFeeRecieptMonthly } from "components/FeeManager/FeeReciepts/GenerateFeeRecieptMonthly";
-import { collection, doc, getDoc, getDocs, onSnapshot, orderBy, query, Timestamp, where, writeBatch } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  onSnapshot,
+  orderBy,
+  query,
+  Timestamp,
+  where,
+  writeBatch,
+} from "firebase/firestore";
 import { useFirebase } from "context/firebaseContext";
 import FeeChallanTable from "components/FeeManager/FeeChallanTable";
 import PartPaymentForm from "components/FeeManager/PartPaymentForm";
 import PaymentForm from "components/FeeManager/PaymentForm";
 import ViewChallanDetails from "components/Modals/payments/ViewChallanDetails";
 import { useAuth } from "context/AuthContext";
+import { useNavbar } from "context/NavbarContext";
+import { getStudentById } from "api/students";
 
 const SearchAnotherButton = () => {
   const historyRef = useNavigate();
@@ -82,14 +92,19 @@ interface ITotalFeeHeader {
 }
 
 function StudentFeeDetails() {
-
   //Get Firebase DB instance
   const { db } = useFirebase();
+
+  const { studentId } = useParams();
+  const { session } = useNavbar();
+
+  const [studentData, setStudentData] = useState<StudentDetailsType | null>(
+    null,
+  );
 
   const [selectedRow, setSelectedRow] = useState<IChallanNL | null>(null);
 
   const [loading, setLoading] = useState(false);
-  const location = useLocation();
 
   //Add Fee Consession Modal
   const [addFeeConsessionModalOpen, setAddFeeConsessionModalOpen] =
@@ -106,11 +121,11 @@ function StudentFeeDetails() {
       totalDueAmount: 0,
       totalFeeConsession: 0,
       totalPaidAmount: 0,
-    }
+    },
   );
 
   const [feeCollectionDate, setFeeCollectionDate] = useState<string | null>(
-    null
+    null,
   );
   const [feeChallans, setFeeChallans] = useState<IChallanNL[]>([]);
 
@@ -142,10 +157,10 @@ function StudentFeeDetails() {
 
   const [challanList, setChallanList] = useState<IChallanNL[]>([]);
 
-  const [showViewChallanDetailsModal, setShowViewChallanDetailsModal] = useState<boolean>(false);
+  const [showViewChallanDetailsModal, setShowViewChallanDetailsModal] =
+    useState<boolean>(false);
 
-  const { permissions, currentUser } = useAuth()
-
+  const { permissions, currentUser } = useAuth();
 
   // Calculate total feeConsession and totalPaidAmount
   const calculateTotals = () => {
@@ -155,7 +170,7 @@ function StudentFeeDetails() {
         totalPaidAmount: acc.totalPaidAmount + (row.amountPaid || 0),
         totalDueAmount: acc.totalDueAmount + (row.totalDue || 0),
       }),
-      { totalFeeConsession: 0, totalPaidAmount: 0, totalDueAmount: 0 }
+      { totalFeeConsession: 0, totalPaidAmount: 0, totalDueAmount: 0 },
     );
 
     setTotalFeeHeaderData(totals);
@@ -167,7 +182,7 @@ function StudentFeeDetails() {
 
   const handleMenuClick = (
     event: React.MouseEvent<HTMLAnchorElement, MouseEvent>,
-    rowData: IChallanNL
+    rowData: IChallanNL,
   ) => {
     setAnchorEll(event.target as HTMLAnchorElement);
     setSelectedRow(rowData);
@@ -186,11 +201,11 @@ function StudentFeeDetails() {
       | "admissionFee"
       | "otherFee"
       | "annualFee"
-      | "lateFine"
+      | "lateFine",
   ): number {
     return challanList.reduce((totalSum, challan) => {
       const header = challan.feeHeaders.find(
-        (h) => h.headerTitle === headerTitle
+        (h) => h.headerTitle === headerTitle,
       );
       return header ? totalSum + header.amount : totalSum;
     }, 0);
@@ -221,8 +236,6 @@ function StudentFeeDetails() {
     }
   }, [selectedChallan, challanList]);
 
-
-
   const calculateTotalDueAmount = (challan: IChallanNL): number => {
     var totalDue: number = 0;
 
@@ -230,7 +243,7 @@ function StudentFeeDetails() {
       (total, feeHeader) => {
         return total + Number(feeHeader.amount);
       },
-      0
+      0,
     );
     totalDue += totalFeeHeaderAmount;
 
@@ -248,22 +261,27 @@ function StudentFeeDetails() {
     setFeeCollectionDate(getCurrentDate());
     setLoading(true);
 
-
-
-    if (!location.state?.[0]) {
-      enqueueSnackbar("Failed to load student master data!", { variant: "warning" });
+    if (!studentId) {
+      enqueueSnackbar("Failed to get the student id", {
+        variant: "warning",
+      });
       setLoading(false);
       return;
     }
 
     const fetchChallans = async () => {
       try {
-
-
         // Fetch student Fee details
-        const studentId = location.state[0].id;
-        const challansCollectionRef = collection(db, "STUDENTS", studentId, "CHALLANS");
-        const challansQuery = query(challansCollectionRef, orderBy("createdOn", "desc"));
+        const challansCollectionRef = collection(
+          db,
+          "STUDENTS",
+          studentId,
+          "CHALLANS",
+        );
+        const challansQuery = query(
+          challansCollectionRef,
+          orderBy("createdOn", "desc"),
+        );
 
         const unsubscribe = onSnapshot(challansQuery, (snapshot) => {
           if (!snapshot.empty) {
@@ -275,7 +293,9 @@ function StudentFeeDetails() {
 
             setChallanList(challans);
           } else {
-            enqueueSnackbar("No fee generated for student!", { variant: "info" });
+            enqueueSnackbar("No fee generated for student!", {
+              variant: "info",
+            });
           }
 
           setLoading(false);
@@ -285,7 +305,9 @@ function StudentFeeDetails() {
       } catch (err) {
         console.error("Error fetching challans:", err);
         setLoading(false);
-        enqueueSnackbar("Error fetching challans. Please try again.", { variant: "error" });
+        enqueueSnackbar("Error fetching challans. Please try again.", {
+          variant: "error",
+        });
       }
     };
 
@@ -295,7 +317,7 @@ function StudentFeeDetails() {
   const saveDataToDb = async (
     paymentObjForPayment: IPaymentNL,
     paymentObjForChallan: IPaymentNLForChallan,
-    pStatus: IPaymentStatus
+    pStatus: IPaymentStatus,
   ) => {
     try {
       setIsPaymentLoading(true);
@@ -303,7 +325,7 @@ function StudentFeeDetails() {
 
       // Payment References
       const paymentCollRef = doc(
-        collection(db, "STUDENTS", paymentObjForPayment.studentId, "PAYMENTS")
+        collection(db, "STUDENTS", paymentObjForPayment.studentId, "PAYMENTS"),
       );
       const paymentCollRefOL = doc(collection(db, "MY_PAYMENTS"));
 
@@ -313,11 +335,12 @@ function StudentFeeDetails() {
         "STUDENTS",
         paymentObjForChallan.studentId,
         "CHALLANS",
-        paymentObjForChallan.challanId
+        paymentObjForChallan.challanId,
       );
 
       // Data for Challan Update
-      const updatedFeeHeaders: IChallanHeaderTypeForChallan[] = paymentObjForChallan.breakdown;
+      const updatedFeeHeaders: IChallanHeaderTypeForChallan[] =
+        paymentObjForChallan.breakdown;
 
       batch.update(challanDocRef, {
         feeHeaders: updatedFeeHeaders,
@@ -349,21 +372,20 @@ function StudentFeeDetails() {
         const updatedFeeHeaderForPayment = distributePaidAmountForTransaction(
           selectedChallanDetails,
           recievedAmountPartPayment!,
-          true
+          true,
         );
         const updatedFeeHeaderForChallan = distributePaidAmountForChallan(
           selectedChallanDetails,
           recievedAmountPartPayment!,
-          true
+          true,
         );
         const totalPaidAmount = Number(
-          selectedChallanDetails.amountPaid + recievedAmountPartPayment!
+          selectedChallanDetails.amountPaid + recievedAmountPartPayment!,
         );
         const totalAmountDue = Number(selectedChallanDetails.totalAmount);
 
         var pStatus: IPaymentStatus =
           totalPaidAmount >= totalAmountDue ? "PAID" : "PARTIAL";
-
 
         const paymentDataForPayment: IPaymentNL = {
           challanTitle: selectedChallanDetails.challanTitle,
@@ -400,12 +422,12 @@ function StudentFeeDetails() {
         const updatedFeeHeaderForPayment = distributePaidAmountForTransaction(
           selectedChallanDetails,
           recievedAmount!,
-          true
+          true,
         );
         const updatedFeeHeaderForChallan = distributePaidAmountForChallan(
           selectedChallanDetails,
           recievedAmount!,
-          true
+          true,
         );
 
         const paymentDataForPayment: IPaymentNL = {
@@ -442,7 +464,7 @@ function StudentFeeDetails() {
 
   const handlePaymentRecieveButton = async (
     e: React.FormEvent<HTMLFormElement>,
-    partialPayment: boolean
+    partialPayment: boolean,
   ) => {
     e.preventDefault();
     if (selectedChallanDetails) {
@@ -472,13 +494,22 @@ function StudentFeeDetails() {
   const generateCurrentFeeReciept = async (isMonthlyRecipet: boolean) => {
     try {
       setIsGeneratingFeeReciept(true);
-      const studentId = location.state[0].id;
+
+      if (!studentId) {
+        enqueueSnackbar("Student ID not found!", { variant: "error" });
+        setIsGeneratingFeeReciept(false);
+        return;
+      }
+
       const paymentsRef = collection(db, "STUDENTS", studentId, "PAYMENTS");
       const recieptConfigRef = doc(db, "CONFIG", "RECIEPT_CONFIG");
       let q;
 
       if (isMonthlyRecipet) {
-        q = query(paymentsRef, where("challanId", "==", selectedRow?.challanId));
+        q = query(
+          paymentsRef,
+          where("challanId", "==", selectedRow?.challanId),
+        );
       } else {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -488,16 +519,24 @@ function StudentFeeDetails() {
       const snapshot = await getDocs(q);
       if (snapshot.empty) {
         setIsGeneratingFeeReciept(false);
-        enqueueSnackbar("No fee reciept found, please pay fee and try again", { variant: "info" });
+        enqueueSnackbar("No fee reciept found, please pay fee and try again", {
+          variant: "info",
+        });
         return;
       }
 
-      const paymentsData: IPaymentNL[] = snapshot.docs.map(doc => ({ ...(doc.data() as IPaymentNL) }));
+      const paymentsData: IPaymentNL[] = snapshot.docs.map((doc) => ({
+        ...(doc.data() as IPaymentNL),
+      }));
 
       const recieptSnap = await getDoc(recieptConfigRef);
 
-      const accountantName = recieptSnap.exists() ? recieptSnap.data()?.accountantName || "" : "";
-      const recieptGeneratorServer = recieptSnap.exists() ? recieptSnap.data()?.recieptGeneratorServerUrl || "" : "";
+      const accountantName = recieptSnap.exists()
+        ? recieptSnap.data()?.accountantName || ""
+        : "";
+      const recieptGeneratorServer = recieptSnap.exists()
+        ? recieptSnap.data()?.recieptGeneratorServerUrl || ""
+        : "";
 
       const recieptId = generateRandomSixDigitNumber().toString();
       const recieptDate = formatedDate(new Date(), "dd/MM/YYYY hh:mm:ss");
@@ -505,23 +544,23 @@ function StudentFeeDetails() {
       const extractedData = extractChallanIdsAndHeaders(paymentsData);
       const url = isMonthlyRecipet
         ? await GenerateFeeRecieptMonthly({
-          ...extractedData,
-          studentMasterData: location.state[0] as StudentDetailsType,
-          recieptId,
-          recieptDate,
-          accountantName,
-          recieptGeneratorServerUrl: recieptGeneratorServer,
-          challanMonths: extractedData.challanMonthYear
-        })
+            ...extractedData,
+            studentMasterData: studentData!,
+            recieptId,
+            recieptDate,
+            accountantName,
+            recieptGeneratorServerUrl: recieptGeneratorServer,
+            challanMonths: extractedData.challanMonthYear,
+          })
         : await GenerateFeeReciept({
-          ...extractedData,
-          studentMasterData: location.state[0] as StudentDetailsType,
-          recieptId,
-          recieptDate,
-          accountantName,
-          recieptGeneratorServerUrl: recieptGeneratorServer,
-          challanMonths: extractedData.challanMonthYear
-        });
+            ...extractedData,
+            studentMasterData: studentData!,
+            recieptId,
+            recieptDate,
+            accountantName,
+            recieptGeneratorServerUrl: recieptGeneratorServer,
+            challanMonths: extractedData.challanMonthYear,
+          });
 
       if (url) {
         const iframe = document.createElement("iframe");
@@ -540,6 +579,25 @@ function StudentFeeDetails() {
     }
   };
 
+  useEffect(() => {
+    ///load student data
+    const loadStudentData = async () => {
+      if (studentId) {
+        try {
+          const result = await getStudentById(studentId, session);
+          if (result) {
+            setStudentData(result);
+          } else {
+            enqueueSnackbar("Student data not found!", { variant: "warning" });
+          }
+        } catch (err) {
+          console.error("Error fetching student data:", err);
+          enqueueSnackbar("Error fetching student data!", { variant: "error" });
+        }
+      }
+    };
+    loadStudentData();
+  }, [studentId, session]);
 
   return (
     <>
@@ -549,11 +607,12 @@ function StudentFeeDetails() {
         ActionBtn={SearchAnotherButton}
       />
       <br />
-
-      <IndividualFeeDetailsHeader
-        studentMasterData={location.state[0]}
-        totalFeeHeaderData={totalFeeHeaderData}
-      />
+      {studentData && (
+        <IndividualFeeDetailsHeader
+          studentMasterData={studentData}
+          totalFeeHeaderData={totalFeeHeaderData}
+        />
+      )}
       <br />
       {loading ? <LinearProgress /> : null}
       <Box sx={{ display: "flex", justifyContent: "end", mb: "0px" }}>
@@ -602,8 +661,7 @@ function StudentFeeDetails() {
           handlePaymentRecieveButton={handlePaymentRecieveButton}
         />
         <br />
-        {
-          showPartPaymentOption &&
+        {showPartPaymentOption && (
           <PartPaymentForm
             selectedChallanDetails={selectedChallanDetails}
             recievedAmountPartPayment={recievedAmountPartPayment}
@@ -613,7 +671,7 @@ function StudentFeeDetails() {
             isPaymentLoading={isPaymentLoading}
             handlePartPaymentSubmit={handlePartPaymentSubmit}
           />
-        }
+        )}
         <Divider sx={{ mt: "16px", mb: "10px" }} />
         <FeeChallanTable
           challanList={challanList}
@@ -688,9 +746,7 @@ function StudentFeeDetails() {
         {permissions?.deleteFee && (
           <>
             <Divider />
-            <MenuItem
-              onClick={() => setShowDeleteAuthenticationDialog(true)}
-            >
+            <MenuItem onClick={() => setShowDeleteAuthenticationDialog(true)}>
               <ListItemIcon>
                 <Delete fontSize="small" />
               </ListItemIcon>
@@ -698,65 +754,66 @@ function StudentFeeDetails() {
             </MenuItem>
           </>
         )}
-      </Menu >
+      </Menu>
 
       <AddFeeConsessionModal
         open={addFeeConsessionModalOpen}
         setOpen={setAddFeeConsessionModalOpen}
         challanData={selectedRow!}
       />
-      {
-        selectedRow ? (
-          <AddFeeArrearModal
-            open={addArrearModalOpen}
-            setOpen={setAddArrearModalopen}
-            studentId={selectedRow.studentId}
-            challanDocId={selectedRow.challanId}
-            paymentStatus={selectedRow.status}
-            feeHeader={selectedRow.feeHeaders}
-            challanData={{
-              admissionFee:
-                selectedRow.feeHeaders.find(
-                  (header) => header.headerTitle === "admissionFee"
-                )?.amount || 0,
-              annualFee:
-                selectedRow.feeHeaders.find(
-                  (header) => header.headerTitle === "annualFee"
-                )?.amount || 0,
-              otherFee:
-                selectedRow.feeHeaders.find(
-                  (header) => header.headerTitle === "otherFee"
-                )?.amount || 0,
-              examFee:
-                selectedRow.feeHeaders.find(
-                  (header) => header.headerTitle === "examFee"
-                )?.amount || 0,
-            }}
-          />
-        ) : null
-      }
+      {selectedRow ? (
+        <AddFeeArrearModal
+          open={addArrearModalOpen}
+          setOpen={setAddArrearModalopen}
+          studentId={selectedRow.studentId}
+          challanDocId={selectedRow.challanId}
+          paymentStatus={selectedRow.status}
+          feeHeader={selectedRow.feeHeaders}
+          challanData={{
+            admissionFee:
+              selectedRow.feeHeaders.find(
+                (header) => header.headerTitle === "admissionFee",
+              )?.amount || 0,
+            annualFee:
+              selectedRow.feeHeaders.find(
+                (header) => header.headerTitle === "annualFee",
+              )?.amount || 0,
+            otherFee:
+              selectedRow.feeHeaders.find(
+                (header) => header.headerTitle === "otherFee",
+              )?.amount || 0,
+            examFee:
+              selectedRow.feeHeaders.find(
+                (header) => header.headerTitle === "examFee",
+              )?.amount || 0,
+          }}
+        />
+      ) : null}
+      {studentData && (
+        <InstantPaymentModal
+          open={instantPaymentDialogOpen}
+          studentMasterData={studentData}
+          setOpen={setInstantPaymentDialogOpen}
+        />
+      )}
 
-      <InstantPaymentModal
-        open={instantPaymentDialogOpen}
-        studentMasterData={location.state[0]}
-        setOpen={setInstantPaymentDialogOpen}
-      />
-      {
-        selectedRow ? (
-          <DeleteChallanConfirmationDialog
-            open={showDeleteAuthenticationDialog}
-            setOpen={setShowDeleteAuthenticationDialog}
-            studentId={selectedRow.studentId}
-            challanId={selectedRow.challanId}
-          />
-        ) : null
-      }
+      {selectedRow ? (
+        <DeleteChallanConfirmationDialog
+          open={showDeleteAuthenticationDialog}
+          setOpen={setShowDeleteAuthenticationDialog}
+          studentId={selectedRow.studentId}
+          challanId={selectedRow.challanId}
+        />
+      ) : null}
 
-      {
-        selectedRow && showViewChallanDetailsModal ? (
-          <ViewChallanDetails challanId={selectedRow.challanId} studentId={selectedRow.studentId} open={showViewChallanDetailsModal} setOpen={setShowViewChallanDetailsModal} />
-        ) : null
-      }
+      {selectedRow && showViewChallanDetailsModal ? (
+        <ViewChallanDetails
+          challanId={selectedRow.challanId}
+          studentId={selectedRow.studentId}
+          open={showViewChallanDetailsModal}
+          setOpen={setShowViewChallanDetailsModal}
+        />
+      ) : null}
 
       <ModalLoader loading={isGeneratingFeeReciept} />
     </>

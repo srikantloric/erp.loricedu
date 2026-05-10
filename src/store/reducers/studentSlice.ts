@@ -2,26 +2,20 @@ import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 import FileResizer from "react-image-file-resizer";
 import {
-  collection,
   doc,
   getDoc,
-  getDocs,
-  query,
   runTransaction,
   serverTimestamp,
   setDoc,
-  where,
 } from "firebase/firestore";
-import { StudentDetailsType, StudentSessionDetailsType } from "types/student";
+import { StudentDetailsType } from "types/student";
 import { getDownloadURL, ref, uploadString } from "firebase/storage";
 import {
   getFirestoreInstance,
   getStorageInstance,
 } from "context/firebaseUtility";
 
-type StudentSessionDoc = StudentSessionDetailsType & {
-  studentId: string;
-};
+import { execute, field, variable } from "firebase/firestore/pipelines";
 
 const resizeFile = (file: any) =>
   new Promise((resolve) => {
@@ -140,90 +134,169 @@ export const addstudent = createAsyncThunk<
 
 //   return students;
 // });
+// export const fetchstudent = createAsyncThunk(
+//   "student/fetchstudent",
+//   async (sessionId: string) => {
+//     const db = await getFirestoreInstance();
+
+//     if (!sessionId) {
+//       return [];
+//     }
+
+//     // 🔹 Step 1: Get studentSessions for session
+//     const sessionQuery = query(
+//       collection(db, "STUDENTS_SESSIONS"),
+//       where("sessionId", "==", sessionId),
+//     );
+
+//     const sessionSnap = await getDocs(sessionQuery);
+
+//     if (sessionSnap.empty) {
+//       console.log("No students found for session");
+//       return [];
+//     }
+
+//     const sessions = sessionSnap.docs.map((sessionDoc) => ({
+//       sessionDocId: sessionDoc.id,
+//       ...(sessionDoc.data() as StudentSessionDoc),
+//     }));
+
+//     // 🔹 Step 2: Extract studentIds
+//     const studentIds = Array.from(
+//       new Set(sessions.map((session) => session.studentId).filter(Boolean)),
+//     );
+
+//     if (studentIds.length === 0) {
+//       console.log("No student IDs found for session:", sessionId);
+//       return [];
+//     }
+
+//     // 🔹 Step 3: Chunk (Firestore "in" limit = 10)
+//     const chunks: string[][] = [];
+//     for (let i = 0; i < studentIds.length; i += 10) {
+//       chunks.push(studentIds.slice(i, i + 10));
+//     }
+
+//     const studentsById = new Map<string, StudentDetailsType>();
+
+//     // 🔹 Step 4: Fetch only required students
+//     for (const chunk of chunks) {
+//       const studentQuery = query(
+//         collection(db, "STUDENTS"),
+//         where("__name__", "in", chunk),
+//         where("is_active", "==", true),
+//       );
+
+//       const snap = await getDocs(studentQuery);
+
+//       snap.docs.forEach((studentDoc) => {
+//         studentsById.set(studentDoc.id, {
+//           ...(studentDoc.data() as StudentDetailsType),
+//           id: studentDoc.id,
+//         });
+//       });
+//     }
+
+//     // 🔹 Step 6: Merge base student details with academic session details
+//     const finalData: StudentDetailsType[] = sessions.flatMap((session) => {
+//       const student = studentsById.get(session.studentId);
+
+//       if (!student) {
+//         return [];
+//       }
+
+//       return [
+//         {
+//           ...student,
+//           sessionDocId: session.sessionDocId!,
+//           sessionId: session.sessionId!,
+//           classId: session.classId!,
+//           class: session.class!,
+//           section: session.section!,
+//           rollNumber: session.rollNumber!,
+//         },
+//       ];
+//     });
+//     return finalData;
+//   },
+// );
+
 export const fetchstudent = createAsyncThunk(
   "student/fetchstudent",
-  async (sessionId: string) => {
-    const db = await getFirestoreInstance();
 
+  async (sessionId: string): Promise<StudentDetailsType[]> => {
     if (!sessionId) {
       return [];
     }
 
-    // 🔹 Step 1: Get studentSessions for session
-    const sessionQuery = query(
-      collection(db, "STUDENTS_SESSIONS"),
-      where("sessionId", "==", sessionId),
-    );
+    console.log("Fetching students for session:", sessionId);
 
-    const sessionSnap = await getDocs(sessionQuery);
+    const db = await getFirestoreInstance();
 
-    if (sessionSnap.empty) {
-      console.log("No students found for session");
-      return [];
-    }
+    try {
+      const pipeline = db
+        .pipeline()
 
-    const sessions = sessionSnap.docs.map((sessionDoc) => ({
-      sessionDocId: sessionDoc.id,
-      ...(sessionDoc.data() as StudentSessionDoc),
-    }));
+        // MAIN COLLECTION
+        .collection("STUDENTS_SESSIONS")
 
-    // 🔹 Step 2: Extract studentIds
-    const studentIds = Array.from(
-      new Set(sessions.map((session) => session.studentId).filter(Boolean)),
-    );
+        // FILTER SESSION
+        .where(field("sessionId").equal(sessionId))
 
-    if (studentIds.length === 0) {
-      console.log("No student IDs found for session:", sessionId);
-      return [];
-    }
+        // expose session studentId
+        .define(field("studentId").as("sId"))
 
-    // 🔹 Step 3: Chunk (Firestore "in" limit = 10)
-    const chunks: string[][] = [];
-    for (let i = 0; i < studentIds.length; i += 10) {
-      chunks.push(studentIds.slice(i, i + 10));
-    }
+        // JOIN STUDENTS
+        .addFields(
+          db
+            .pipeline()
+            .collection("STUDENTS")
+            .where(field("id").equal(variable("sId")))
+            .where(field("is_active").equal(true))
+            .limit(1)
+            .toScalarExpression()
+            .as("student"),
+        );
 
-    const studentsById = new Map<string, StudentDetailsType>();
+      // EXECUTE
+      const snapshot = await execute(pipeline);
+      if (snapshot.results.length === 0) {
+        console.log("No students found for session:", sessionId);
 
-    // 🔹 Step 4: Fetch only required students
-    for (const chunk of chunks) {
-      const studentQuery = query(
-        collection(db, "STUDENTS"),
-        where("__name__", "in", chunk),
-        where("is_active", "==", true),
-      );
-
-      const snap = await getDocs(studentQuery);
-
-      snap.docs.forEach((studentDoc) => {
-        studentsById.set(studentDoc.id, {
-          ...(studentDoc.data() as StudentDetailsType),
-          id: studentDoc.id,
-        });
-      });
-    }
-
-    // 🔹 Step 6: Merge base student details with academic session details
-    const finalData: StudentDetailsType[] = sessions.flatMap((session) => {
-      const student = studentsById.get(session.studentId);
-
-      if (!student) {
         return [];
       }
 
-      return [
-        {
-          ...student,
-          sessionDocId: session.sessionDocId!,
-          sessionId: session.sessionId!,
-          classId: session.classId!,
-          class: session.class!,
-          section: session.section!,
-          rollNumber: session.rollNumber!,
-        },
-      ];
-    });
-    return finalData;
+      const finalData: StudentDetailsType[] = [];
+
+      for (const result of snapshot.results) {
+        const row = result.data();
+
+        if (!row.student) {
+          continue;
+        }
+
+        finalData.push({
+          ...row.student,
+
+          sessionDocId: row.__name__?.referencePath || row.id,
+
+          sessionId: row.sessionId,
+
+          classId: row.classId,
+
+          class: row.class,
+
+          section: row.section,
+
+          rollNumber: row.rollNumber,
+        });
+      }
+      return finalData;
+    } catch (error) {
+      console.error("Pipeline fetch failed:", error);
+
+      return [];
+    }
   },
 );
 

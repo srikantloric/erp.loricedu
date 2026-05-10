@@ -152,7 +152,7 @@ function AppNew() {
 
                       <Route path="fee-management" element={<FeeManager />} />
                       <Route
-                        path="fee-management/FeeDetails/:id"
+                        path="fee-management/FeeDetails/:studentId"
                         element={<StudentFeeDetails />}
                       />
                       <Route
@@ -310,7 +310,7 @@ function AppNew() {
                       />
                       <Route
                         path="/academic/class-migration"
-                        element={<UnderConstruction />}
+                        element={<StudentMigration />}
                       />
                     </Route>
 

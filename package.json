@@ -29,7 +29,7 @@
     "date-fns": "^4.1.0",
     "faker": "^5.5.3",
     "file-saver": "^2.0.5",
-    "firebase": "^11.4.0",
+    "firebase": "^12.13.0",
     "formik": "^2.4.6",
     "framer-motion": "^10.16.4",
     "iconsax-react": "^0.0.8",

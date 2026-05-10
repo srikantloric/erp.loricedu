@@ -1,5 +1,5 @@
 import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { initializeFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 import { initializeSchoolFirebase } from "./firebaseService";
 
@@ -8,16 +8,18 @@ export const getFirebaseApp = async () => {
 };
 
 export const getAuthInstance = async () => {
-  const app = await getFirebaseApp();
+  const { app } = await getFirebaseApp();
   return getAuth(app);
 };
 
 export const getFirestoreInstance = async () => {
-  const app = await getFirebaseApp();
-  return getFirestore(app);
+  const { app, config } = await getFirebaseApp();
+  // return getFirestore(app);
+  console.log("Initializing database:", config.databaseId);
+  return initializeFirestore(app, {}, config.databaseId || "(default)");
 };
 
 export const getStorageInstance = async () => {
-  const app = await getFirebaseApp();
+  const { app } = await getFirebaseApp();
   return getStorage(app);
 };

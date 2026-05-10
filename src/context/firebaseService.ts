@@ -13,6 +13,7 @@ export interface FirebaseConfig {
   messagingSenderId: string;
   appId: string;
   measurementId?: string;
+  databaseId?: string;
 }
 
 // Function to get Firebase Config for a school
@@ -56,7 +57,7 @@ export const setStoredSchoolId = (schoolId: string): void => {
 };
 
 // Initialize Firebase App for a specific school
-export const initializeSchoolFirebase = async (): Promise<FirebaseApp> => {
+export const initializeSchoolFirebase = async (): Promise<{ app: FirebaseApp; config: FirebaseConfig }> => {
   const schoolId = getStoredSchoolId();
   if (!schoolId) {
     throw new Error("No school selected. Please set a school ID.");
@@ -67,5 +68,6 @@ export const initializeSchoolFirebase = async (): Promise<FirebaseApp> => {
 
   // Check if Firebase App already exists
   const existingApp = getApps().find(app => app.name === schoolId);
-  return existingApp ? existingApp : initializeApp(firebaseConfig, schoolId);
+  const app = existingApp ? existingApp : initializeApp(firebaseConfig, schoolId);
+  return { app, config: firebaseConfig };
 };
