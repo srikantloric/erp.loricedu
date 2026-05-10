@@ -1,7 +1,17 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
 
 import { CircularProgress, Box, Typography } from "@mui/material";
-import { getAuthInstance, getFirestoreInstance, getStorageInstance } from "./firebaseUtility";
+import {
+  getAuthInstance,
+  getFirestoreInstance,
+  getStorageInstance,
+} from "./firebaseUtility";
 
 interface FirebaseContextType {
   db: any;
@@ -9,7 +19,9 @@ interface FirebaseContextType {
   storage: any;
 }
 
-const FirebaseContext = createContext<FirebaseContextType | undefined>(undefined);
+const FirebaseContext = createContext<FirebaseContextType | undefined>(
+  undefined,
+);
 
 export const FirebaseProvider = ({ children }: { children: ReactNode }) => {
   const [db, setDb] = useState<any>(null);
@@ -19,7 +31,11 @@ export const FirebaseProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     setIsLoading(true);
-    Promise.all([getFirestoreInstance(), getAuthInstance(), getStorageInstance()])
+    Promise.all([
+      getFirestoreInstance(),
+      getAuthInstance(),
+      getStorageInstance(),
+    ])
       .then(([dbInstance, authInstance, storageInstance]) => {
         setDb(dbInstance);
         setAuth(authInstance);
@@ -31,10 +47,17 @@ export const FirebaseProvider = ({ children }: { children: ReactNode }) => {
 
   if (isLoading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        height="100vh"
+      >
         <Box textAlign="center">
           <CircularProgress />
-          <Typography variant="body1" mt={2}>Initializing Application...</Typography>
+          <Typography variant="body1" mt={2}>
+            Initializing Application...
+          </Typography>
         </Box>
       </Box>
     );

@@ -15,7 +15,7 @@ export const getAuthInstance = async () => {
 export const getFirestoreInstance = async () => {
   const { app, config } = await getFirebaseApp();
   // return getFirestore(app);
-  console.log("Initializing database:", config.databaseId);
+  console.log("Initializing database:", config.databaseId || "(default)");
   return initializeFirestore(app, {}, config.databaseId || "(default)");
 };
 
