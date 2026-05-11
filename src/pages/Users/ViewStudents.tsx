@@ -35,8 +35,6 @@ import { Avatar, Divider } from "@mui/joy";
 import { deleteStudent, fetchstudent } from "store/reducers/studentSlice";
 import { RootState, useDispatch } from "store";
 import { StudentDetailsType } from "types/student";
-import { doc, updateDoc } from "firebase/firestore";
-import { useFirebase } from "context/firebaseContext";
 import { useNavbar } from "context/NavbarContext";
 
 function ViewStudents() {
@@ -73,7 +71,6 @@ function ViewStudents() {
   const { session } = useNavbar();
 
   //Get Firebase DB instance
-  const { db } = useFirebase();
   const handleMenuClick = (event: any, rowData: StudentDetailsType) => {
     setAnchorEl(event.currentTarget);
     setSelectedRowData(rowData);
@@ -202,9 +199,24 @@ function ViewStudents() {
     {
       field: "classId",
       title: "Class Name",
+      render: (rowData: StudentDetailsType) => {
+        return rowData.classId || "-";
+      },
     },
-    { field: "section", title: "Section" },
-    { field: "rollNumber", title: "Roll" },
+    {
+      field: "section",
+      title: "Section",
+      render: (rowData: StudentDetailsType) => {
+        return rowData.section || "-";
+      },
+    },
+    {
+      field: "rollNumber",
+      title: "Roll",
+      render: (rowData: StudentDetailsType) => {
+        return rowData.rollNumber || "-";
+      },
+    },
     { field: "father_name", title: "Father Name" },
     { field: "contact_number", title: " Contact number" },
   ];
@@ -215,25 +227,6 @@ function ViewStudents() {
       setSelectedSection(-1);
       setFilteredData(data);
     }
-  };
-
-  const deactivateUser = (student: StudentDetailsType) => {
-    if (!student) {
-      enqueueSnackbar("No student selected", { variant: "error" });
-      return;
-    }
-    const studentDocRef = doc(db, "STUDENTS", student.id);
-
-    updateDoc(studentDocRef, { is_active: false })
-      .then(() => {
-        enqueueSnackbar("Student deactivated successfully!", {
-          variant: "success",
-        });
-      })
-      .catch((error) => {
-        console.error("Error deactivating student: ", error);
-        enqueueSnackbar("Failed to deactivate student", { variant: "error" });
-      });
   };
 
   const handleFeeDetails = (studentId: string) => {
@@ -250,10 +243,6 @@ function ViewStudents() {
       });
     }
   };
-
-  useEffect(() => {
-    console.log(searchValue);
-  }, [searchValue]);
 
   return (
     <>
@@ -395,7 +384,7 @@ function ViewStudents() {
         }}
         columns={columnMat}
         data={filteredData}
-        title="Students Data"
+        title={`Students Data - ${filteredData.length} Records`}
         onSearchChange={(newSearchText) => {
           setSearchValue(newSearchText); // update your own state
           // ✅ This line updates the URL automatically
@@ -512,7 +501,7 @@ function ViewStudents() {
         </MenuItem>
         <Divider />
 
-        <MenuItem onClick={() => deactivateUser(selectedRowData!)}>
+        <MenuItem onClick={() => deletestudent(selectedRowData!)}>
           <ListItemIcon>
             <BlockIcon fontSize="small" />
           </ListItemIcon>

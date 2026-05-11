@@ -238,24 +238,21 @@ export const fetchstudent = createAsyncThunk(
         .pipeline()
 
         // MAIN COLLECTION
-        .collection("STUDENTS_SESSIONS")
-
-        // FILTER SESSION
-        .where(field("sessionId").equal(sessionId))
-
-        // expose session studentId
-        .define(field("studentId").as("sId"))
+        .collection("STUDENTS")
+        .where(field("is_active").equal(true))
+        // expose student id
+        .define(field("id").as("studentId"))
 
         // JOIN STUDENTS
         .addFields(
           db
             .pipeline()
-            .collection("STUDENTS")
-            .where(field("id").equal(variable("sId")))
-            .where(field("is_active").equal(true))
+            .collection("STUDENTS_SESSIONS")
+            .where(field("studentId").equal(variable("studentId")))
+            .where(field("sessionId").equal(sessionId))
             .limit(1)
             .toScalarExpression()
-            .as("student"),
+            .as("sessionData"),
         );
 
       // EXECUTE
@@ -269,26 +266,18 @@ export const fetchstudent = createAsyncThunk(
       const finalData: StudentDetailsType[] = [];
 
       for (const result of snapshot.results) {
-        const row = result.data();
+        const row = result.data() as StudentDetailsType & { sessionData?: any };
 
-        if (!row.student) {
-          continue;
-        }
+        const sessionData = row.sessionData;
 
         finalData.push({
-          ...row.student,
-
-          sessionDocId: row.__name__?.referencePath || row.id,
-
-          sessionId: row.sessionId,
-
-          classId: row.classId,
-
-          class: row.class,
-
-          section: row.section,
-
-          rollNumber: row.rollNumber,
+          ...row,
+          sessionDocId: sessionData?.__name__?.referencePath || null,
+          sessionId: sessionData?.sessionId || null,
+          classId: sessionData?.classId ||null,
+          class: sessionData?.class || null,
+          section: sessionData?.section || null,
+          rollNumber: sessionData?.rollNumber || null,
         });
       }
       return finalData;

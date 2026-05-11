@@ -113,7 +113,7 @@ const WebsiteConfig = Loadable(
 
 function AppNew() {
   useEffect(() => {
-    document.title = "School Tower - School Management System";
+    document.title = "Skool Tower - Every School, One Tower";
   }, []);
 
 
