@@ -16,6 +16,8 @@ import AttendanceTab from "./Tabs/AttendanceTab";
 import PageHeaderWithHelpButton from "components/Breadcrumbs/PageHeaderWithHelpButton";
 import { getStudentById } from "api/students";
 import { useNavbar } from "context/NavbarContext";
+import { IconSchool } from "@tabler/icons-react";
+import AcademicTab from "./Tabs/AcademicTab";
 
 function ViewStudentProfile() {
   const [studentData, setStudentData] = useState<StudentDetailsType | null>(
@@ -78,6 +80,12 @@ function ViewStudentProfile() {
             </Tab>
             <Tab>
               <ListItemDecorator>
+                <IconSchool size="18" />
+              </ListItemDecorator>
+              Academic
+            </Tab>
+            <Tab>
+              <ListItemDecorator>
                 <Bus size="18" />
               </ListItemDecorator>
               Transport
@@ -102,9 +110,12 @@ function ViewStudentProfile() {
             {studentData ? <PersonalTab studentData={studentData} /> : null}
           </TabPanel>
           <TabPanel value={2}>
-            {studentData ? <TransportTab studentData={studentData} /> : null}
+            {studentData ? <AcademicTab studentData={studentData} /> : null}
           </TabPanel>
           <TabPanel value={3}>
+            {studentData ? <TransportTab studentData={studentData} /> : null}
+          </TabPanel>
+          <TabPanel value={4}>
             {studentData ? <AttendanceTab studentData={studentData} /> : null}
           </TabPanel>
           {/* <TabPanel value={4}>Settings</TabPanel> */}
