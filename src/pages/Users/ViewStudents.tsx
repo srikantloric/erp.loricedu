@@ -32,10 +32,9 @@ import { getClassNameByValue } from "utilities/UtilitiesFunctions";
 import { StudReportPDF } from "components/StudentDetailsReport/StudentReportGeneratorPDF";
 import ExportToExcel from "components/Reports/ExportToExcel";
 import { Avatar, Divider } from "@mui/joy";
-import { deleteStudent, fetchstudent } from "store/reducers/studentSlice";
+import { deleteStudent } from "store/reducers/studentSlice";
 import { RootState, useDispatch } from "store";
 import { StudentDetailsType } from "types/student";
-import { useNavbar } from "context/NavbarContext";
 
 function ViewStudents() {
   const data = useSelector((state: RootState) => state.students.studentarray);
@@ -68,8 +67,6 @@ function ViewStudents() {
   const searchQuery = searchParams.get("search") || "";
   const [searchValue, setSearchValue] = useState(searchQuery);
 
-  const { session } = useNavbar();
-
   //Get Firebase DB instance
   const handleMenuClick = (event: any, rowData: StudentDetailsType) => {
     setAnchorEl(event.currentTarget);
@@ -87,10 +84,6 @@ function ViewStudents() {
   }, [searchQuery]);
 
   useEffect(() => {
-    dipatch(fetchstudent(session));
-  }, [session]);
-
-  useEffect(() => {
     if (error) {
       console.log("error", error);
       enqueueSnackbar("ERROR:" + error, { variant: "error" });
@@ -98,10 +91,8 @@ function ViewStudents() {
   }, [error, enqueueSnackbar]);
 
   useEffect(() => {
-    if (!isDataLoading) {
-      setFilteredData(data);
-    }
-  }, [isDataLoading, data]);
+    setFilteredData(data);
+  }, [data]);
 
   const handleFilterButton = () => {
     if (selectedClass !== -1 && selectedSection !== -1) {

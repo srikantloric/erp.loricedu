@@ -18,14 +18,12 @@ import {
   ListItemDecorator,
   Typography,
 } from "@mui/joy";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { enqueueSnackbar } from "notistack";
 import BreadCrumbsV2 from "components/Breadcrumbs/BreadCrumbsV2";
-import { fetchstudent } from "store/reducers/studentSlice";
-import { RootState, AppDispatch } from "store";
+import { RootState } from "store";
 import { getClassNameByValue } from "utilities/UtilitiesFunctions";
 import FeeCollectionReport from "./FeeCollectionReport";
-import { useNavbar } from "context/NavbarContext";
 
 // -----------------------------
 // Interfaces / Types
@@ -81,15 +79,12 @@ function a11yProps(index: number) {
 const FeeManager: React.FC = () => {
   const [value, setValue] = useState(0);
   const historyRef = useNavigate();
-  const dispatch = useDispatch<AppDispatch>();
   const data = useSelector((state: RootState) => state.students.studentarray);
+  const loading = useSelector((state: RootState) => state.students.loading);
 
   const [searchList, setSearchList] = useState<StudentOption[]>([]);
   const [selectedDoc, setSelectedDoc] = useState<string | null>(null);
   const searchBoxRef = useRef<HTMLInputElement>(null);
-  const [loading, setLoading] = useState(false);
-
-  const {session} = useNavbar();
 
   const handleChange = (_event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
@@ -110,17 +105,8 @@ const FeeManager: React.FC = () => {
   };
 
   useEffect(() => {
-    if (data.length !== 0) {
-      setFilteredData(data);
-    }
+    setFilteredData(data);
   }, [data]);
-
-  useEffect(() => {
-    if (!data || data.length === 0) {
-      setLoading(true);
-      dispatch(fetchstudent(session)).then(() => setLoading(false));
-    }
-  }, [data, dispatch]);
 
   const filterOptions = createFilterOptions<StudentOption>({
     stringify: (option) =>

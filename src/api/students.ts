@@ -17,36 +17,32 @@ export const getStudentById = async (
     const myPipeline = db
       .pipeline()
 
-      .collection("STUDENTS_SESSIONS")
+      .collection("STUDENTS")
 
-      .where(field("studentId").equal(studentId.toString()))
-
-      .where(field("sessionId").equal(sessionId))
-
+      .where(field("id").equal(studentId.toString()))
       // expose outer field
-      .define(field("studentId").as("studentIdVar"))
+      .define(field("id").as("studentIdVar"))
 
       // JOIN
       .addFields(
         db
           .pipeline()
-
-          .collection("STUDENTS")
-
-          .where(field("id").equal(variable("studentIdVar")))
-
+          .collection("STUDENTS_SESSIONS")
+          .where(field("studentId").equal(variable("studentIdVar")))
+          .where(field("sessionId").equal(sessionId))
           .toScalarExpression()
-
-          .as("student"),
+          .as("studentSessionData"),
       );
 
     // EXECUTE
-    const result = (await execute(myPipeline)).results[0].data();
-    console.log(result);
+    const snap = await execute(myPipeline);
+    const result = snap.results[0]?.data();
 
     const row = result;
 
-    const studentData = row.student;
+    const studentData = row;
+    const studentSessionData = row.studentSessionData;
+    console.log("Pipeline result:", row);
 
     if (!studentData) {
       return null;
@@ -56,13 +52,13 @@ export const getStudentById = async (
     return {
       ...studentData,
 
-      class: row.class,
-      classId: row.classId,
-      section: row.section,
-      rollNumber: row.rollNumber,
-      sessionId: row.sessionId,
+      class: studentSessionData?.class || "",
+      classId: studentSessionData?.classId || "",
+      section: studentSessionData?.section || "",
+      rollNumber: studentSessionData?.rollNumber || "",
+      sessionId: studentSessionData?.sessionId || "",
 
-      sessionDocId: row.__name__ || row.id || undefined,
+      sessionDocId: studentSessionData?.__name__?.id || undefined,
     } as StudentDetailsType;
   } catch (err) {
     console.error("Pipeline query failed:", err);
