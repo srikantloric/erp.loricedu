@@ -378,7 +378,7 @@ interface StudentState {
 
 const initialState: StudentState = {
   studentarray: [],
-  loading: true,
+  loading: false,
   error: null,
   loadedSessionId: null,
 };

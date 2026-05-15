@@ -1,12 +1,17 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 import { useNavbar } from "context/NavbarContext";
+import { useSnackbar } from "notistack";
 import { invalidateStudentCache, fetchstudent } from "store/reducers/studentSlice";
 import { RootState, useDispatch, useSelector } from "store";
 
 export const useInitializeStudents = () => {
   const dispatch = useDispatch();
   const { session } = useNavbar();
+  const { enqueueSnackbar } = useSnackbar();
+  const lastCacheToastSession = useRef<string | null>(null);
+  const lastServerToastSession = useRef<string | null>(null);
+  const inFlightFetchSession = useRef<string | null>(null);
 
   const studentarray = useSelector(
     (state: RootState) => state.students.studentarray,
@@ -26,6 +31,12 @@ export const useInitializeStudents = () => {
     const hasCachedStudents = studentarray.length > 0;
 
     if (cacheSessionMatches && hasCachedStudents) {
+      if (lastCacheToastSession.current !== session) {
+        enqueueSnackbar(`Students loaded from cache for ${session}`, {
+          variant: "info",
+        });
+        lastCacheToastSession.current = session;
+      }
       return;
     }
 
@@ -45,8 +56,42 @@ export const useInitializeStudents = () => {
       return;
     }
 
-    dispatch(fetchstudent(session));
-  }, [dispatch, error, loadedSessionId, loading, session, studentarray.length]);
+    if (inFlightFetchSession.current === session) {
+      return;
+    }
+
+    inFlightFetchSession.current = session;
+
+    dispatch(fetchstudent(session))
+      .unwrap()
+      .then(() => {
+        if (lastServerToastSession.current !== session) {
+          enqueueSnackbar(`Students loaded from server for ${session}`, {
+            variant: "success",
+          });
+          lastServerToastSession.current = session;
+        }
+      })
+      .catch((fetchError) => {
+        const message =
+          fetchError instanceof Error
+            ? fetchError.message
+            : "Failed to load students from server";
+
+        enqueueSnackbar(message, { variant: "error" });
+      })
+      .finally(() => {
+        inFlightFetchSession.current = null;
+      });
+  }, [
+    dispatch,
+    enqueueSnackbar,
+    error,
+    loadedSessionId,
+    loading,
+    session,
+    studentarray.length,
+  ]);
 
   return {
     loading,
