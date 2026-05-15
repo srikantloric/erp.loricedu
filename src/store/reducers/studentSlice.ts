@@ -231,8 +231,11 @@ export const fetchstudent = createAsyncThunk(
 
     console.log("Fetching students for session:", sessionId);
 
-    const db = await getFirestoreInstance();
+    // const env = process.env.NODE_ENV;
+    // const maxFetchLimit = env === "development" ? 10 : 1000;
 
+    const db = await getFirestoreInstance();
+    alert("fetching students for session: " + sessionId);
     try {
       const pipeline = db
         .pipeline()
@@ -253,8 +256,8 @@ export const fetchstudent = createAsyncThunk(
             .limit(1)
             .toScalarExpression()
             .as("sessionData"),
-        );
-
+        )
+        // .limit(maxFetchLimit);
       // EXECUTE
       const snapshot = await execute(pipeline);
       if (snapshot.results.length === 0) {
@@ -274,7 +277,7 @@ export const fetchstudent = createAsyncThunk(
           ...row,
           sessionDocId: sessionData?.__name__?.referencePath || null,
           sessionId: sessionData?.sessionId || null,
-          classId: sessionData?.classId ||null,
+          classId: sessionData?.classId || null,
           class: sessionData?.class || null,
           section: sessionData?.section || null,
           rollNumber: sessionData?.rollNumber || null,
@@ -370,18 +373,26 @@ interface StudentState {
   studentarray: StudentDetailsType[]; // Array of student details
   loading: boolean;
   error: string | null;
+  loadedSessionId: string | null;
 }
 
 const initialState: StudentState = {
   studentarray: [],
   loading: true,
   error: null,
+  loadedSessionId: null,
 };
 
 const studentslice = createSlice({
   name: "student",
   initialState,
-  reducers: {},
+  reducers: {
+    invalidateStudentCache: (state) => {
+      state.studentarray = [];
+      state.loadedSessionId = null;
+      state.error = null;
+    },
+  },
   extraReducers: (builder) => {
     builder
       // Add student
@@ -404,10 +415,14 @@ const studentslice = createSlice({
       .addCase(fetchstudent.pending, (state) => {
         state.loading = true;
       })
-      .addCase(fetchstudent.fulfilled, (state, action: PayloadAction<any>) => {
+      .addCase(
+        fetchstudent.fulfilled,
+        (state, action: ReturnType<typeof fetchstudent.fulfilled>) => {
         state.loading = false;
         state.studentarray = action.payload;
-      })
+        state.loadedSessionId = action.meta.arg;
+        },
+      )
       .addCase(fetchstudent.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message || "Failed to fetch students";
@@ -456,4 +471,5 @@ const studentslice = createSlice({
   },
 });
 
+export const { invalidateStudentCache } = studentslice.actions;
 export default studentslice.reducer;

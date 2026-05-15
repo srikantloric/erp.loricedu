@@ -5,11 +5,13 @@ import SearchDialog from "components/Dialog/SearchDialog";
 import Footer from "components/Footer/Footer";
 import Navbar from "components/Navbar/Navbar";
 import SidebarNew from "components/Sidebar/SidebarNew";
+import { useInitializeStudents } from "hooks/useInitializeStudents";
 import { useState } from "react";
 import { Outlet } from "react-router-dom";
 
 function DashboardLayoutNew() {
     const [showAttenzyFeed, setShowAttenzyFeed] = useState(false);
+    useInitializeStudents();
 
     return (
         <>

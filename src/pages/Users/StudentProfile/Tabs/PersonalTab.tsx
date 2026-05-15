@@ -206,6 +206,8 @@ const PersonalTab: React.FC<StudentProfileProps> = ({ studentData }) => {
 
         updatedData["updated_at"] = serverTimestamp();
 
+        console.log("Updated Data to be saved:", studentData);
+
         const studentRef = doc(db, "STUDENTS", studentData.id);
 
         const studentSessionRef = doc(
