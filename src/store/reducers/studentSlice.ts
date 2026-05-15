@@ -235,7 +235,6 @@ export const fetchstudent = createAsyncThunk(
     // const maxFetchLimit = env === "development" ? 10 : 1000;
 
     const db = await getFirestoreInstance();
-    alert("fetching students for session: " + sessionId);
     try {
       const pipeline = db
         .pipeline()
