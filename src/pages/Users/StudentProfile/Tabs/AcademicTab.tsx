@@ -52,10 +52,17 @@ interface PreviousRecord {
 
 function AcademicTab({ studentData }: StudentProfileProps) {
   const [currentSessionData, setCurrentSessionData] = useState<
-    (StudentSessionDetailsType & { docId?: string; previousRecords?: PreviousRecord[] }) | null
+    | (StudentSessionDetailsType & {
+        docId?: string;
+        previousRecords?: PreviousRecord[];
+      })
+    | null
   >(null);
   const [previousSessions, setPreviousSessions] = useState<
-    (StudentSessionDetailsType & { docId?: string; previousRecords?: PreviousRecord[] })[]
+    (StudentSessionDetailsType & {
+      docId?: string;
+      previousRecords?: PreviousRecord[];
+    })[]
   >([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -68,7 +75,9 @@ function AcademicTab({ studentData }: StudentProfileProps) {
 
   // Change details modal state
   const [changeDetailsOpen, setChangeDetailsOpen] = useState(false);
-  const [selectedChanges, setSelectedChanges] = useState<PreviousRecord[] | null>(null);
+  const [selectedChanges, setSelectedChanges] = useState<
+    PreviousRecord[] | null
+  >(null);
 
   const { db } = useFirebase();
   const auth = useAuth();
@@ -172,10 +181,17 @@ function AcademicTab({ studentData }: StudentProfileProps) {
           class: studentData.class,
           section: studentData.section,
           rollNumber: studentData.rollNumber,
-          updatedAt: studentData.updated_at,
+          updatedAt: studentData.updated_at || null,
           updatedBy: auth.currentUser?.uid,
         }),
       };
+
+      console.log(
+        "Updating session with data:",
+        sessionUpdateData,
+        "for docId:",
+        currentSessionData.docId,
+      );
 
       // Update STUDENTS_SESSIONS collection
       await setDoc(
@@ -401,7 +417,10 @@ function AcademicTab({ studentData }: StudentProfileProps) {
                         sx={{ mt: 2, backgroundColor: "#f5f5f5" }}
                       >
                         <Stack spacing={2}>
-                          <Typography level="title-sm" sx={{ fontWeight: "bold" }}>
+                          <Typography
+                            level="title-sm"
+                            sx={{ fontWeight: "bold" }}
+                          >
                             Change History (Current Session)
                           </Typography>
                           <Box sx={{ overflowX: "auto" }}>
@@ -425,16 +444,14 @@ function AcademicTab({ studentData }: StudentProfileProps) {
                                 {currentSessionData.previousRecords.map(
                                   (record, idx) => (
                                     <tr key={idx}>
-                                      <td>
-                                        {getClassName(record.class)}
-                                      </td>
+                                      <td>{getClassName(record.class)}</td>
                                       <td>{record.section || "N/A"}</td>
                                       <td>{record.rollNumber || "N/A"}</td>
                                       <td>
                                         {record.updatedAt
                                           ? new Date(
-                                              record.updatedAt.toDate?.()
-                                                || record.updatedAt,
+                                              record.updatedAt.toDate?.() ||
+                                                record.updatedAt,
                                             ).toLocaleDateString()
                                           : "N/A"}
                                       </td>
@@ -513,7 +530,9 @@ function AcademicTab({ studentData }: StudentProfileProps) {
                             size="sm"
                             variant="outlined"
                             onClick={() =>
-                              handleViewChangeDetails(session.previousRecords || [])
+                              handleViewChangeDetails(
+                                session.previousRecords || [],
+                              )
                             }
                           >
                             View Changes
@@ -544,7 +563,10 @@ function AcademicTab({ studentData }: StudentProfileProps) {
       )}
 
       {/* Change Details Modal */}
-      <Modal open={changeDetailsOpen} onClose={() => setChangeDetailsOpen(false)}>
+      <Modal
+        open={changeDetailsOpen}
+        onClose={() => setChangeDetailsOpen(false)}
+      >
         <ModalDialog maxWidth="md">
           <DialogTitle>Class Change History</DialogTitle>
           <Divider />
@@ -576,8 +598,7 @@ function AcademicTab({ studentData }: StudentProfileProps) {
                         <td>
                           {record.updatedAt
                             ? new Date(
-                                record.updatedAt.toDate?.()
-                                  || record.updatedAt,
+                                record.updatedAt.toDate?.() || record.updatedAt,
                               ).toLocaleString()
                             : "N/A"}
                         </td>

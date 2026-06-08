@@ -14,6 +14,7 @@ interface AuthContextType {
   displayName: string | null;
   role: string | null;
   permissions: Permissions | null;
+  permissionsLoading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -31,6 +32,7 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
   const [displayName, setDisplayName] = useState<string | null>(null);
   const [role, setRole] = useState<string | null>(null);
   const [permissions, setPermissions] = useState<Permissions | null>(null);
+  const [permissionsLoading, setPermissionsLoading] = useState(true);
   const [profile, setProfile] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -43,41 +45,45 @@ const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      setLoading(false);
       if (user) {
-
         setCurrentUser(user);
+        setPermissionsLoading(true);
+        setLoading(false);
         // Fetch additional user info from Firestore (or your DB)
         try {
           const userDoc = await getDoc(doc(db, "ADMIN_USERS", user.uid));
           if (userDoc.exists()) {
             const data = userDoc.data();
             setRole(data.role || null);
-            setPermissions(data.permissions || []);
+            setPermissions(data.permissions || null);
             setDisplayName(data.name || user.email || "User");
             setProfile(data.profile);
           } else {
             setRole(null);
             setPermissions(null);
-            setProfile(null)
+            setProfile(null);
           }
         } catch (error) {
           setRole(null);
-          setProfile(null)
+          setProfile(null);
           setPermissions(null);
+        } finally {
+          setPermissionsLoading(false);
         }
       } else {
         setCurrentUser(null);
         setRole(null);
         setPermissions(null);
-        setProfile(null)
+        setProfile(null);
+        setLoading(false);
+        setPermissionsLoading(false);
         navigate("/login");
       }
     });
     return unsubscribe;
   }, [navigate]);
 
-  const value = { currentUser, login, role, permissions, displayName, profile };
+  const value = { currentUser, login, role, permissions, displayName, profile, permissionsLoading };
 
   return (
     <AuthContext.Provider value={value}>
