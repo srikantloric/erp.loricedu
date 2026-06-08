@@ -1,5 +1,5 @@
 import { ExpandLess, ExpandMore } from "@mui/icons-material";
-import { Popper, Paper, List, ListItemButton, ListItemIcon, ListItemText, Box, Collapse, Drawer, ListSubheader, styled, useMediaQuery, useTheme, Tooltip } from "@mui/material";
+import { Popper, Paper, List, ListItemButton, ListItemIcon, ListItemText, Box, Collapse, Drawer, ListSubheader, Skeleton, styled, useMediaQuery, useTheme, Tooltip } from "@mui/material";
 import { menuItems } from "config/menuConfig";
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -43,7 +43,7 @@ const NavbarNew = () => {
     const [hoveredMenu, setHoveredMenu] = useState<null | string>(null);
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
-    const { permissions } = useAuth();
+    const { permissions, permissionsLoading } = useAuth();
 
     const handleToggleSubMenu = (label: string) => {
         setOpenSubmenu(prev => (prev === label ? null : label));
@@ -77,9 +77,67 @@ const NavbarNew = () => {
         return filteredMenu.some(m => !m.isHeader && m.group === item.group);
     });
 
-    const drawerContent = (
-        <List
-        >
+    const skeletonGroups = [
+        { label: "Masters", rows: 4 },
+        { label: "Manager", rows: 5 },
+        { label: "Report Center", rows: 2 },
+        { label: "Academic Session", rows: 2 },
+        { label: "Controls", rows: 4 },
+    ];
+
+    const renderSkeletonMenu = () => (
+        <List>
+            {skeletonGroups.map((group) => (
+                <Box key={group.label}>
+                    <ListSubheader
+                        disableSticky
+                        sx={{
+                            typography: "overline",
+                            color: "text.secondary",
+                            fontWeight: 800,
+                            pl: 2,
+                            pt: 2,
+                            pb: 1,
+                            textAlign: isMini ? "center" : "left",
+                            fontSize: isMini ? "0.5rem" : "0.75rem",
+                        }}
+                    >
+                        <Skeleton variant="text" width={isMini ? 34 : 96} />
+                    </ListSubheader>
+                    {Array.from({ length: group.rows }).map((_, index) => (
+                        <ListItemButton
+                            key={`${group.label}-${index}`}
+                            sx={{
+                                borderRadius: 2,
+                                mx: 1,
+                                my: 0.8,
+                                minHeight: 40,
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                gap: 1,
+                                pointerEvents: "none",
+                            }}
+                        >
+                            <ListItemIcon sx={{ minWidth: 28 }}>
+                                <Skeleton variant="circular" width={20} height={20} />
+                            </ListItemIcon>
+                            {!isMini && (
+                                <Box sx={{ flexGrow: 1 }}>
+                                    <Skeleton variant="text" width={`${58 + ((index % 3) * 10)}%`} height={24} />
+                                </Box>
+                            )}
+                        </ListItemButton>
+                    ))}
+                </Box>
+            ))}
+        </List>
+    );
+
+    const drawerContent = permissionsLoading ? (
+        renderSkeletonMenu()
+    ) : (
+        <List>
             {finalMenu.map(item => {
                 const hasActiveSubmenu = item.subMenu?.some(sub => location.pathname === sub.path);
                 const isActive = location.pathname === item.path || hasActiveSubmenu;
