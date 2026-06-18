@@ -49,6 +49,9 @@ export type StudentDetailsType = {
   paidInstallments?: string[];
   sessionDocId?: string;
   sessionId?: string;
+
+  //temp
+  originalRollNumber?: number;
 };
 
 export type StudentSessionDetailsType = {

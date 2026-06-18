@@ -38,6 +38,7 @@ function ViewStudentProfile() {
 
       try {
         const studentData = await getStudentById(studentDocId, session);
+        console.log("Fetched student data:", studentData);
         setStudentData(studentData);
       } catch (error) {
         enqueueSnackbar("Unable to load student data: " + error, {

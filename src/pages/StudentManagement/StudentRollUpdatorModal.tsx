@@ -124,6 +124,7 @@ const StudentRollUpdaterModal: React.FC<StudentRollUpdaterModalProps> = ({
         }
 
         const fetchStudents = async () => {
+            console.log("Selected student for roll update:", selectedStudent);
             if (selectedStudent.class) {
                 setLoading(true);
                 const q = query(
@@ -136,6 +137,7 @@ const StudentRollUpdaterModal: React.FC<StudentRollUpdaterModalProps> = ({
                 querySnapshot.forEach((doc) =>
                     fetched.push({ ...doc.data(), id: doc.id } as StudentDetailsType)
                 );
+                console.log("Fetched students:", fetched);
                 fetched.sort((a, b) => Number(a.rollNumber) - Number(b.rollNumber));
                 setStudents(fetched);
                 originalOrderRef.current = [...fetched]; // full object snapshot
