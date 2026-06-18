@@ -34,6 +34,7 @@ import { useState } from "react";
 import LockIcon from "@mui/icons-material/Lock";
 import {
   arrayUnion,
+  collection,
   doc,
   runTransaction,
   serverTimestamp,
@@ -43,6 +44,7 @@ import { useFirebase } from "context/firebaseContext";
 import StudentRollUpdaterModal from "pages/StudentManagement/StudentRollUpdatorModal";
 import { getClassNameByValue } from "utilities/UtilitiesFunctions";
 import { useAuth } from "context/AuthContext";
+import { useNavbar } from "context/NavbarContext";
 
 const VisuallyHiddenInput = styled("input")`
   clip: rect(0 0 0 0);
@@ -84,7 +86,7 @@ const schema = z.object({
   caste: z.string(),
   city: z.string().min(1, "City is required!"),
   class: z.number().min(1, "Class is required!"),
-  rollNumber: z.string().min(1),
+  rollNumber: z.string().optional(),
   contact_number: z
     .string()
     .regex(/^\d{10}$/, { message: "Invalid phone number" }),
@@ -114,6 +116,7 @@ const schema = z.object({
   transportation_fee: z.number(),
   fee_discount: z.number(),
   updated_at: z.union([z.instanceof(Timestamp), z.any()]).optional(),
+  sessionDocId: z.string().optional(),
 });
 
 type UpdateFormFields = z.infer<typeof schema>;
@@ -142,6 +145,9 @@ const PersonalTab: React.FC<StudentProfileProps> = ({ studentData }) => {
 
   const [changeKeyInput, setChangeKeyInput] = useState<string>("");
   const [changeKeyAccessError, setChangeKeyAccessError] = useState<string>("");
+
+  const { session } = useNavbar();
+  console.log("Current Academic Session:", session);
 
   //Roll update modal state
   const [updatedRollNumber, setUpdatedRollNumber] = useState<number>(
@@ -206,44 +212,76 @@ const PersonalTab: React.FC<StudentProfileProps> = ({ studentData }) => {
 
         updatedData["updated_at"] = serverTimestamp();
 
-        console.log("Updated Data to be saved:", studentData);
+        console.log("Updated Data to be saved:", updatedData);
 
         const studentRef = doc(db, "STUDENTS", studentData.id);
 
-        const studentSessionRef = doc(
-          db,
-          "STUDENTS_SESSIONS",
-          studentData.sessionDocId!,
-        );
+        if (!studentData.sessionDocId) {
+          //missed to create the session document for this student, creating now to avoid errors and data inconsistency, this should be a one time fix
+          const sessionData = {
+            class: updatedData.class,
+            classId:
+              getClassNameByValue(updatedData.class)?.toString() || "N/A",
+            section: updatedData.section,
+            rollNumber: parseInt(updatedData.rollNumber || "0"),
+            sessionStart: serverTimestamp(),
+            sessionEnd: null,
+            createdAt: serverTimestamp(),
+            createdBy: auth.currentUser?.uid,
+            previousRecords: [],
+            studentId: studentData.id,
+            sessionId: session,
+          };
+          const sessionDocRef = doc(collection(db, "STUDENTS_SESSIONS"));
 
-        const sessionUpdateData = {
-          class: updatedData.class,
-          classId: getClassNameByValue(updatedData.class)?.toString() || "N/A",
-          section: updatedData.section,
-          rollNumber: parseInt(updatedData.rollNumber),
-          updatedAt: serverTimestamp(),
-          updatedBy: auth.currentUser?.uid,
+          updatedData["sessionDocId"] = sessionDocRef.id;
 
-          //store historical data in array of objects in firestore
-          previousRecords: arrayUnion({
-            class: studentData.class,
-            section: studentData.section,
-            rollNumber: studentData.rollNumber,
-            updatedAt: studentData.updated_at,
+          await runTransaction(db, async (transaction) => {
+            transaction.set(sessionDocRef, sessionData);
+            transaction.update(studentRef, updatedData);
+          });
+          console.log("Update successful!");
+          enqueueSnackbar("Profile updated successfully!", {
+            variant: "success",
+          });
+        } else {
+          const studentSessionRef = doc(
+            db,
+            "STUDENTS_SESSIONS",
+            studentData.sessionDocId!,
+          );
+
+          const sessionUpdateData = {
+            class: updatedData.class,
+            classId:
+              getClassNameByValue(updatedData.class)?.toString() || "N/A",
+            section: updatedData.section,
+            rollNumber: parseInt(updatedData.rollNumber || "0"),
+            updatedAt: serverTimestamp(),
             updatedBy: auth.currentUser?.uid,
-          }),
-        };
 
-        await runTransaction(db, async (transaction) => {
-          transaction.update(studentRef, updatedData);
-          transaction.update(studentSessionRef, sessionUpdateData);
-        });
+            //store historical data in array of objects in firestore
+            previousRecords: arrayUnion({
+              class: studentData.class,
+              section: studentData.section,
+              rollNumber: studentData.rollNumber,
+              updatedAt: studentData.updated_at,
+              updatedBy: auth.currentUser?.uid,
+            }),
+          };
+          console.log("Session Update Data:", sessionUpdateData);
 
-        console.log("Update successful!");
-        enqueueSnackbar("Profile updated successfully!", {
-          variant: "success",
-        });
-        setPaymentDetailsChangeBlocked(true);
+          await runTransaction(db, async (transaction) => {
+            transaction.update(studentRef, updatedData);
+            transaction.update(studentSessionRef, sessionUpdateData);
+          });
+
+          console.log("Update successful!");
+          enqueueSnackbar("Profile updated successfully!", {
+            variant: "success",
+          });
+          setPaymentDetailsChangeBlocked(true);
+        }
       } catch (err) {
         console.error("Firestore Update Error:", err);
         enqueueSnackbar("Something went wrong while updating data!", {

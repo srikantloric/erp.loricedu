@@ -38,19 +38,12 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { StudentDetailsType } from "types/student";
 import { rankType } from "types/results";
-import {
-  collection,
-  query,
-  where,
-  getDocs,
-  doc,
-  writeBatch,
-  getDoc,
-} from "firebase/firestore";
+import { doc, writeBatch, getDoc } from "firebase/firestore";
 import { useFirebase } from "context/firebaseContext";
 import { useNavbar } from "context/NavbarContext";
 import { enqueueSnackbar } from "notistack";
 import { SCHOOL_CLASSES } from "config/schoolConfig";
+import { getStudentsByClass } from "api/students";
 
 /* ============ SORTABLE ITEM COMPONENT ============ */
 interface SortableRollItemProps {
@@ -68,7 +61,6 @@ const SortableRollItem: React.FC<SortableRollItemProps> = ({
 }) => {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id: student.id });
-
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
     transition,
@@ -103,15 +95,7 @@ const SortableRollItem: React.FC<SortableRollItemProps> = ({
           {student.father_name}
         </Box>
         <Box sx={{ textAlign: "center" }}>{originalRoll}</Box>
-        <Box
-          sx={{
-            textAlign: "center",
-            fontWeight: 600,
-            color: hasChanged ? "green" : "inherit",
-          }}
-        >
-          {newRoll}
-        </Box>
+
         <Box sx={{ display: "flex", justifyContent: "center" }}>
           {hasChanged && (
             <Chip
@@ -397,7 +381,12 @@ const ManualAllocation: React.FC<ManualAllocationProps> = ({
   const sensors = useSensors(useSensor(PointerSensor));
 
   useEffect(() => {
-    const sorted = [...students].sort((a, b) => a.rollNumber - b.rollNumber);
+    const sorted = [...students]
+      .sort((a, b) => a.rollNumber - b.rollNumber)
+      .map((s) => ({
+        ...s,
+        originalRollNumber: s.rollNumber,
+      }));
     setPreview(sorted);
     originalOrderRef.current = [...sorted];
   }, [students]);
@@ -421,15 +410,13 @@ const ManualAllocation: React.FC<ManualAllocationProps> = ({
 
   const handleApply = () => {
     const changedCount = preview.filter(
-      (s) =>
-        s.rollNumber !==
-        originalOrderRef.current.find((os) => os.id === s.id)?.rollNumber,
+      (s) => s.rollNumber !== s.originalRollNumber,
     ).length;
-
     if (changedCount > 0) {
       enqueueSnackbar(`Updating ${changedCount} roll numbers...`, {
         variant: "info",
       });
+      console.log("Applying manual allocation with changes:", preview);
       onApply(preview);
     } else {
       enqueueSnackbar("No changes to apply", { variant: "warning" });
@@ -441,7 +428,8 @@ const ManualAllocation: React.FC<ManualAllocationProps> = ({
   };
 
   if (loading) return <CircularProgress />;
-
+  console.log("ManualAllocation rendered");
+  console.log("Preview", preview.length);
   return (
     <Box>
       <Alert severity="info" sx={{ mb: 2 }}>
@@ -453,6 +441,12 @@ const ManualAllocation: React.FC<ManualAllocationProps> = ({
         sensors={sensors}
         collisionDetection={closestCenter}
         onDragEnd={handleDragEnd}
+        onDragStart={(event) => {
+          console.log("DRAG START", event.active.id);
+        }}
+        onDragMove={() => {
+          console.log("DRAG MOVE");
+        }}
       >
         {/* Header Row */}
         <Box
@@ -475,7 +469,6 @@ const ManualAllocation: React.FC<ManualAllocationProps> = ({
           <Box>Student Name</Box>
           <Box>Father Name</Box>
           <Box sx={{ textAlign: "center" }}>Previous</Box>
-          <Box sx={{ textAlign: "center" }}>New</Box>
           <Box sx={{ textAlign: "center" }}>Status</Box>
         </Box>
 
@@ -485,13 +478,12 @@ const ManualAllocation: React.FC<ManualAllocationProps> = ({
             strategy={verticalListSortingStrategy}
           >
             {preview.map((student) => {
-              const originalRoll = student.rollNumber || 0;
               return (
                 <SortableRollItem
                   key={student.id}
                   student={student}
                   newRoll={student.rollNumber}
-                  originalRoll={originalRoll}
+                  originalRoll={student.originalRollNumber || 0}
                 />
               );
             })}
@@ -534,93 +526,17 @@ const StudentRollNumberAllocation: React.FC<
   const { db } = useFirebase();
   const { session: currentSessionId } = useNavbar();
 
-  // Helper function to merge student details from STUDENTS collection
-  const mergeStudentDetails = async (sessionStudents: any[]) => {
-    try {
-      const studentsWithDetails = await Promise.all(
-        sessionStudents.map(async (sessionStudent) => {
-          try {
-            const studentDocRef = doc(db, "STUDENTS", sessionStudent.studentId);
-            const studentSnap = await getDoc(studentDocRef);
-
-            if (studentSnap.exists()) {
-              const studentData = studentSnap.data();
-              if (studentData.is_active === false) {
-                return null;
-              }
-
-              return {
-                ...sessionStudent,
-                is_active: studentData.is_active,
-                admission_no: studentData.admission_no || "",
-                student_name: studentData.student_name || "",
-                father_name: studentData.father_name || "",
-                profil_url: studentData.profil_url || "",
-                id: sessionStudent.id,
-                studentId: sessionStudent.studentId,
-              };
-            }
-            return {
-              ...sessionStudent,
-              id: sessionStudent.id,
-              studentId: sessionStudent.studentId,
-            };
-          } catch (err) {
-            console.error(
-              `Failed to fetch details for student ${sessionStudent.studentId}:`,
-              err,
-            );
-            return sessionStudent;
-          }
-        }),
-      );
-      return studentsWithDetails.filter((student) => student !== null);
-    } catch (err) {
-      console.error("Failed to merge student details:", err);
-      return sessionStudents;
-    }
-  };
-
   // Fetch students for selected class from STUDENTS_SESSIONS collection
   useEffect(() => {
     const fetchStudents = async () => {
-      console.log(
-        "Fetching students for class:",
-        selectedClass,
-        "Session ID:",
-        currentSessionId,
-      );
-      if (!selectedClass || !currentSessionId) {
-        setStudents([]);
-        return;
-      }
-
       setLoading(true);
+
       try {
-        // Fetch from STUDENTS_SESSIONS collection
-        const q = query(
-          collection(db, "STUDENTS_SESSIONS"),
-          where("sessionId", "==", currentSessionId),
-          where("class", "==", selectedClass),
+        const students = await getStudentsByClass(
+          Number(selectedClass),
+          currentSessionId,
         );
-        const snap = await getDocs(q);
-        let sessionStudents = snap.docs.map((doc) => ({
-          sessionDocId: doc.id,
-          ...doc.data(),
-        })) as any[];
-
-        // Merge student details from STUDENTS collection
-        sessionStudents = await mergeStudentDetails(sessionStudents);
-
-        // Preserve original rollNumber before sorting
-        sessionStudents = sessionStudents.map((s) => ({
-          ...s,
-          originalClassRoll: s.rollNumber,
-        }));
-
-        // Sort by class roll
-        sessionStudents.sort((a, b) => a.rollNumber - b.rollNumber);
-        setStudents(sessionStudents);
+        setStudents(students);
       } catch (error) {
         console.error("Error fetching students:", error);
         enqueueSnackbar("Failed to load students", { variant: "error" });
@@ -644,19 +560,16 @@ const StudentRollNumberAllocation: React.FC<
     try {
       const batch = writeBatch(db);
 
-      console.log(
-        `Updating ${pendingAllocation.length} students for session: ${currentSessionId}`,
-      );
-
       console.log("Pending allocation details:", pendingAllocation);
 
       pendingAllocation.forEach((student) => {
         // Update STUDENTS_SESSIONS collection (use session document ID and filter by current session)
-
         console.log(
-          `Preparing batch update for student: ${student.student_name}, new roll: ${student.rollNumber}, sessionDocId: ${student.sessionDocId}`,
+          "Updating student:",
+          student.id,
+          "with new roll number:",
+          student.rollNumber,
         );
-
         const sessionRef = doc(db, "STUDENTS_SESSIONS", student.sessionDocId!);
         batch.update(sessionRef, {
           rollNumber: Number(student.rollNumber),
@@ -665,10 +578,6 @@ const StudentRollNumberAllocation: React.FC<
         // Also update STUDENTS collection (use studentId)
         const studentRef = doc(db, "STUDENTS", student.id);
         batch.update(studentRef, { rollNumber: Number(student.rollNumber) });
-
-        console.debug(
-          `Batch update for student: sessionDocId=${student.sessionDocId}, studentId=${student.id}, newRoll=${student.rollNumber}`,
-        );
       });
 
       await batch.commit();
