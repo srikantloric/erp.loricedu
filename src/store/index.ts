@@ -6,7 +6,7 @@ import {
 } from "react-redux";
 import {
   persistStore,
-  persistReducer,
+  // persistReducer,
   FLUSH,
   REHYDRATE,
   PAUSE,
@@ -14,7 +14,7 @@ import {
   PURGE,
   REGISTER,
 } from "redux-persist";
-import storage from "redux-persist/lib/storage";
+// import storage from "redux-persist/lib/storage";
 
 // Persist config for only students slice
 import { combineReducers } from "@reduxjs/toolkit";
@@ -23,11 +23,11 @@ import studentslice from "./reducers/studentSlice";
 import dashboardSlice from "./reducers/dashboardSlice";
 import facultiesSlice from "./reducers/facultiesSlice";
 
-const persistConfig = {
-  key: "root",
-  storage,
-  whitelist: ["students"], // only persist students slice
-};
+// const persistConfig = {
+//   key: "root",
+//   storage,
+//   whitelist: ["students"], // only persist students slice
+// };
 
 
 const rootReducer = combineReducers({
@@ -36,10 +36,10 @@ const rootReducer = combineReducers({
   students: studentslice,
 });
 
-const persistedReducer = persistReducer(persistConfig, rootReducer);
+// const persistedReducer = persistReducer(persistConfig, rootReducer);
 
 const store = configureStore({
-  reducer: persistedReducer,
+  reducer: rootReducer,
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: {

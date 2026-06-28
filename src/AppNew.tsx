@@ -35,8 +35,8 @@ import FeeCollectionPage from "modules/fees/pages/FeeCollectionPage";
 import { ConfirmDialogProvider } from "context/ConfirmDialogContext";
 import FacultyAttendanceNew from "pages/Attendance/FacultyAttendance/FacultyAttendanceNew";
 import StudentRollNumberAllocation from "pages/AcademicSession/StudentRollNumberAllocation";
-import { fetchStudentDataVersion } from "utils/studentDataVersion";
-import { persistor } from "store";
+// import { fetchStudentDataVersion } from "utils/studentDataVersion";
+// import { persistor } from "store";
 
 // Lazy Loaded Components
 
@@ -113,31 +113,33 @@ const WebsiteConfig = Loadable(
   lazy(() => import("./pages/WebsiteConfig/WebsiteConfigPage")),
 );
 
-const STUDENT_DATA_VERSION_KEY = "student_data_version";
+// const STUDENT_DATA_VERSION_KEY = "student_data_version";
 
 function AppNew() {
   useEffect(() => {
     document.title = "Skool Tower - Every School, One Tower";
   }, []);
 
-  // Version check and revalidation logic
-  useEffect(() => {
-    async function checkStudentDataVersion() {
-      try {
-        const remoteVersion = await fetchStudentDataVersion();
-        const localVersion = localStorage.getItem(STUDENT_DATA_VERSION_KEY);
-        if (remoteVersion && String(remoteVersion) !== localVersion) {
-          // Version mismatch: purge persisted store and update version in localStorage
-          persistor.purge();
-          localStorage.setItem(STUDENT_DATA_VERSION_KEY, String(remoteVersion));
-        }
-      } catch (err) {
-        // Optionally handle error (e.g., show notification)
-        // console.error("Failed to check student data version", err);
-      }
-    }
-    checkStudentDataVersion();
-  }, []);
+  // // Version check and revalidation logic
+  // useEffect(() => {
+  //   async function checkStudentDataVersion() {
+  //     try {
+  //       const remoteVersion = await fetchStudentDataVersion();
+  //       const localVersion = localStorage.getItem(STUDENT_DATA_VERSION_KEY);
+  //       if (remoteVersion && String(remoteVersion) !== localVersion) {
+  //         // Version mismatch: purge persisted store and update version in localStorage
+  //         persistor.purge();
+  //         localStorage.setItem(STUDENT_DATA_VERSION_KEY, String(remoteVersion));
+  //       }
+  //     } catch (err) {
+  //       // Optionally handle error (e.g., show notification)
+  //       // console.error("Failed to check student data version", err);
+  //     }
+  //   }
+  //   checkStudentDataVersion();
+  // }, []);
+
+
 
   return (
     <FirebaseProvider>

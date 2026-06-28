@@ -3,7 +3,7 @@ import ReactDOM from "react-dom/client";
 import "./index.css";
 import { BrowserRouter } from "react-router-dom";
 import { Provider } from "react-redux";
-import { persistor, store } from "./store";
+import {  store } from "./store";
 import { SnackbarProvider } from "notistack";
 import AppNew from "AppNew";
 import { PersistGate } from "redux-persist/integration/react";
@@ -13,11 +13,11 @@ root.render(
   // <React.StrictMode>
   <BrowserRouter>
     <SnackbarProvider maxSnack={4}>
-      <PersistGate loading={null} persistor={persistor}>
+      {/* <PersistGate loading={null} persistor={persistor}> */}
         <Provider store={store}>
           <AppNew />
         </Provider>
-      </PersistGate>
+      {/* </PersistGate> */}
     </SnackbarProvider>
   </BrowserRouter>,
 
