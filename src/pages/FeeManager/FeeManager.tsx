@@ -21,9 +21,11 @@ import {
 import { useSelector } from "react-redux";
 import { enqueueSnackbar } from "notistack";
 import BreadCrumbsV2 from "components/Breadcrumbs/BreadCrumbsV2";
-import { RootState } from "store";
+import { RootState, useDispatch } from "store";
 import { getClassNameByValue } from "utilities/UtilitiesFunctions";
 import FeeCollectionReport from "./FeeCollectionReport";
+import { fetchstudent } from "store/reducers/studentSlice";
+import { useNavbar } from "context/NavbarContext";
 
 // -----------------------------
 // Interfaces / Types
@@ -48,7 +50,12 @@ interface StudentOption {
 // -----------------------------
 // CustomTabPanel Component
 // -----------------------------
-function CustomTabPanel({ children, value, index, ...other }: CustomTabPanelProps) {
+function CustomTabPanel({
+  children,
+  value,
+  index,
+  ...other
+}: CustomTabPanelProps) {
   return (
     <div
       role="tabpanel"
@@ -81,10 +88,12 @@ const FeeManager: React.FC = () => {
   const historyRef = useNavigate();
   const data = useSelector((state: RootState) => state.students.studentarray);
   const loading = useSelector((state: RootState) => state.students.loading);
-
+  const dipatch = useDispatch();
   const [searchList, setSearchList] = useState<StudentOption[]>([]);
   const [selectedDoc, setSelectedDoc] = useState<string | null>(null);
   const searchBoxRef = useRef<HTMLInputElement>(null);
+
+  const { session } = useNavbar();
 
   const handleChange = (_event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
@@ -140,9 +149,14 @@ const FeeManager: React.FC = () => {
     searchBoxRef.current?.focus();
   }, []);
 
+  useEffect(() => {
+    if (data.length === 0) {
+      dipatch(fetchstudent(session)); // Fetch students if not already fetched
+    }
+  }, []);
+
   return (
     <>
-
       <BreadCrumbsV2
         Icon={AccountBalanceWalletIcon}
         Path="Fee Management/Search Student"
@@ -150,14 +164,18 @@ const FeeManager: React.FC = () => {
       <Box sx={{ width: "100%", mt: "16px" }}>
         <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
           <Tabs value={value} onChange={handleChange} aria-label="tabs">
-            <Tab label="Student Fee Collection" {...a11yProps(0)} sx={{ textTransform: "capitalize" }} />
+            <Tab
+              label="Student Fee Collection"
+              {...a11yProps(0)}
+              sx={{ textTransform: "capitalize" }}
+            />
             <Tab
               label={
                 <Badge
                   color="error"
                   badgeContent="New"
                   sx={{
-                    '& .MuiBadge-badge': {
+                    "& .MuiBadge-badge": {
                       right: -11, // less negative so badge is more visible
                       top: 8,
                       zIndex: 1,
@@ -168,7 +186,12 @@ const FeeManager: React.FC = () => {
                 </Badge>
               }
               {...a11yProps(1)}
-              sx={{ textTransform: "capitalize", pr: 4, minWidth: 180, paddingRight: 4 }} // increase minWidth and padding
+              sx={{
+                textTransform: "capitalize",
+                pr: 4,
+                minWidth: 180,
+                paddingRight: 4,
+              }} // increase minWidth and padding
             />
             <Tab
               label={
@@ -176,7 +199,7 @@ const FeeManager: React.FC = () => {
                   color="error"
                   badgeContent="New"
                   sx={{
-                    '& .MuiBadge-badge': {
+                    "& .MuiBadge-badge": {
                       right: -20, // less negative so badge is more visible
                       top: 8,
                       zIndex: 1,
@@ -187,7 +210,12 @@ const FeeManager: React.FC = () => {
                 </Badge>
               }
               {...a11yProps(2)}
-              sx={{ textTransform: "capitalize", pr: 4, minWidth: 180, paddingRight: 6 }} // increase minWidth and padding
+              sx={{
+                textTransform: "capitalize",
+                pr: 4,
+                minWidth: 180,
+                paddingRight: 6,
+              }} // increase minWidth and padding
             />
           </Tabs>
         </Box>
@@ -198,7 +226,12 @@ const FeeManager: React.FC = () => {
           <Box
             component="form"
             onSubmit={handleNextPageBtn}
-            sx={{ display: "flex", alignItems: "center", justifyContent: "center", height: "30vh" }}
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              height: "30vh",
+            }}
           >
             <Autocomplete
               id="student-search"
@@ -213,10 +246,23 @@ const FeeManager: React.FC = () => {
               renderOption={(props, option) => (
                 <AutocompleteOption {...props}>
                   <ListItemDecorator>
-                    <img loading="lazy" width="20" src={option.profile} alt="" />
+                    <img
+                      loading="lazy"
+                      width="20"
+                      src={option.profile}
+                      alt=""
+                    />
                   </ListItemDecorator>
-                  <ListItemContent sx={{ fontSize: "sm", display: "flex", flexDirection: "column" }}>
-                    <b>{option.name} | {option.class}</b>
+                  <ListItemContent
+                    sx={{
+                      fontSize: "sm",
+                      display: "flex",
+                      flexDirection: "column",
+                    }}
+                  >
+                    <b>
+                      {option.name} | {option.class}
+                    </b>
                     <Typography level="body-xs" fontSize={"14px"}>
                       {option.admission} | {option.fatherName} | {option.dob}
                     </Typography>
@@ -224,7 +270,12 @@ const FeeManager: React.FC = () => {
                 </AutocompleteOption>
               )}
             />
-            <Button type="submit" variant="contained" sx={{ height: 36 }} disableElevation>
+            <Button
+              type="submit"
+              variant="contained"
+              sx={{ height: 36 }}
+              disableElevation
+            >
               Search
             </Button>
           </Box>
@@ -234,7 +285,12 @@ const FeeManager: React.FC = () => {
           <Box
             component="form"
             onSubmit={handleNextPageBtnNew}
-            sx={{ display: "flex", alignItems: "center", justifyContent: "center", height: "30vh" }}
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              height: "30vh",
+            }}
           >
             <Autocomplete
               id="student-search"
@@ -249,10 +305,23 @@ const FeeManager: React.FC = () => {
               renderOption={(props, option) => (
                 <AutocompleteOption {...props}>
                   <ListItemDecorator>
-                    <img loading="lazy" width="20" src={option.profile} alt="" />
+                    <img
+                      loading="lazy"
+                      width="20"
+                      src={option.profile}
+                      alt=""
+                    />
                   </ListItemDecorator>
-                  <ListItemContent sx={{ fontSize: "sm", display: "flex", flexDirection: "column" }}>
-                    <b>{option.name} | {option.class}</b>
+                  <ListItemContent
+                    sx={{
+                      fontSize: "sm",
+                      display: "flex",
+                      flexDirection: "column",
+                    }}
+                  >
+                    <b>
+                      {option.name} | {option.class}
+                    </b>
                     <Typography level="body-xs" fontSize={"14px"}>
                       {option.admission} | {option.fatherName} | {option.dob}
                     </Typography>
@@ -260,7 +329,12 @@ const FeeManager: React.FC = () => {
                 </AutocompleteOption>
               )}
             />
-            <Button type="submit" variant="contained" sx={{ height: 36 }} disableElevation>
+            <Button
+              type="submit"
+              variant="contained"
+              sx={{ height: 36 }}
+              disableElevation
+            >
               Search
             </Button>
           </Box>

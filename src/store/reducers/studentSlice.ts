@@ -73,7 +73,7 @@ export const addstudent = createAsyncThunk<
     if (!schoolId) {
       throw new Error("Unable to construct email. School ID not found.");
     }
-    const userEmail = `apx2025${formattedCountValue}@gmail.com`;
+    const userEmail = `apx2026${formattedCountValue}@gmail.com`;
 
     const docId = generateFirebaseUID();
     const admissionNo = `${schoolId}${formattedCountValue}`;
