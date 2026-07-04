@@ -265,7 +265,7 @@ const PersonalTab: React.FC<StudentProfileProps> = ({ studentData }) => {
               class: studentData.class,
               section: studentData.section,
               rollNumber: studentData.rollNumber,
-              updatedAt: studentData.updated_at,
+              updatedAt: studentData.updated_at||new Date(),
               updatedBy: auth.currentUser?.uid,
             }),
           };
