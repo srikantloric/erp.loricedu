@@ -146,6 +146,7 @@ function AddStudentNew() {
 
     }
     const fetchLastRollNumber = async (classId: number, sectionId: string) => {
+        console.log("Fetching last roll number for class:", classId, "section:", sectionId);
         try {
             const studentsRef = collection(db, "STUDENTS");
             const q = query(
@@ -159,7 +160,7 @@ function AddStudentNew() {
             const snapshot = await getDocs(q);
 
             if (!snapshot.empty) {
-                const lastRoll = snapshot.docs[0].data().rollNumber;
+                const lastRoll = snapshot.docs[0].data().rollNumber|| 0;
                 const lastRollNum = typeof lastRoll === "string" ? parseInt(lastRoll, 10) : lastRoll || 0;
                 return lastRollNum + 1; // Return as number
             } else {
@@ -265,8 +266,10 @@ function AddStudentNew() {
 
                         if (!nextRoll) {
                             enqueueSnackbar("Some issue occured while auto-generating roll number", { variant: "error" })
+                            setLoading(false);
                             return
                         }
+                        
                         values.rollNumber = nextRoll;
                         dispatch(
                             // @ts-ignore
@@ -284,8 +287,8 @@ function AddStudentNew() {
                             });
                     }}
                 >
-                    {({ values, setFieldValue, errors }) => {
-                        console.log(errors)
+                    {() => {
+                        
                         return (
                             <Form>
                                 <SeperatorHeader>Personal Details</SeperatorHeader>

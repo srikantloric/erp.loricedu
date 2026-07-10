@@ -70,6 +70,7 @@ export const getStudentById = async (
 export const getStudentsByClass = async (
   classId: number,
   sessionId: string,
+  section?: string,
 ): Promise<StudentDetailsType[]> => {
   const db = await getFirestoreInstance();
 
@@ -79,6 +80,7 @@ export const getStudentsByClass = async (
       .collection("STUDENTS_SESSIONS")
       .where(field("classId").equal(getClassNameByValue(classId)))
       .where(field("sessionId").equal(sessionId))
+      .where(field("section").equal(section || ""))
       // expose outer field
       .define(field("studentId").as("studentIdVar"))
       // JOIN
