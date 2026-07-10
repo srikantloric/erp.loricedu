@@ -42,8 +42,9 @@ import { doc, writeBatch, getDoc } from "firebase/firestore";
 import { useFirebase } from "context/firebaseContext";
 import { useNavbar } from "context/NavbarContext";
 import { enqueueSnackbar } from "notistack";
-import { SCHOOL_CLASSES } from "config/schoolConfig";
+import { SCHOOL_CLASSES, SCHOOL_SECTIONS } from "config/schoolConfig";
 import { getStudentsByClass } from "api/students";
+import { getClassNameByValue } from "utilities/UtilitiesFunctions";
 
 /* ============ SORTABLE ITEM COMPONENT ============ */
 interface SortableRollItemProps {
@@ -80,13 +81,15 @@ const SortableRollItem: React.FC<SortableRollItemProps> = ({
       <Box
         sx={{
           display: "grid",
-          gridTemplateColumns: "80px 150px 150px 100px 120px 80px 100px",
+          gridTemplateColumns: "100px 150px 150px 100px 120px 80px 100px",
           gap: 1.5,
           alignItems: "center",
           fontSize: "0.9rem",
         }}
       >
         <Box sx={{ fontWeight: 600 }}>{newRoll}</Box>
+        <Box>{getClassNameByValue(Number(student.class || 0))}</Box>
+        <Box>{student.section}</Box>
         <Box sx={{ fontWeight: 600, color: "#1976d2" }}>
           {student.admission_no}
         </Box>
@@ -165,7 +168,7 @@ const AlphabeticalAllocation: React.FC<AlphabeticalAllocationProps> = ({
       <Box
         sx={{
           display: "grid",
-          gridTemplateColumns: "80px 150px 150px 100px 120px 80px 100px",
+          gridTemplateColumns: "100px 150px 150px 100px 120px 80px 100px",
           gap: 1.5,
           alignItems: "center",
           fontSize: "0.85rem",
@@ -465,6 +468,8 @@ const ManualAllocation: React.FC<ManualAllocationProps> = ({
           }}
         >
           <Box>New Roll</Box>
+          <Box>Class</Box>
+          <Box>Section</Box>
           <Box>Admission No</Box>
           <Box>Student Name</Box>
           <Box>Father Name</Box>
@@ -517,6 +522,7 @@ const StudentRollNumberAllocation: React.FC<
   const [selectedClass, setSelectedClass] = useState<string>(
     defaultClass || "",
   );
+  const [selectedSection, setSelectedSection] = useState<string>("");
   const [activeTab, setActiveTab] = useState<number>(0);
   const [confirmModal, setConfirmModal] = useState(false);
   const [pendingAllocation, setPendingAllocation] = useState<
@@ -527,26 +533,31 @@ const StudentRollNumberAllocation: React.FC<
   const { session: currentSessionId } = useNavbar();
 
   // Fetch students for selected class from STUDENTS_SESSIONS collection
-  useEffect(() => {
-    const fetchStudents = async () => {
-      setLoading(true);
 
-      try {
-        const students = await getStudentsByClass(
-          Number(selectedClass),
-          currentSessionId,
-        );
-        setStudents(students);
-      } catch (error) {
-        console.error("Error fetching students:", error);
-        enqueueSnackbar("Failed to load students", { variant: "error" });
-      } finally {
-        setLoading(false);
-      }
-    };
+  const handleFetchStudents = async () => {
+    if (!selectedClass || !selectedSection) {
+      enqueueSnackbar(
+        "Please select both class and section before fetching students.",
+        { variant: "warning" },
+      );
+      return;
+    }
+    setLoading(true);
 
-    fetchStudents();
-  }, [selectedClass, currentSessionId, db]);
+    try {
+      const students = await getStudentsByClass(
+        Number(selectedClass),
+        currentSessionId,
+        selectedSection,
+      );
+      setStudents(students);
+    } catch (error) {
+      console.error("Error fetching students:", error);
+      enqueueSnackbar("Failed to load students", { variant: "error" });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleApplyAllocation = (allocatedStudents: StudentDetailsType[]) => {
     setPendingAllocation(allocatedStudents);
@@ -609,7 +620,15 @@ const StudentRollNumberAllocation: React.FC<
       <PageHeaderWithHelpButton title="Student Roll Number Allocator" />
 
       {/* CLASS SELECTOR */}
-      <Card sx={{ mb: 3, p: 2 }}>
+      <Card
+        sx={{
+          mb: 3,
+          p: 2,
+          display: "flex",
+          alignItems: "center",
+          gap: 2,
+        }}
+      >
         <FormControl sx={{ minWidth: 250 }}>
           <FormLabel>Select Class</FormLabel>
           <Select
@@ -624,10 +643,31 @@ const StudentRollNumberAllocation: React.FC<
             ))}
           </Select>
         </FormControl>
+        <FormControl sx={{ minWidth: 250, ml: 3 }}>
+          <FormLabel>Select Section</FormLabel>
+          <Select
+            value={selectedSection}
+            onChange={(e) => setSelectedSection(e.target.value || "")}
+          >
+            <MenuItem value="">-- Choose a section --</MenuItem>
+            {SCHOOL_SECTIONS.map((sectionName) => (
+              <MenuItem key={sectionName.value} value={sectionName.value}>
+                {sectionName.title}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        <Button
+          onClick={handleFetchStudents}
+          sx={{ ml: 3 }}
+          variant="contained"
+        >
+          Fetch Students
+        </Button>
       </Card>
 
       {/* ALLOCATION METHODS */}
-      {selectedClass && students.length > 0 ? (
+      {selectedClass && selectedSection && students.length > 0 ? (
         <Card>
           <Tabs
             value={activeTab}

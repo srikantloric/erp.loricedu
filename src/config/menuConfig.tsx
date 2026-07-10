@@ -43,7 +43,7 @@ export const menuItems: MenuItem[] = [
         path: "/students/view",
         permission: "viewStudents",
       },
-      { label: "Add Student", path: "/students/add", permission: "addStudent" },
+      { label: "Add Student", path: "/students/add",  },
     ],
     group: "masters",
   },
