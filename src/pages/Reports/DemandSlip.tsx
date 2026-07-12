@@ -4,7 +4,7 @@ import { IconReport } from "@tabler/icons-react";
 import { Paper } from "@mui/material";
 import { Box, Button, Chip, Option, Select, Stack, Typography } from "@mui/joy";
 import { useState } from "react";
-import { SCHOOL_CLASSES } from "config/schoolConfig";
+import { SCHOOL_CLASSES, SCHOOL_SECTIONS } from "config/schoolConfig";
 import { enqueueSnackbar } from "notistack";
 import { getDemandSlips } from "utilities/ReportUtilityFunctions";
 import { GenerateDemandSlip } from "components/Reports/DemandSlips/GenerateDemandSlip";
@@ -15,6 +15,7 @@ import { DemandSlipType } from "types/reports";
 
 const DemandSlip = () => {
   const [selectedClass, setSelectedClass] = useState<number | null>(null);
+  const [selectedSection, setSelectedSection] = useState<string | null>(null);
   const [demandSlips, setDemandSlips] = useState<DemandSlipType[]>([])
   const [pdfUrl, setPdfUrl] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
@@ -26,10 +27,11 @@ const DemandSlip = () => {
       enqueueSnackbar("Please select class!", { variant: "warning" });
       return;
     }
+
     setPdfUrl("");
     setLoading(true);
     try {
-      const demandSlips = await getDemandSlips(selectedClass);
+      const demandSlips = await getDemandSlips(selectedClass, selectedSection);
       setDemandSlips(demandSlips)
       if (demandSlips.length === 0) {
         setLoading(false);
@@ -69,6 +71,18 @@ const DemandSlip = () => {
               required
             >
               {SCHOOL_CLASSES.map((item) => (
+                <Option key={item.value} value={item.value}>
+                  {item.title}
+                </Option>
+              ))}
+            </Select>
+            <Select
+              placeholder="Choose section"
+              value={selectedSection}
+              onChange={(e, val) => setSelectedSection(val)}
+              required
+            >
+              {SCHOOL_SECTIONS.map((item) => (
                 <Option key={item.value} value={item.value}>
                   {item.title}
                 </Option>

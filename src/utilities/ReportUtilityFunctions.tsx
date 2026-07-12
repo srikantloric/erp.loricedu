@@ -9,11 +9,16 @@ import { SCHOOL_FEE_MONTHS, SCHOOL_SESSIONS } from "config/schoolConfig";
 import { DueReportRow } from "components/Tables/DueReportTable";
 
 
-export const getDemandSlips = async (selectedClass: number): Promise<DemandSlipType[]> => {
+export const getDemandSlips = async (selectedClass: number, selectedSection: string | null): Promise<DemandSlipType[]> => {
     const db = await getFirestoreInstance();
     // Get all students of selected class
     const studentCollection = collection(db, "STUDENTS");
-    const studentQuery = query(studentCollection, where("class", "==", selectedClass));
+    let studentQuery = query(studentCollection, where("class", "==", selectedClass));
+    
+    if (selectedSection) {
+        studentQuery = query(studentCollection, where("class", "==", selectedClass), where("section", "==", selectedSection));
+    }
+
     const studentSnap = await getDocs(studentQuery);
 
 
