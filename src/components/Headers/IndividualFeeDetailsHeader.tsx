@@ -98,7 +98,7 @@ const IndividualFeeDetailsHeader: React.FC<Props> = ({
           >
             <Typography level="body-sm">Admission Date</Typography>
             <Typography level="title-sm">
-              {studentMasterData.date_of_addmission}
+              {studentMasterData.date_of_addmission === "string" ? studentMasterData.date_of_addmission : "N/A"}
             </Typography>
           </div>
           <div
